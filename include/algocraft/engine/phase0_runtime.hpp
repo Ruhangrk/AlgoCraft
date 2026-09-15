@@ -35,6 +35,8 @@ public:
   void stop();
 
   [[nodiscard]] EventRing& market_data_ring() { return market_data_; }
+  [[nodiscard]] LogRing& log_ring() { return log_ring_; }
+  [[nodiscard]] AsyncLogger& logger() { return logger_; }
 
   [[nodiscard]] std::uint64_t bars_processed() const {
     return bars_processed_.load(std::memory_order_relaxed);

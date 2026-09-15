@@ -18,6 +18,7 @@ include(cmake/Dependencies.cmake)
 include(cmake/CompilerWarnings.cmake)
 
 add_library(algocraft
+  src/domain/symbol_table.cpp
   src/engine/phase0_runtime.cpp
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp

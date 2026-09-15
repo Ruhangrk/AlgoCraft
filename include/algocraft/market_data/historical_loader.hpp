@@ -4,7 +4,7 @@
 
 #include "algocraft/domain/bar_event.hpp"
 #include "algocraft/domain/bar_resolution.hpp"
-#include "algocraft/domain/symbol.hpp"
+#include "algocraft/domain/ids.hpp"
 #include "algocraft/domain/timestamp.hpp"
 
 namespace algocraft {

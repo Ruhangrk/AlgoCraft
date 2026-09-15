@@ -1,6 +1,6 @@
 #pragma once
 
-#include "algocraft/domain/symbol.hpp"
+#include "algocraft/domain/ids.hpp"
 
 namespace algocraft {
 

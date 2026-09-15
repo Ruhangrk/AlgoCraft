@@ -25,4 +25,15 @@ private:
   std::int64_t paise_{0};
 };
 
+// Round to nearest tick (tick is also in paise, e.g. ₹0.05 = 5).
+constexpr Price round_to_tick(Price price, Price tick) {
+  const auto step = tick.paise();
+  if (step <= 0) {
+    return price;
+  }
+  const auto raw = price.paise();
+  const auto rounded = ((raw + step / 2) / step) * step;
+  return Price::from_paise(rounded);
+}
+
 }  // namespace algocraft

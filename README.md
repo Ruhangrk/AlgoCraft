@@ -2,7 +2,7 @@
 
 C++ NSE algorithmic trading engine.
 
-**Phase 0** is the skeleton only: rings, threads, a dummy data source. No strategies and no live market.
+**Phase 0** skeleton (rings, threads, dummy data). **Phase 1** domain types and events (price/lots, orders, workbooks).
 
 ## Build
 

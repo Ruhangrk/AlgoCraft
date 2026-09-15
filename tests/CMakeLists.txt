@@ -4,6 +4,8 @@ add_executable(algocraft_tests
   unit/test_spsc_ring.cpp
   unit/test_memory_pool.cpp
   unit/test_domain.cpp
+  unit/test_symbol_table.cpp
+  unit/test_events.cpp
   unit/test_data_source_registry.cpp
   unit/test_async_logger.cpp
   unit/test_phase0_runtime.cpp
