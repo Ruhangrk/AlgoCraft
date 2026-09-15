@@ -41,6 +41,7 @@ struct ContainerIdTag {};
 struct StrategyIdTag {};
 struct RoutingAlgoIdTag {};
 struct RunIdTag {};
+struct BorrowIdTag {};
 
 using OrderId = TypedU64<OrderIdTag>;
 using FillId = TypedU64<FillIdTag>;
@@ -48,6 +49,7 @@ using ContainerId = TypedU64<ContainerIdTag>;
 using StrategyId = TypedU64<StrategyIdTag>;
 using RoutingAlgoId = TypedU64<RoutingAlgoIdTag>;
 using RunId = TypedU64<RunIdTag>;
+using BorrowId = TypedU64<BorrowIdTag>;
 
 using SymbolId = std::uint32_t;
 using UserId = Uuid;

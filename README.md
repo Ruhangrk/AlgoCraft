@@ -2,7 +2,7 @@
 
 C++ NSE algorithmic trading engine.
 
-**Phase 0** skeleton. **Phase 1** domain types. **Phase 2** indicators, 3 strategies, CSV backtest on RELIANCE / INFY / TCS (28-day 1-min window).
+**Phase 0** skeleton. **Phase 1** domain types. **Phase 2** indicators, strategies, CSV backtest. **Phase 3** workbook capital, trading containers, portfolio ledger, risk engine (in-memory).
 
 ## Build
 

@@ -494,6 +494,8 @@ risk/
 - Kill switch stops all new orders immediately
 - Unit tests for all capital accounting edge cases (workbook-level and activity-level)
 
+**Status (this repo):** Phase 3 is implemented in-memory (no Postgres — that is Phase 5). Capital is two-level: workbook pool → activity `PortfolioLedger` → container allocation. BACKTEST/PAPER allocations track `paper_capital` and do not reduce activity `available_capital` until `upgrade(REAL)`. Persistence, routing, and the HTTP API are not part of this phase.
+
 ---
 
 ### Phase 4 — First Routing Algorithm + Run Manager

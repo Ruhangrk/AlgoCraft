@@ -19,6 +19,7 @@ include(cmake/CompilerWarnings.cmake)
 
 add_library(algocraft
   src/backtest/backtest_runner.cpp
+  src/container/trading_container.cpp
   src/domain/symbol_table.cpp
   src/engine/phase0_runtime.cpp
   src/execution/cost_calculator.cpp
@@ -30,11 +31,15 @@ add_library(algocraft
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp
   src/persistence/async_logger.cpp
+  src/portfolio/capital_manager.cpp
+  src/portfolio/portfolio_ledger.cpp
+  src/risk/risk_engine.cpp
   src/strategies/consecutive_up_clip.cpp
   src/strategies/ema_crossover.cpp
   src/strategies/opening_range_breakout.cpp
   src/strategies/strategy_registrations.cpp
   src/strategies/vwap_reversion.cpp
+  src/workbook/workbook_manager.cpp
 )
 
 add_library(algocraft::algocraft ALIAS algocraft)
