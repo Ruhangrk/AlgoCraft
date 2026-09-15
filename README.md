@@ -2,7 +2,7 @@
 
 C++ NSE algorithmic trading engine.
 
-**Phase 0** skeleton (rings, threads, dummy data). **Phase 1** domain types and events (price/lots, orders, workbooks).
+**Phase 0** skeleton. **Phase 1** domain types. **Phase 2** indicators, 3 strategies, CSV backtest.
 
 ## Build
 

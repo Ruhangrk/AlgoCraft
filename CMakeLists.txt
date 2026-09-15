@@ -18,11 +18,22 @@ include(cmake/Dependencies.cmake)
 include(cmake/CompilerWarnings.cmake)
 
 add_library(algocraft
+  src/backtest/backtest_runner.cpp
   src/domain/symbol_table.cpp
   src/engine/phase0_runtime.cpp
+  src/execution/cost_calculator.cpp
+  src/execution/simulated_exchange.cpp
+  src/indicators/ema.cpp
+  src/indicators/rsi.cpp
+  src/indicators/vwap.cpp
+  src/market_data/csv_provider.cpp
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp
   src/persistence/async_logger.cpp
+  src/strategies/ema_crossover.cpp
+  src/strategies/opening_range_breakout.cpp
+  src/strategies/strategy_registrations.cpp
+  src/strategies/vwap_reversion.cpp
 )
 
 add_library(algocraft::algocraft ALIAS algocraft)
