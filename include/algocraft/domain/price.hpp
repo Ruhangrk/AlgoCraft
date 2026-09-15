@@ -5,6 +5,7 @@
 
 namespace algocraft {
 
+// NSE cash prices in paise (₹1 = 100). Integer so money never uses float.
 class Price {
 public:
   constexpr Price() = default;

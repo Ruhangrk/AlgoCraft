@@ -12,6 +12,12 @@
 
 namespace algocraft {
 
+// Phase 0 wiring check: five threads, SPSC rings only, dummy payload.
+//
+//   (test / main) --market_data--> Thread 0 --routing--> Thread 1 --command--> Thread 0
+//                         Thread 0 --order_out--> Thread 3 --fill_in--> Thread 0
+//                         Thread 0 / 1 / 3 --persist* / log--> Thread 2
+//                         Thread 4 idle until stop
 class Phase0Runtime {
 public:
   static constexpr std::size_t kRingCapacity = 1024;
@@ -29,8 +35,6 @@ public:
   void stop();
 
   [[nodiscard]] EventRing& market_data_ring() { return market_data_; }
-  [[nodiscard]] LogRing& log_ring() { return log_ring_; }
-  [[nodiscard]] AsyncLogger& logger() { return logger_; }
 
   [[nodiscard]] std::uint64_t bars_processed() const {
     return bars_processed_.load(std::memory_order_relaxed);
@@ -63,10 +67,10 @@ private:
   EventRing fill_in_{};
   EventRing routing_{};
   EventRing command_{};
-  EventRing persist0_{};
-  EventRing persist1_{};
-  EventRing persist3_{};
-  LogRing log_ring_{};
+  EventRing persist0_{};  // Thread 0 -> Thread 2
+  EventRing persist1_{};  // Thread 1 -> Thread 2
+  EventRing persist3_{};  // Thread 3 -> Thread 2
+  LogRing log_ring_{};    // Thread 0 -> Thread 2
 
   AsyncLogger logger_{log_ring_};
 

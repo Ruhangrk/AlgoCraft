@@ -7,13 +7,13 @@
 
 namespace algocraft {
 
+// Named std::thread. Destructor joins so a thread cannot be left running.
 class EngineThread {
 public:
   explicit EngineThread(std::string name) : name_(std::move(name)) {}
 
   EngineThread(const EngineThread&) = delete;
   EngineThread& operator=(const EngineThread&) = delete;
-
   EngineThread(EngineThread&&) = delete;
   EngineThread& operator=(EngineThread&&) = delete;
 

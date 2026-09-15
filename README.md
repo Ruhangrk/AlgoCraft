@@ -1,6 +1,8 @@
 # AlgoCraft
 
-C++ NSE algorithmic trading engine. Phase 0 is the project skeleton: lock-free SPSC rings, memory pools, dedicated threads, async logging, and pluggable data-source interfaces.
+C++ NSE algorithmic trading engine.
+
+**Phase 0** is the skeleton only: rings, threads, a dummy data source. No strategies and no live market.
 
 ## Build
 

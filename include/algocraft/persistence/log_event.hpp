@@ -13,6 +13,7 @@ enum class LogLevel : std::uint8_t {
   Error,
 };
 
+// Fixed-size so it can sit on an SPSC ring (no std::string).
 struct LogEvent {
   std::int64_t timestamp_ns{0};
   LogLevel level{LogLevel::Info};

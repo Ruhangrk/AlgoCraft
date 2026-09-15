@@ -7,7 +7,8 @@
 
 namespace algocraft {
 
-/// SPSC ring facade. Swap the Boost implementation later without changing callers.
+// One writer, one reader. Fixed size so the queue never grows at runtime.
+// Boost is behind this type so we can replace it later without touching callers.
 template <typename T, std::size_t Capacity>
 class SpscRing {
   static_assert(Capacity > 0, "SpscRing capacity must be > 0");
@@ -15,6 +16,7 @@ class SpscRing {
 
 public:
   using value_type = T;
+
   static constexpr std::size_t capacity() { return Capacity; }
 
   SpscRing() = default;
@@ -22,8 +24,10 @@ public:
   SpscRing(const SpscRing&) = delete;
   SpscRing& operator=(const SpscRing&) = delete;
 
+  // false = ring full; caller must not wait on the hot path.
   [[nodiscard]] bool try_push(const T& item) { return queue_.push(item); }
 
+  // false = ring empty.
   [[nodiscard]] bool try_pop(T& item) { return queue_.pop(item); }
 
 private:

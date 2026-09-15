@@ -7,6 +7,7 @@
 
 namespace algocraft {
 
+// Hot path only pushes. Thread 2 pops and prints. Never blocks; drops if full.
 class AsyncLogger {
 public:
   static constexpr std::size_t kCapacity = 4096;
@@ -15,8 +16,7 @@ public:
 
   explicit AsyncLogger(Ring& ring) : ring_(&ring) {}
 
-  /// Non-blocking. Returns false if the ring is full (message dropped).
-  bool try_log(LogLevel level, std::string_view message);
+  [[nodiscard]] bool try_log(LogLevel level, std::string_view message);
 
 private:
   Ring* ring_{nullptr};

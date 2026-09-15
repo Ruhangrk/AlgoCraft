@@ -5,7 +5,7 @@
 
 namespace algocraft {
 
-/// Dummy payload for Phase 0 ring wiring. Replaced by typed events in later phases.
+// Stand-in event until Phase 1 adds BarEvent/Order/Fill on the rings.
 struct DummyEvent {
   std::uint32_t kind{0};
   std::uint32_t symbol_id{0};

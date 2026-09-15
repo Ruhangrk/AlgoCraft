@@ -5,7 +5,7 @@
 
 namespace algocraft {
 
-/// Pre-allocated free-list pool. After construction, acquire/release do not allocate.
+// N objects allocated once. acquire/release only move pointers on the free list.
 template <typename T>
 class MemoryPool {
 public:
@@ -20,6 +20,7 @@ public:
   MemoryPool(const MemoryPool&) = delete;
   MemoryPool& operator=(const MemoryPool&) = delete;
 
+  // nullptr when the pool is empty.
   [[nodiscard]] T* acquire() {
     if (free_list_.empty()) {
       return nullptr;

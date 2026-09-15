@@ -8,6 +8,7 @@
 
 namespace algocraft {
 
+// One OHLCV candle. Resolution is part of the event from day one.
 struct BarEvent {
   SymbolId symbol_id{0};
   Timestamp timestamp{};

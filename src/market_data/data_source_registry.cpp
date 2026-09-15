@@ -9,12 +9,13 @@ void DataSourceRegistry::register_provider(std::unique_ptr<DataProvider> provide
   if (!provider) {
     throw std::invalid_argument("provider is null");
   }
+
   const std::string key{provider->name()};
   if (providers_.contains(key)) {
     throw std::invalid_argument("provider already registered: " + key);
   }
-  auto [it, inserted] = providers_.emplace(key, std::move(provider));
-  (void)inserted;
+
+  const auto it = providers_.emplace(key, std::move(provider)).first;
   if (active_ == nullptr) {
     active_ = it->second.get();
   }
@@ -22,7 +23,7 @@ void DataSourceRegistry::register_provider(std::unique_ptr<DataProvider> provide
 
 void DataSourceRegistry::set_active(std::string_view name) {
   const std::string key{name};
-  auto it = providers_.find(key);
+  const auto it = providers_.find(key);
   if (it == providers_.end()) {
     throw std::invalid_argument("unknown data source: " + key);
   }

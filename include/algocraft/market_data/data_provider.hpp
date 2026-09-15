@@ -17,13 +17,14 @@ struct DataProviderCapabilities {
 class HistoricalDataLoader;
 class MarketDataFeed;
 
+// One vendor (CSV, Upstox, …). Engine talks only to this, never to a broker SDK.
 class DataProvider {
 public:
   virtual ~DataProvider() = default;
 
   virtual std::string_view name() const = 0;
   virtual HistoricalDataLoader& historical_loader() = 0;
-  virtual MarketDataFeed* live_feed() = 0;
+  virtual MarketDataFeed* live_feed() = 0;  // nullptr if this source is history-only
   virtual DataProviderCapabilities capabilities() const = 0;
 };
 

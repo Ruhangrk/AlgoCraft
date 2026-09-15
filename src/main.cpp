@@ -17,7 +17,8 @@ int main() {
   algocraft::Phase0Runtime runtime;
   runtime.start();
 
-  for (std::uint64_t i = 0; i < 8; ++i) {
+  constexpr std::uint64_t kBars = 8;
+  for (std::uint64_t i = 0; i < kBars; ++i) {
     algocraft::DummyEvent event{};
     event.kind = algocraft::kEventBar;
     event.symbol_id = 1;
@@ -28,7 +29,7 @@ int main() {
   }
 
   const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-  while (runtime.bars_processed() < 8 && std::chrono::steady_clock::now() < deadline) {
+  while (runtime.bars_processed() < kBars && std::chrono::steady_clock::now() < deadline) {
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
 
@@ -36,5 +37,5 @@ int main() {
   spdlog::info("bars={} fills={} commands={} persist={} logs={}", runtime.bars_processed(),
                runtime.fills_processed(), runtime.commands_processed(), runtime.persist_events(),
                runtime.logs_written());
-  return runtime.bars_processed() >= 8 ? 0 : 1;
+  return runtime.bars_processed() >= kBars ? 0 : 1;
 }
