@@ -12,6 +12,7 @@ add_executable(algocraft_tests
   unit/test_indicators.cpp
   unit/test_execution.cpp
   unit/test_backtest.cpp
+  unit/test_consecutive_up_clip.cpp
 )
 
 target_link_libraries(algocraft_tests
@@ -23,6 +24,7 @@ target_link_libraries(algocraft_tests
 target_compile_definitions(algocraft_tests
   PRIVATE
     ALGOCRAFT_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
+    ALGOCRAFT_DATA_DIR="${CMAKE_SOURCE_DIR}/data/1min"
 )
 
 algocraft_set_warnings(algocraft_tests)
@@ -33,5 +35,5 @@ endif()
 
 add_test(NAME algocraft_unit COMMAND algocraft_tests)
 set_tests_properties(algocraft_unit PROPERTIES
-  ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0:halt_on_error=1;UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1"
+  ENVIRONMENT "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1;UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1"
 )

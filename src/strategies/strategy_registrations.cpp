@@ -1,5 +1,6 @@
 #include "algocraft/strategies/strategy_registry.hpp"
 
+#include "algocraft/strategies/consecutive_up_clip.hpp"
 #include "algocraft/strategies/ema_crossover.hpp"
 #include "algocraft/strategies/opening_range_breakout.hpp"
 #include "algocraft/strategies/vwap_reversion.hpp"
@@ -33,6 +34,7 @@ void register_all_strategies(StrategyRegistry& registry) {
   registry.add("ema_crossover", [] { return std::make_unique<EmaCrossover>(); });
   registry.add("vwap_reversion", [] { return std::make_unique<VwapReversion>(); });
   registry.add("opening_range_breakout", [] { return std::make_unique<OpeningRangeBreakout>(); });
+  registry.add("consecutive_up_clip", [] { return std::make_unique<ConsecutiveUpClip>(); });
 }
 
 }  // namespace algocraft

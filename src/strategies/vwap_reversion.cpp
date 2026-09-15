@@ -9,9 +9,10 @@ void VwapReversion::configure(const StrategyConfig& config, IndicatorLibrary& li
   vwap_ = &lib.get<Vwap>(config.symbol_id, BarResolution::OneMin);
 }
 
-std::vector<OrderIntent> VwapReversion::on_bar(const BarEvent& bar, const PortfolioView& portfolio) {
+void VwapReversion::on_bar(const BarEvent& bar, const PortfolioView& portfolio,
+                           std::vector<OrderIntent>& out) {
   if (bar.symbol_id != config_.symbol_id || vwap_ == nullptr || !vwap_->ready()) {
-    return {};
+    return;
   }
 
   const auto close = static_cast<double>(bar.close.paise());
@@ -20,12 +21,11 @@ std::vector<OrderIntent> VwapReversion::on_bar(const BarEvent& bar, const Portfo
   const auto thresh = static_cast<double>(config_.vwap_dev_paise);
 
   if (portfolio.position.shares() == 0 && dev <= -thresh) {
-    return {make_intent(StrategyId::from(2), config_.symbol_id, Side::Buy, config_.order_qty)};
+    out.push_back(make_intent(StrategyId::from(2), config_.symbol_id, Side::Buy, config_.order_qty));
+  } else if (portfolio.position.shares() > 0 && dev >= thresh) {
+    out.push_back(
+        make_intent(StrategyId::from(2), config_.symbol_id, Side::Sell, portfolio.position));
   }
-  if (portfolio.position.shares() > 0 && dev >= thresh) {
-    return {make_intent(StrategyId::from(2), config_.symbol_id, Side::Sell, portfolio.position)};
-  }
-  return {};
 }
 
 void VwapReversion::on_fill(const FillEvent& fill) { (void)fill; }
@@ -34,7 +34,8 @@ StrategyMetadata VwapReversion::metadata() const {
   return {.name = "vwap_reversion",
           .version = "1.0.0",
           .trading_mode = TradingMode::Mis,
-          .required_resolution = BarResolution::OneMin};
+          .required_resolution = BarResolution::OneMin,
+          .required_indicators = {"VWAP"}};
 }
 
 }  // namespace algocraft

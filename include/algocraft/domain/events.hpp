@@ -8,7 +8,6 @@
 #include "algocraft/domain/ids.hpp"
 #include "algocraft/domain/price.hpp"
 #include "algocraft/domain/quantity.hpp"
-#include "algocraft/domain/ids.hpp"
 #include "algocraft/domain/timestamp.hpp"
 
 namespace algocraft {
@@ -29,6 +28,7 @@ struct FillEvent {
   Quantity filled_qty{};
   Price fill_price{};
   Capital fees{};
+  Capital net_cash_impact{};
   Timestamp timestamp{};
   WorkbookId workbook_id{};
 };

@@ -412,9 +412,17 @@ reporting/
 
 **Stocks for Phase 2:** RELIANCE, INFY, TCS (liquid, well-known NSE stocks, easy to get CSV data for)
 
+**Market data for Phase 2 (decided 2026-09-15):**
+- No Upstox provider in this phase. Engine stays on `CsvProvider`.
+- Pull 1-min candles **offline** (existing Upstox client in the other repo), save CSV, then backtest.
+- Range: **28 calendar days** of 1-min bars — not 1 year. Upstox 1-min history is **max ~1 month per request**; 28 days is the safe window.
+- Fetched 2026-09-15: `data/1min/{RELIANCE,INFY,TCS}.csv` — 7125 bars / 19 sessions each (2026-08-18 09:15 IST through 2026-09-11 15:29 IST). Three HTTP requests, one stock each.
+- One instrument per Upstox request; ~30 requests/min allowed. Three stocks = three requests.
+- Do **not** fetch until the user explicitly approves.
+
 **Definition of done:**
 - CSVProvider registered in DataSourceRegistry and active
-- Backtest runs for all 3 strategies on 3 stocks with 1 year of 1-min bar data
+- Backtest runs for all 3 strategies on 3 stocks with **28 days** of 1-min bar data (CSV)
 - Data loaded through DataProvider abstraction (not directly from CSV)
 - IndicatorLibrary keys include resolution (always ONE_MIN)
 - Results are printed/logged with P&L, trade count, Sharpe ratio

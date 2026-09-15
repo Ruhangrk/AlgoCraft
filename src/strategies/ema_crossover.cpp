@@ -10,16 +10,16 @@ void EmaCrossover::configure(const StrategyConfig& config, IndicatorLibrary& lib
   slow_ = &lib.get<Ema>(config.symbol_id, BarResolution::OneMin, config.ema_slow);
 }
 
-std::vector<OrderIntent> EmaCrossover::on_bar(const BarEvent& bar, const PortfolioView& portfolio) {
+void EmaCrossover::on_bar(const BarEvent& bar, const PortfolioView& portfolio,
+                          std::vector<OrderIntent>& out) {
   if (bar.symbol_id != config_.symbol_id || fast_ == nullptr || slow_ == nullptr) {
-    return {};
+    return;
   }
   if (!fast_->ready() || !slow_->ready()) {
-    return {};
+    return;
   }
 
   const bool fast_above = fast_->value() > slow_->value();
-  std::vector<OrderIntent> out;
   if (have_prev_) {
     if (!prev_fast_above_ && fast_above && portfolio.position.shares() == 0) {
       out.push_back(make_intent(StrategyId::from(1), config_.symbol_id, Side::Buy,
@@ -31,7 +31,6 @@ std::vector<OrderIntent> EmaCrossover::on_bar(const BarEvent& bar, const Portfol
   }
   prev_fast_above_ = fast_above;
   have_prev_ = true;
-  return out;
 }
 
 void EmaCrossover::on_fill(const FillEvent& fill) { (void)fill; }
@@ -40,7 +39,8 @@ StrategyMetadata EmaCrossover::metadata() const {
   return {.name = "ema_crossover",
           .version = "1.0.0",
           .trading_mode = TradingMode::Mis,
-          .required_resolution = BarResolution::OneMin};
+          .required_resolution = BarResolution::OneMin,
+          .required_indicators = {"EMA"}};
 }
 
 }  // namespace algocraft

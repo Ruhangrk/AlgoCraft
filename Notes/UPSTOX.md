@@ -35,6 +35,7 @@ CLI:
 finnhub_sample profile
 finnhub_sample quote INSTRUMENT_KEY
 finnhub_sample candles INSTRUMENT_KEY FROM TO UNIT [INTERVAL]
+finnhub_sample ws INSTRUMENT_KEY [SECONDS] [MODE]
 ```
 
 `FROM`/`TO` are `YYYY-MM-DD` (start, then end, inclusive). Quote keys that contain `|` must be shell-quoted.
@@ -102,11 +103,18 @@ History caps (do not fill these when testing):
 
 | Unit | Interval | Rough max window |
 | --- | --- | --- |
-| minutes | 1–15 | ~1 month |
+| minutes | 1–15 | **1 month max per request** |
 | minutes | 16–300 | ~1 quarter |
 | hours | 1–5 | ~1 quarter |
 | days | 1 | ~1 decade |
 | weeks / months | 1 | no documented short cap |
+
+**Confirmed request rules (write these down; they do not change per session):**
+
+- **1-minute candles:** maximum **~1 month window per HTTP request**. For AlgoCraft we use **28 calendar days**, not a full month and not 1 year.
+- **One stock per request.** Historical candle URLs take a single `instrument_key`. You cannot club / batch symbols.
+- **~30 API requests per minute** (rough). Stay under that. Three stocks × one 28-day window = **3 requests**.
+- Longer 1-min history means **sequential** requests with different date windows, spaced to stay under ~30/min. Do not parallel-blast.
 
 Intraday-only (today): `GET /v3/historical-candle/intraday/{instrument_key}/{unit}/{interval}` — not wrapped yet.
 
@@ -130,18 +138,72 @@ From a non-whitelisted IP: HTTP 401 `UDAPI1221` (“permitted only when requeste
 
 ## WebSocket (live) — v3 only
 
-- v2 `wss://api.upstox.com/v2/feed/market-data-feed` is obsolete.
-- v3: protobuf, not JSON ticks. Proto: https://assets.upstox.com/feed/market-data-feed/v3/MarketDataFeed.proto
-- Typical flow: REST authorize `GET /v3/feed/market-data-feed/authorize`, then connect to the returned `wss` URL with Bearer.
-- Subscribe JSON (text control frame), then binary protobuf payloads:
+Use this section in other Cursor sessions. Do **not** reuse Finnhub (`wss://ws.finnhub.io`, `{"type":"subscribe","symbol":"AAPL"}`).
 
-```json
-{"guid":"...","method":"sub","data":{"mode":"ltpc","instrumentKeys":["NSE_INDEX|Nifty 50"]}}
+### Endpoints
+
+- **Obsolete:** `wss://api.upstox.com/v2/feed/market-data-feed`
+- **Connect (redirects):** `wss://api.upstox.com/v3/feed/market-data-feed`
+- **Authorize (preferred):** `GET https://api.upstox.com/v3/feed/market-data-feed/authorize`
+- **Proto:** https://assets.upstox.com/feed/market-data-feed/v3/MarketDataFeed.proto  
+  Package: `com.upstox.marketdatafeederv3udapi.rpc.proto`. Top message: `FeedResponse`.
+
+Docs: https://upstox.com/developer/api-documentation/get-market-data-feed-authorize-v3/ and https://upstox.com/developer/api-documentation/v3/get-market-data-feed/
+
+### How to connect (working sequence)
+
+1. **REST authorize** with the same Bearer token as quotes (not in the query string):
+
+   ```
+   GET /v3/feed/market-data-feed/authorize
+   Authorization: Bearer <access_token>
+   Accept: application/json
+   ```
+
+   Body includes `data.authorized_redirect_uri` (`wss://…?requestId=…&code=…`). That URL is **one-time**. Do not print the token. Printing the redirect URI leaks a short-lived `code`; avoid logging it.
+
+2. **Open WebSocket** on `authorized_redirect_uri`. Expect HTTP **101**. Do **not** start the handshake on `/v3/feed/market-data-feed` if the client cannot follow a **307** (many native WebSockets reject 307; authorize-first avoids that).
+
+   Handshake headers if you connect to the public v3 URL instead of the redirect URI:
+
+   ```
+   Authorization: Bearer <access_token>
+   Accept: */*
+   ```
+
+3. **After 101, subscribe.** JSON is UTF-8, sent as a **binary** WebSocket frame (`opcode=2` / `CURLWS_BINARY`). A **text** frame is ignored: you only get `market_info` and no ticks.
+
+   ```json
+   {"guid":"cpp-sample","method":"sub","data":{"mode":"ltpc","instrumentKeys":["NSE_INDEX|Nifty 50"]}}
+   ```
+
+   Methods: `sub`, `unsub`, `change_mode`.  
+   Modes: `ltpc`, `full`, `full_d30`, `option_greeks` (JSON still says `full`; proto enum uses `full_d5` for that mode).
+
+4. **Incoming data is protobuf**, not JSON. First frame is often `FeedResponse.type = market_info` with empty `feeds`. Then `initial_feed` and `live_feed` with `map<string, Feed> feeds`. Idle connections get WebSocket **ping**; reply **pong** (libcurl does this unless `CURLWS_NOAUTOPONG`).
+
+5. **Decode** `FeedResponse`: `type` (0/1/2), `feeds` map key = instrument key, `Feed.ltpc` (`ltp` double, `ltt`/`ltq` varint, `cp` double) or nested `fullFeed` / `firstLevelWithGreeks`. V3 payloads are **not** gzip (v2 was).
+
+### This repo (C++)
+
+`UpstoxClient::market_ws()`: authorize via `history_base_url`, libcurl `CURLOPT_CONNECT_ONLY=2`, `curl_ws_send` binary subscribe, `curl_ws_recv` + protobuf LTPC dump.
+
+```bash
+./build/finnhub_sample ws "NSE_INDEX|Nifty 50" 8 ltpc
+./build/finnhub_sample ws "NSE_EQ|INE002A01018" 8 ltpc
 ```
 
-Modes: `ltpc`, `full`, `full_d30`, `option_greeks`. Methods: `sub`, `unsub`, `change_mode`.
+`ws INSTRUMENT_KEY [SECONDS] [MODE]`. Quote `|`. One symbol, a few seconds is enough for a smoke test.
 
-This sample binary does **not** implement the feed yet. New C++ should use libcurl `CURLOPT_CONNECT_ONLY=2` (websocket) plus protobuf decode, or an Upstox SDK. Do not copy the old Finnhub JSON `{"type":"subscribe","symbol":"AAPL"}` protocol.
+### Pitfalls
+
+| Symptom | Cause |
+| --- | --- |
+| Handshake not 101 / 307 | Client followed redirect poorly; use authorize URI |
+| Only `market_info`, empty `feeds` | Subscribe sent as **text**, or never sent |
+| JSON ticks / `type:subscribe` | Finnhub protocol; wrong |
+| 401 on authorize | Expired `upstox_access_token` |
+| No ticks after hours | Normal; `initial_feed` may still have last LTP |
 
 ## C++ client conventions in this repo
 
@@ -170,6 +232,9 @@ When the agent tests Upstox:
 - Use **1–2 trading days**, or one session of `minutes 15` / `hours 1`.
 - Do not pull months of 1-minute data unless the user explicitly asks.
 - Do not loop many symbols. One success is enough.
+- Never start a 28-day (or longer) 1-min pull until the user says to go.
+
+**AlgoCraft Phase 2 (decided 2026-09-15):** no Upstox `DataProvider` in this repo yet. Fetch 28 days of 1-min bars **outside** AlgoCraft, write CSV, backtest via `CsvProvider`. Stocks: RELIANCE, INFY, TCS. Wait for explicit approval before fetching.
 
 ## Adding a new REST operation
 

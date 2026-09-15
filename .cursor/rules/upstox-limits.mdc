@@ -1,0 +1,17 @@
+---
+description: Upstox history/rate limits and AlgoCraft Phase 2 CSV data policy
+alwaysApply: true
+---
+
+# Upstox limits (confirmed)
+
+- **1-minute candles:** max **~1 month window per request**. Use **28 calendar days**, not a full month, not 1 year.
+- **One stock per request.** Cannot club / batch instruments.
+- **~30 API requests per minute** (rough). Three stocks × 28 days = 3 requests.
+
+# AlgoCraft Phase 2 data
+
+- This repo has **no Upstox DataProvider** yet.
+- Fetch offline → write CSV (`RELIANCE`, `INFY`, `TCS`) → backtest via `CsvProvider`.
+- **Do not fetch** 28-day 1-min history until the user explicitly approves.
+- Smoke tests of the Upstox client stay at 1–2 days / coarse intervals unless asked.

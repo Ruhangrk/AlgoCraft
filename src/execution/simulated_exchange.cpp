@@ -12,7 +12,7 @@ SimulatedExchange::SimulatedExchange(CostCalculator costs, Price slippage, int m
 
 std::optional<FillEvent> SimulatedExchange::submit(const OrderIntent& intent, const BarEvent& bar,
                                                    TradingMode mode, Capital cash,
-                                                   Quantity position) {
+                                                   Quantity position, Price avg_entry) {
   if (intent.quantity.shares() <= 0) {
     return std::nullopt;
   }
@@ -24,9 +24,6 @@ std::optional<FillEvent> SimulatedExchange::submit(const OrderIntent& intent, co
     fill_price = Price::from_paise(std::max<std::int64_t>(0, bar.close.paise() - slippage_.paise()));
   }
 
-  if (intent.side == Side::Buy && position.shares() != 0) {
-    return std::nullopt;
-  }
   if (intent.side == Side::Sell && position.shares() <= 0) {
     return std::nullopt;
   }
@@ -37,9 +34,8 @@ std::optional<FillEvent> SimulatedExchange::submit(const OrderIntent& intent, co
   const auto value = notional(fill_price, intent.quantity);
   const auto leverage = (mode == TradingMode::Mis) ? mis_leverage_ : 1;
   const auto required = Capital::from_paise(value.paise() / leverage);
-  const auto fees =
-      (intent.side == Side::Buy) ? costs_.buy_fees(fill_price, intent.quantity)
-                                 : costs_.sell_fees(fill_price, intent.quantity);
+  const auto fees = (intent.side == Side::Buy) ? costs_.buy_fees(fill_price, intent.quantity)
+                                               : costs_.sell_fees(fill_price, intent.quantity);
 
   if (intent.side == Side::Buy && cash.paise() < required.paise() + fees.paise()) {
     return std::nullopt;
@@ -53,6 +49,15 @@ std::optional<FillEvent> SimulatedExchange::submit(const OrderIntent& intent, co
   fill.fill_price = fill_price;
   fill.fees = fees;
   fill.timestamp = bar.timestamp;
+  if (intent.side == Side::Buy) {
+    fill.net_cash_impact = Capital::from_paise(-(required.paise() + fees.paise()));
+  } else {
+    const auto entry = avg_entry.paise() > 0 ? avg_entry : fill_price;
+    const auto released = notional(entry, intent.quantity).paise() / leverage;
+    const auto pnl = notional(fill_price, intent.quantity).paise() -
+                     notional(entry, intent.quantity).paise() - fees.paise();
+    fill.net_cash_impact = Capital::from_paise(released + pnl);
+  }
   return fill;
 }
 

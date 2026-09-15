@@ -31,13 +31,30 @@ TEST(SimulatedExchange, BuyThenSell) {
   ASSERT_TRUE(fill_buy);
   EXPECT_EQ(fill_buy->side, algocraft::Side::Buy);
   EXPECT_EQ(fill_buy->fill_price.paise(), 10001);
+  EXPECT_LT(fill_buy->net_cash_impact.paise(), 0);
 
   algocraft::OrderIntent sell = buy;
   sell.side = algocraft::Side::Sell;
-  const auto fill_sell =
-      sim.submit(sell, bar, algocraft::TradingMode::Mis, cash, fill_buy->filled_qty);
+  const auto fill_sell = sim.submit(sell, bar, algocraft::TradingMode::Mis, cash,
+                                    fill_buy->filled_qty, fill_buy->fill_price);
   ASSERT_TRUE(fill_sell);
   EXPECT_EQ(fill_sell->fill_price.paise(), 9999);
+}
+
+TEST(SimulatedExchange, AllowsPyramidBuy) {
+  algocraft::SimulatedExchange sim;
+  algocraft::BarEvent bar{};
+  bar.close = algocraft::Price::from_paise(10000);
+  algocraft::OrderIntent buy{};
+  buy.symbol_id = 1;
+  buy.side = algocraft::Side::Buy;
+  buy.quantity = algocraft::Quantity::from_shares(1);
+  const auto cash = algocraft::Capital::from_paise(1'00'000'00);
+  const auto a = sim.submit(buy, bar, algocraft::TradingMode::Mis, cash, algocraft::Quantity{});
+  ASSERT_TRUE(a);
+  const auto b =
+      sim.submit(buy, bar, algocraft::TradingMode::Mis, cash, a->filled_qty, a->fill_price);
+  ASSERT_TRUE(b);
 }
 
 TEST(SimulatedExchange, RejectsSellWhenFlat) {

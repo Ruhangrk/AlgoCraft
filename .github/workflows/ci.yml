@@ -58,6 +58,9 @@ jobs:
       - name: Smoke engine
         run: ./build/algocraft_engine
 
+      - name: Phase 2 CSV backtest
+        run: ./build/algocraft_engine backtest
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4

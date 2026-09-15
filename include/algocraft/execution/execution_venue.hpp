@@ -14,8 +14,8 @@ public:
   virtual ~ExecutionVenue() = default;
 
   virtual std::optional<FillEvent> submit(const OrderIntent& intent, const BarEvent& bar,
-                                          TradingMode mode, Capital cash,
-                                          Quantity position) = 0;
+                                          TradingMode mode, Capital cash, Quantity position,
+                                          Price avg_entry = {}) = 0;
 };
 
 }  // namespace algocraft

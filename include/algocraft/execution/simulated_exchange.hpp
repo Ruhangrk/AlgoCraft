@@ -11,7 +11,7 @@ public:
                              Price slippage = Price::from_paise(1), int mis_leverage = 5);
 
   std::optional<FillEvent> submit(const OrderIntent& intent, const BarEvent& bar, TradingMode mode,
-                                  Capital cash, Quantity position) override;
+                                  Capital cash, Quantity position, Price avg_entry = {}) override;
 
 private:
   CostCalculator costs_{};

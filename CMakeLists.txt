@@ -30,6 +30,7 @@ add_library(algocraft
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp
   src/persistence/async_logger.cpp
+  src/strategies/consecutive_up_clip.cpp
   src/strategies/ema_crossover.cpp
   src/strategies/opening_range_breakout.cpp
   src/strategies/strategy_registrations.cpp
@@ -60,6 +61,9 @@ endif()
 
 add_executable(algocraft_engine src/main.cpp)
 target_link_libraries(algocraft_engine PRIVATE algocraft::algocraft spdlog::spdlog)
+target_compile_definitions(algocraft_engine PRIVATE
+  ALGOCRAFT_DATA_DIR="${CMAKE_SOURCE_DIR}/data/1min"
+)
 algocraft_set_warnings(algocraft_engine)
 if(ALGOCRAFT_ENABLE_SANITIZERS)
   algocraft_enable_sanitizers(algocraft_engine)
