@@ -5,24 +5,99 @@ on:
     branches: [main, master]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+  UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+
 jobs:
-  build-test:
+  test-asan:
+    name: Debug + ASan/UBSan + tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install ninja
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build
+
+      - uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: asan-${{ runner.os }}
+          create-symlink: true
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: .cache/fetchcontent
+          key: fetchcontent-${{ hashFiles('cmake/Dependencies.cmake') }}
+
       - name: Configure
         run: >
-          cmake -S . -B build
+          cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cache/fetchcontent
           -DALGOCRAFT_ENABLE_SANITIZERS=ON
           -DALGOCRAFT_BUILD_TESTS=ON
 
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build
+
+      - name: CTest
+        run: ctest --test-dir build --output-on-failure --output-junit ctest-report.xml
+
+      - name: GoogleTest (per-case report + leak check)
+        run: ./build/tests/algocraft_tests --gtest_output=xml:gtest-report.xml
+
+      - name: Smoke engine
+        run: ./build/algocraft_engine
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-asan
+          path: |
+            gtest-report.xml
+            ctest-report.xml
+
+  build-release:
+    name: Release build + tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ninja
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build
+
+      - uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: release-${{ runner.os }}
+          create-symlink: true
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: .cache/fetchcontent
+          key: fetchcontent-${{ hashFiles('cmake/Dependencies.cmake') }}
+
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cache/fetchcontent
+          -DALGOCRAFT_ENABLE_SANITIZERS=OFF
+          -DALGOCRAFT_BUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
-        env:
-          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
-          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
