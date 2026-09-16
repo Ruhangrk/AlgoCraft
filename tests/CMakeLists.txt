@@ -17,6 +17,8 @@ add_executable(algocraft_tests
   unit/test_portfolio.cpp
   unit/test_risk.cpp
   unit/test_container.cpp
+  unit/test_scheduler.cpp
+  unit/test_run.cpp
 )
 
 target_link_libraries(algocraft_tests

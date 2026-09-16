@@ -236,6 +236,8 @@ When the agent tests Upstox:
 
 **AlgoCraft Phase 2 (decided 2026-09-15):** no Upstox `DataProvider` in this repo yet. Fetch 28 days of 1-min bars **outside** AlgoCraft, write CSV, backtest via `CsvProvider`. Stocks: RELIANCE, INFY, TCS. Wait for explicit approval before fetching.
 
+**AlgoCraft Phase 4 (approved 2026-09-16):** 7 more NSE cash names, **15 calendar days** of 1-min (`2026-08-28`–`2026-09-11`): HDFCBANK, ICICIBANK, SBIN, BHARTIARTL, ITC, LT, HINDUNILVR. Still CSV-only in AlgoCraft; 7 sequential requests, no batching.
+
 ## Adding a new REST operation
 
 1. Confirm v2 vs v3 from current Upstox docs (history and WS are v3; many account APIs remain v2).

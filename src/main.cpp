@@ -2,10 +2,12 @@
 #include "algocraft/domain/instrument.hpp"
 #include "algocraft/domain/symbol.hpp"
 #include "algocraft/engine/phase0_runtime.hpp"
+#include "algocraft/engine/run_manager.hpp"
 #include "algocraft/market_data/csv_provider.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/market_data/dummy_provider.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
+#include "algocraft/workbook/workbook_manager.hpp"
 
 #include <array>
 #include <chrono>
@@ -164,9 +166,74 @@ int run_phase2_backtest(const char* data_dir) {
   return 0;
 }
 
+int run_phase4(const char* data_dir) {
+  algocraft::SymbolTable symbols;
+  const algocraft::Instrument inst{};
+  const std::array<const char*, 10> tickers{"RELIANCE", "INFY",     "TCS", "HDFCBANK", "ICICIBANK",
+                                            "SBIN",     "BHARTIARTL", "ITC", "LT",      "HINDUNILVR"};
+  for (const char* ticker : tickers) {
+    symbols.intern({.ticker = ticker}, inst);
+  }
+
+  auto csv = std::make_unique<algocraft::CsvProvider>(data_dir, &symbols);
+  algocraft::DataSourceRegistry registry;
+  registry.register_provider(std::move(csv));
+
+  algocraft::StrategyRegistry strategies;
+  algocraft::register_all_strategies(strategies);
+
+  algocraft::WorkbookManager books;
+  algocraft::RunConfig cfg{};
+  cfg.user_id = algocraft::UserId::from_u64(1);
+  cfg.workbook_name = "phase4-10cr";
+  cfg.workbook_capital = algocraft::Capital::from_paise(10'00'00'000'00);
+  for (const char* ticker : tickers) {
+    cfg.tickers.emplace_back(ticker);
+  }
+  cfg.strategies = {"ema_crossover", "vwap_reversion", "consecutive_up_clip"};
+  cfg.from = algocraft::Timestamp::from_nanos(1'787'509'800'000'000'000LL);
+  cfg.to = algocraft::Timestamp::from_nanos(1'789'064'940'000'000'000LL);
+  cfg.trade_from = algocraft::Timestamp::from_nanos(1'789'065'000'000'000'000LL);
+  cfg.trade_to = algocraft::Timestamp::from_nanos(1'789'151'340'000'000'000LL);
+
+  spdlog::info(
+      "phase4 default_router 10 stocks x ema/vwap/clip, eval=14 sessions "
+      "2026-08-24..2026-09-10, trade=2026-09-11, capital=10cr data={}",
+      data_dir);
+  algocraft::RunManager mgr;
+  const auto result = mgr.execute(cfg, registry, strategies, books, symbols);
+
+  std::int64_t eval_pnl = 0;
+  spdlog::info("--- 14-day eval (₹10L/pair) selected={} skipped={}", result.selected,
+               result.skipped);
+  for (const auto& ev : result.evaluations) {
+    eval_pnl += ev.pnl_paise;
+    spdlog::info("  {} {} bars={} fills={} pnl_rs={:.2f} {}", ev.ticker, ev.strategy_name, ev.bars,
+                 ev.fills, ev.pnl_paise / 100.0, ev.selected ? "WINNER" : "SKIP");
+  }
+  spdlog::info("  eval_total_pnl_rs={:.2f}", eval_pnl / 100.0);
+
+  const auto trade_pnl = result.returned.paise() - cfg.workbook_capital.paise();
+  spdlog::info(
+      "--- 15th day REAL 2026-09-11 containers={} fills={} trade_pnl_rs={:.2f} "
+      "returned_rs={:.2f} workbook_after_rs={:.2f} force_stop={}",
+      result.real_containers, result.fills, trade_pnl / 100.0, result.returned.paise() / 100.0,
+      result.workbook_available_after.paise() / 100.0, result.force_stopped);
+  for (const auto& row : result.traded) {
+    spdlog::info("  {} {} alloc_rs={:.2f} realized_rs={:.2f} cash_rs={:.2f} fills={}", row.ticker,
+                 row.strategy_name, row.allocation.paise() / 100.0, row.realized.paise() / 100.0,
+                 row.cash.paise() / 100.0, row.fills);
+  }
+  return 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
+  if (argc >= 2 && std::strcmp(argv[1], "run") == 0) {
+    const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;
+    return run_phase4(data_dir);
+  }
   if (argc >= 2 && std::strcmp(argv[1], "backtest") == 0) {
     if (argc >= 3 && std::strcmp(argv[2], "consecutive_up_clip") == 0) {
       const char* data_dir = (argc >= 4) ? argv[3] : ALGOCRAFT_DATA_DIR;

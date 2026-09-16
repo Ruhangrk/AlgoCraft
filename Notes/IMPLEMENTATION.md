@@ -543,6 +543,8 @@ scheduler/
 - Force-stop correctly exits all positions at current price
 - Workbook available_capital correctly updated throughout
 
+**Status (this repo):** Phase 4 DefaultRouter is in-memory, CSV-backed, no live feed. It backtests the last **15 calendar days** of 1-min data for **10 stocks × 3 strategies**. Pairs with `realized P&L > 0` skip PAPER and are created as **REAL** containers (`SimulatedExchange` + committed capital). Run capital is **₹10 crore**, split equally among winners. `REAL` still has no broker (Phase 9). Persistence/API are Phase 5.
+
 ---
 
 ### Phase 5 — Persistence Layer + Auth + API + Signal Logging + DataFetchService

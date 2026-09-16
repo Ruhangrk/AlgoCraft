@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "algocraft/domain/bar_event.hpp"
@@ -29,6 +30,7 @@ struct TradingContainerConfig {
   ContainerMode mode{ContainerMode::Backtest};
   Capital sim_cash{};
   Capital real_allocation{};
+  std::string strategy_name;
   StrategyConfig strategy{};
 };
 
@@ -56,6 +58,14 @@ public:
   [[nodiscard]] Quantity position() const { return position_; }
   [[nodiscard]] Capital realized() const { return realized_; }
   [[nodiscard]] RiskResult last_rejection() const { return last_rejection_; }
+  [[nodiscard]] SymbolId symbol_id() const { return config_.symbol_id; }
+  [[nodiscard]] const std::string& strategy_name() const { return config_.strategy_name; }
+  [[nodiscard]] bool has_bar() const { return have_bar_; }
+  [[nodiscard]] Price last_price() const { return last_bar_.close; }
+  [[nodiscard]] int fills() const { return fills_; }
+  [[nodiscard]] Capital allocation() const {
+    return config_.mode == ContainerMode::Real ? config_.real_allocation : config_.sim_cash;
+  }
 
 private:
   void apply_fill(const FillEvent& fill);
@@ -78,6 +88,7 @@ private:
   bool registered_{false};
   std::vector<OrderIntent> intents_{};
   RiskResult last_rejection_{};
+  int fills_{0};
 };
 
 }  // namespace algocraft

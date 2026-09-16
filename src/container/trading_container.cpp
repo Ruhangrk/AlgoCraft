@@ -62,7 +62,8 @@ OpResult TradingContainer::upgrade(ContainerMode new_mode) {
     config_.mode = ContainerMode::Paper;
     return OpResult::success();
   }
-  if (config_.mode == ContainerMode::Paper && new_mode == ContainerMode::Real) {
+  if ((config_.mode == ContainerMode::Backtest || config_.mode == ContainerMode::Paper) &&
+      new_mode == ContainerMode::Real) {
     if (capital_ != nullptr) {
       const auto committed = capital_->commit_real(config_.id);
       if (!committed.ok) {
@@ -110,6 +111,9 @@ void TradingContainer::stop() {
 }
 
 void TradingContainer::on_bar(const BarEvent& bar) {
+  if (bar.symbol_id != config_.symbol_id) {
+    return;
+  }
   last_bar_ = bar;
   have_bar_ = true;
   lib_.update(bar);
@@ -150,6 +154,7 @@ void TradingContainer::on_bar(const BarEvent& bar) {
 
 void TradingContainer::on_fill(const FillEvent& fill) {
   apply_fill(fill);
+  ++fills_;
   if (strategy_ != nullptr) {
     strategy_->on_fill(fill);
   }
@@ -169,14 +174,17 @@ void TradingContainer::on_system_event(const SystemEvent& event) {
   if (status_ != ContainerStatus::Active) {
     return;
   }
-  if (event.type == SystemEventType::KillSwitch ||
-      (event.type == SystemEventType::MisSquareoffWarning &&
-       config_.trading_mode == TradingMode::Mis)) {
+  if (event.type == SystemEventType::KillSwitch) {
     if (have_bar_) {
       force_exit(last_bar_.close);
     } else {
       stop();
     }
+    return;
+  }
+  if (event.type == SystemEventType::MisSquareoffWarning &&
+      config_.trading_mode == TradingMode::Mis && have_bar_) {
+    flatten(last_bar_.close, true);
   }
 }
 

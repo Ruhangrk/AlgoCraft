@@ -19,9 +19,11 @@ include(cmake/CompilerWarnings.cmake)
 
 add_library(algocraft
   src/backtest/backtest_runner.cpp
+  src/container/container_manager.cpp
   src/container/trading_container.cpp
   src/domain/symbol_table.cpp
   src/engine/phase0_runtime.cpp
+  src/engine/run_manager.cpp
   src/execution/cost_calculator.cpp
   src/execution/simulated_exchange.cpp
   src/indicators/ema.cpp
@@ -34,6 +36,8 @@ add_library(algocraft
   src/portfolio/capital_manager.cpp
   src/portfolio/portfolio_ledger.cpp
   src/risk/risk_engine.cpp
+  src/routing/default_router.cpp
+  src/routing/routing_algo_registry.cpp
   src/strategies/consecutive_up_clip.cpp
   src/strategies/ema_crossover.cpp
   src/strategies/opening_range_breakout.cpp
