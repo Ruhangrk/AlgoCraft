@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -24,6 +25,7 @@ public:
   SymbolId intern(Symbol symbol, Instrument instrument);
 
   [[nodiscard]] bool contains(SymbolId id) const;
+  [[nodiscard]] std::optional<SymbolId> find(std::string_view ticker) const;
   [[nodiscard]] const Symbol& symbol(SymbolId id) const;
   [[nodiscard]] const Instrument& instrument(SymbolId id) const;
 

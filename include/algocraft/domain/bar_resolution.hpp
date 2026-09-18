@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 namespace algocraft {
 
@@ -14,5 +15,25 @@ enum class BarResolution : std::uint8_t {
   OneDay,
   OneWeek,
 };
+
+inline std::string_view bar_resolution_code(BarResolution resolution) {
+  switch (resolution) {
+    case BarResolution::OneMin:
+      return "1m";
+    case BarResolution::FiveMin:
+      return "5m";
+    case BarResolution::FifteenMin:
+      return "15m";
+    case BarResolution::ThirtyMin:
+      return "30m";
+    case BarResolution::OneHour:
+      return "1h";
+    case BarResolution::OneDay:
+      return "1d";
+    case BarResolution::OneWeek:
+      return "1w";
+  }
+  return "1m";
+}
 
 }  // namespace algocraft

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(AlgoCraft VERSION 0.1.0 LANGUAGES CXX)
+project(AlgoCraft VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,6 +18,8 @@ include(cmake/Dependencies.cmake)
 include(cmake/CompilerWarnings.cmake)
 
 add_library(algocraft
+  src/auth/auth_service.cpp
+  src/api/http_server.cpp
   src/backtest/backtest_runner.cpp
   src/container/container_manager.cpp
   src/container/trading_container.cpp
@@ -29,10 +31,19 @@ add_library(algocraft
   src/indicators/ema.cpp
   src/indicators/rsi.cpp
   src/indicators/vwap.cpp
+  src/market_data/cached_provider.cpp
   src/market_data/csv_provider.cpp
+  src/market_data/data_fetch_service.cpp
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp
+  src/market_data/upstox_provider.cpp
+  src/persistence/activity_repository.cpp
   src/persistence/async_logger.cpp
+  src/persistence/coverage_repository.cpp
+  src/persistence/migration_runner.cpp
+  src/persistence/packed_bars.cpp
+  src/persistence/rocks_bar_store.cpp
+  src/persistence/sqlite_database.cpp
   src/portfolio/capital_manager.cpp
   src/portfolio/portfolio_ledger.cpp
   src/risk/risk_engine.cpp
@@ -57,8 +68,12 @@ target_include_directories(algocraft
 target_link_libraries(algocraft
   PUBLIC
     Boost::lockfree
+    algocraft::sqlite3
+    PkgConfig::ROCKSDB
   PRIVATE
     spdlog::spdlog
+    OpenSSL::Crypto
+    CURL::libcurl
 )
 
 algocraft_set_warnings(algocraft)
@@ -72,6 +87,9 @@ add_executable(algocraft_engine src/main.cpp)
 target_link_libraries(algocraft_engine PRIVATE algocraft::algocraft spdlog::spdlog)
 target_compile_definitions(algocraft_engine PRIVATE
   ALGOCRAFT_DATA_DIR="${CMAKE_SOURCE_DIR}/data/1min"
+  ALGOCRAFT_DB_PATH="${CMAKE_SOURCE_DIR}/data/algocraft.db"
+  ALGOCRAFT_BARS_DIR="${CMAKE_SOURCE_DIR}/data/bars"
+  ALGOCRAFT_MIGRATIONS_DIR="${CMAKE_SOURCE_DIR}/migrations"
 )
 algocraft_set_warnings(algocraft_engine)
 if(ALGOCRAFT_ENABLE_SANITIZERS)

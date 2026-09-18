@@ -550,6 +550,8 @@ scheduler/
 ### Phase 5 — Persistence Layer + Auth + API + Signal Logging + DataFetchService
 **Goal:** Results are saved permanently. Auth protects the API. Workbook-scoped endpoints work. Signal logging captures strategy decisions for graphs. DataFetchService caches market data.
 
+**This repo:** follow **`Notes/PHASE5.md`** (step 5.1 → 5.10). Stores are **SQLite** (relational) + **RocksDB** (one session blob per ticker/resolution/date), not PostgreSQL `bars`. Paper uses live WebSocket; REST “today” is a 30-min cache only. Do not implement a step until the previous one is done.
+
 **What to build:**
 ```
 persistence/

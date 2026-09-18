@@ -1,5 +1,6 @@
 #include "algocraft/container/container_manager.hpp"
 
+#include "algocraft/domain/timestamp.hpp"
 #include "algocraft/routing/position_sizer.hpp"
 
 namespace algocraft {
@@ -120,6 +121,46 @@ std::vector<ContainerManager::Snapshot> ContainerManager::snapshots() const {
     row.realized = container->realized();
     row.fills = container->fills();
     out.push_back(row);
+  }
+  return out;
+}
+
+std::vector<ContainerManager::SignalLog> ContainerManager::collect_signals() const {
+  std::vector<SignalLog> out;
+  for (const auto& container : containers_) {
+    if (container == nullptr) {
+      continue;
+    }
+    for (const auto& s : container->signals()) {
+      SignalLog row{};
+      row.container_id = container->id();
+      row.symbol_id = container->symbol_id();
+      row.strategy_name = container->strategy_name();
+      row.timestamp = s.timestamp;
+      row.intent_count = s.intent_count;
+      row.indicators_json = s.indicators_json;
+      out.push_back(std::move(row));
+    }
+  }
+  return out;
+}
+
+std::vector<ContainerManager::RejectionLog> ContainerManager::collect_rejections() const {
+  std::vector<RejectionLog> out;
+  for (const auto& container : containers_) {
+    if (container == nullptr) {
+      continue;
+    }
+    for (const auto& r : container->rejections()) {
+      RejectionLog row{};
+      row.container_id = container->id();
+      row.symbol_id = container->symbol_id();
+      row.strategy_name = container->strategy_name();
+      row.timestamp = r.timestamp;
+      row.rule = r.rule;
+      row.reason = r.reason;
+      out.push_back(std::move(row));
+    }
   }
   return out;
 }

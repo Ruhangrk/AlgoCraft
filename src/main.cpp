@@ -1,20 +1,29 @@
+#include "algocraft/api/http_server.hpp"
 #include "algocraft/backtest/backtest_runner.hpp"
 #include "algocraft/domain/instrument.hpp"
 #include "algocraft/domain/symbol.hpp"
 #include "algocraft/engine/phase0_runtime.hpp"
 #include "algocraft/engine/run_manager.hpp"
+#include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/csv_provider.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/market_data/dummy_provider.hpp"
+#include "algocraft/market_data/upstox_provider.hpp"
+#include "algocraft/persistence/activity_repository.hpp"
+#include "algocraft/persistence/coverage_repository.hpp"
+#include "algocraft/persistence/rocks_bar_store.hpp"
+#include "algocraft/persistence/sqlite_database.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
 #include "algocraft/workbook/workbook_manager.hpp"
 
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
 
@@ -22,6 +31,15 @@
 
 #ifndef ALGOCRAFT_DATA_DIR
 #define ALGOCRAFT_DATA_DIR "data/1min"
+#endif
+#ifndef ALGOCRAFT_DB_PATH
+#define ALGOCRAFT_DB_PATH "data/algocraft.db"
+#endif
+#ifndef ALGOCRAFT_BARS_DIR
+#define ALGOCRAFT_BARS_DIR "data/bars"
+#endif
+#ifndef ALGOCRAFT_MIGRATIONS_DIR
+#define ALGOCRAFT_MIGRATIONS_DIR "migrations"
 #endif
 
 namespace {
@@ -31,6 +49,57 @@ std::tm ist_tm(std::int64_t timestamp_ns) {
   std::tm out{};
   gmtime_r(&ist_sec, &out);
   return out;
+}
+
+algocraft::PersistenceConfig engine_persistence_cfg() {
+  algocraft::PersistenceConfig cfg;
+  cfg.db_path = ALGOCRAFT_DB_PATH;
+  cfg.migrations_dir = ALGOCRAFT_MIGRATIONS_DIR;
+  cfg.bars_dir = ALGOCRAFT_BARS_DIR;
+  return cfg;
+}
+
+struct EngineCache {
+  algocraft::SqliteDatabase db;
+  algocraft::RocksBarStore bars;
+  std::optional<algocraft::CoverageRepository> coverage;
+
+  EngineCache() : db(engine_persistence_cfg()), bars(ALGOCRAFT_BARS_DIR) {
+    db.open();
+    db.migrate();
+    bars.open();
+    coverage.emplace(db.handle());
+    spdlog::info("sqlite={} rocksdb={}", db.path().string(), bars.path().string());
+  }
+
+  algocraft::CoverageRepository& cov() { return *coverage; }
+};
+
+std::unique_ptr<algocraft::CachedProvider> wrap_csv(const char* data_dir,
+                                                    algocraft::SymbolTable& symbols,
+                                                    EngineCache& cache) {
+  return std::make_unique<algocraft::CachedProvider>(
+      std::make_unique<algocraft::CsvProvider>(data_dir, &symbols), cache.bars, cache.cov(),
+      symbols);
+}
+
+int run_db_smoke(const char* db_path) {
+  algocraft::PersistenceConfig cfg;
+  cfg.db_path = db_path;
+  cfg.migrations_dir = ALGOCRAFT_MIGRATIONS_DIR;
+
+  algocraft::SqliteDatabase db(cfg);
+  db.open();
+  db.migrate();
+  const auto tables = db.table_names();
+  const auto applied = db.applied_migrations();
+  spdlog::info("sqlite path={} wal={} tables={} migrations={}", db.path().string(),
+               db.journal_mode(), tables.size(), applied.size());
+  for (const auto& name : applied) {
+    spdlog::info("  applied {}", name);
+  }
+  db.close();
+  return db.is_open() ? 1 : 0;
 }
 
 int run_phase0_smoke() {
@@ -73,9 +142,11 @@ int run_clip_backtest(const char* data_dir) {
     ids[i] = symbols.intern({.ticker = tickers[i]}, inst);
   }
 
-  auto csv = std::make_unique<algocraft::CsvProvider>(data_dir, &symbols);
+  EngineCache cache;
+  auto cached = wrap_csv(data_dir, symbols, cache);
+  auto* fetch = &cached->fetch();
   algocraft::DataSourceRegistry registry;
-  registry.register_provider(std::move(csv));
+  registry.register_provider(std::move(cached));
 
   algocraft::StrategyRegistry strategies;
   algocraft::register_all_strategies(strategies);
@@ -118,6 +189,7 @@ int run_clip_backtest(const char* data_dir) {
       }
     }
   }
+  spdlog::info("vendor_fetches={}", fetch->vendor_fetches());
   return 0;
 }
 
@@ -130,9 +202,11 @@ int run_phase2_backtest(const char* data_dir) {
     ids[i] = symbols.intern({.ticker = tickers[i]}, inst);
   }
 
-  auto csv = std::make_unique<algocraft::CsvProvider>(data_dir, &symbols);
+  EngineCache cache;
+  auto cached = wrap_csv(data_dir, symbols, cache);
+  auto* fetch = &cached->fetch();
   algocraft::DataSourceRegistry registry;
-  registry.register_provider(std::move(csv));
+  registry.register_provider(std::move(cached));
   spdlog::info("active data source: {} dir={}", registry.active_provider().name(), data_dir);
 
   algocraft::StrategyRegistry strategies;
@@ -163,6 +237,7 @@ int run_phase2_backtest(const char* data_dir) {
           r.avg_hold_seconds);
     }
   }
+  spdlog::info("vendor_fetches={}", fetch->vendor_fetches());
   return 0;
 }
 
@@ -175,9 +250,11 @@ int run_phase4(const char* data_dir) {
     symbols.intern({.ticker = ticker}, inst);
   }
 
-  auto csv = std::make_unique<algocraft::CsvProvider>(data_dir, &symbols);
+  EngineCache cache;
+  auto cached = wrap_csv(data_dir, symbols, cache);
+  auto* fetch = &cached->fetch();
   algocraft::DataSourceRegistry registry;
-  registry.register_provider(std::move(csv));
+  registry.register_provider(std::move(cached));
 
   algocraft::StrategyRegistry strategies;
   algocraft::register_all_strategies(strategies);
@@ -200,8 +277,9 @@ int run_phase4(const char* data_dir) {
       "phase4 default_router 10 stocks x ema/vwap/clip, eval=14 sessions "
       "2026-08-24..2026-09-10, trade=2026-09-11, capital=10cr data={}",
       data_dir);
+  algocraft::ActivityRepository act_repo(cache.db.handle());
   algocraft::RunManager mgr;
-  const auto result = mgr.execute(cfg, registry, strategies, books, symbols);
+  const auto result = mgr.execute(cfg, registry, strategies, books, symbols, &act_repo);
 
   std::int64_t eval_pnl = 0;
   spdlog::info("--- 14-day eval (₹10L/pair) selected={} skipped={}", result.selected,
@@ -224,12 +302,65 @@ int run_phase4(const char* data_dir) {
                  row.strategy_name, row.allocation.paise() / 100.0, row.realized.paise() / 100.0,
                  row.cash.paise() / 100.0, row.fills);
   }
+  spdlog::info("vendor_fetches={}", fetch->vendor_fetches());
+  return 0;
+}
+
+int run_api_server(const char* data_dir, int port) {
+  EngineCache cache;
+  algocraft::SymbolTable symbols;
+  const algocraft::Instrument inst{};
+  // DefaultRouter universe (10). Ensure/API may use any of these.
+  for (const char* t : {"RELIANCE", "INFY", "TCS", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL",
+                        "ITC", "LT", "HINDUNILVR"}) {
+    symbols.intern({.ticker = t}, inst);
+  }
+
+  algocraft::DataFetchService* fetch_ptr = nullptr;
+  std::unique_ptr<algocraft::CachedProvider> cached;
+
+  auto upstox_cfg = algocraft::UpstoxConfig::from_default_file();
+  if (upstox_cfg.ok()) {
+    auto upstox = std::make_unique<algocraft::UpstoxProvider>(std::move(upstox_cfg), &symbols);
+    cached = std::make_unique<algocraft::CachedProvider>(std::move(upstox), cache.bars, cache.cov(),
+                                                         symbols);
+    spdlog::info("data source: upstox (token loaded from ~/.config/upstox/config.json)");
+  } else {
+    cached = wrap_csv(data_dir, symbols, cache);
+    spdlog::warn("upstox token missing — serving CSV from {}", data_dir);
+  }
+  fetch_ptr = &cached->fetch();
+
+  algocraft::DataSourceRegistry registry;
+  registry.register_provider(std::move(cached));
+
+  algocraft::StrategyRegistry strategies;
+  algocraft::register_all_strategies(strategies);
+
+  algocraft::HttpServer::Config cfg;
+  cfg.host = "127.0.0.1";
+  cfg.port = port;
+  algocraft::HttpServer server(cfg, cache.db, registry, strategies, symbols, fetch_ptr);
+  spdlog::info("API listening on http://{}:{}", cfg.host, cfg.port);
+  server.start();
   return 0;
 }
 
 }  // namespace
 
 int main(int argc, char** argv) {
+  if (argc >= 2 && std::strcmp(argv[1], "db") == 0) {
+    const char* db_path = (argc >= 3) ? argv[2] : ALGOCRAFT_DB_PATH;
+    return run_db_smoke(db_path);
+  }
+  if (argc >= 2 && std::strcmp(argv[1], "serve") == 0) {
+    const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;
+    int port = 8080;
+    if (argc >= 4) {
+      port = std::atoi(argv[3]);
+    }
+    return run_api_server(data_dir, port);
+  }
   if (argc >= 2 && std::strcmp(argv[1], "run") == 0) {
     const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;
     return run_phase4(data_dir);

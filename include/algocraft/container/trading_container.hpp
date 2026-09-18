@@ -67,6 +67,20 @@ public:
     return config_.mode == ContainerMode::Real ? config_.real_allocation : config_.sim_cash;
   }
 
+  struct SignalRecord {
+    Timestamp timestamp{};
+    int intent_count{0};
+    std::string indicators_json;
+  };
+  struct RejectionRecord {
+    Timestamp timestamp{};
+    std::string rule;
+    std::string reason;
+  };
+
+  [[nodiscard]] const std::vector<SignalRecord>& signals() const { return signals_; }
+  [[nodiscard]] const std::vector<RejectionRecord>& rejections() const { return rejections_; }
+
 private:
   void apply_fill(const FillEvent& fill);
   void flatten(Price price, bool bypass_risk);
@@ -89,6 +103,8 @@ private:
   std::vector<OrderIntent> intents_{};
   RiskResult last_rejection_{};
   int fills_{0};
+  std::vector<SignalRecord> signals_{};
+  std::vector<RejectionRecord> rejections_{};
 };
 
 }  // namespace algocraft

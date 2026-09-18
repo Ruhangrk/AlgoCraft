@@ -65,6 +65,7 @@ std::vector<BarEvent> CsvHistoricalLoader::load_bars(SymbolId symbol_id, Timesta
   if (!in) {
     throw std::runtime_error("cannot open csv: " + path.string());
   }
+  ++load_calls_;
 
   std::vector<BarEvent> bars;
   std::string line;

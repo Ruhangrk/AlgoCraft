@@ -25,6 +25,9 @@ TEST(SymbolTable, InternReturnsStableId) {
   EXPECT_EQ(id1, 1u);
   EXPECT_EQ(id1, id2);
   EXPECT_EQ(id3, 2u);
+  ASSERT_TRUE(table.find("RELIANCE").has_value());
+  EXPECT_EQ(*table.find("RELIANCE"), id1);
+  EXPECT_FALSE(table.find("NOPE").has_value());
   EXPECT_EQ(table.symbol(id1).ticker, "RELIANCE");
   EXPECT_EQ(table.instrument(id1).tick_size.paise(), 5);
   EXPECT_EQ(table.instrument(id1).symbol_id, id1);

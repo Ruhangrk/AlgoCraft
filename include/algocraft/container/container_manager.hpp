@@ -62,6 +62,26 @@ public:
   [[nodiscard]] bool empty() const;
   [[nodiscard]] std::vector<Snapshot> snapshots() const;
 
+  struct SignalLog {
+    ContainerId container_id{};
+    SymbolId symbol_id{0};
+    std::string strategy_name;
+    Timestamp timestamp{};
+    int intent_count{0};
+    std::string indicators_json;
+  };
+  struct RejectionLog {
+    ContainerId container_id{};
+    SymbolId symbol_id{0};
+    std::string strategy_name;
+    Timestamp timestamp{};
+    std::string rule;
+    std::string reason;
+  };
+
+  [[nodiscard]] std::vector<SignalLog> collect_signals() const;
+  [[nodiscard]] std::vector<RejectionLog> collect_rejections() const;
+
 private:
   TradingContainer* find(ContainerId id);
   const TradingContainer* find(ContainerId id) const;

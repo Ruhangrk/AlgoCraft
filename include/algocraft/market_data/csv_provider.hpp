@@ -19,10 +19,13 @@ public:
   std::vector<BarEvent> load_bars(SymbolId symbol_id, Timestamp from, Timestamp to,
                                   BarResolution resolution) override;
 
+  [[nodiscard]] std::uint64_t load_calls() const { return load_calls_; }
+
 private:
   std::filesystem::path data_dir_{};
   const SymbolTable* symbols_{nullptr};
   std::unordered_map<SymbolId, std::filesystem::path> files_{};
+  std::uint64_t load_calls_{0};
 };
 
 class CsvProvider final : public DataProvider {

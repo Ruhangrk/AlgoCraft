@@ -67,3 +67,12 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# SQLite (Phase 5) — keep CSVs in data/1min, never the db
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal
+
+# RocksDB session blobs (Phase 5)
+data/bars/

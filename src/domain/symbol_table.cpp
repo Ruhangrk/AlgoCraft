@@ -1,6 +1,8 @@
 #include "algocraft/domain/symbol.hpp"
 
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 namespace algocraft {
@@ -25,6 +27,14 @@ SymbolId SymbolTable::intern(Symbol symbol, Instrument instrument) {
 
 bool SymbolTable::contains(SymbolId id) const {
   return id != 0 && id <= symbols_.size();
+}
+
+std::optional<SymbolId> SymbolTable::find(std::string_view ticker) const {
+  const auto it = ticker_to_id_.find(std::string{ticker});
+  if (it == ticker_to_id_.end()) {
+    return std::nullopt;
+  }
+  return it->second;
 }
 
 const Symbol &SymbolTable::symbol(SymbolId id) const {

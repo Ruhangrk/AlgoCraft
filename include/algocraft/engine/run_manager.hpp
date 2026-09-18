@@ -14,6 +14,8 @@
 #include "algocraft/strategies/strategy_registry.hpp"
 #include "algocraft/workbook/workbook_manager.hpp"
 
+namespace algocraft { class ActivityRepository; }
+
 namespace algocraft {
 
 struct RunConfig {
@@ -38,6 +40,8 @@ struct RunResult {
   Capital returned{};
   std::vector<StrategyEvalResult> evaluations{};
   std::vector<ContainerManager::Snapshot> traded{};
+  std::vector<ContainerManager::SignalLog> signals{};
+  std::vector<ContainerManager::RejectionLog> rejections{};
   int selected{0};
   int skipped{0};
   int real_containers{0};
@@ -47,8 +51,10 @@ struct RunResult {
 
 class RunManager {
 public:
+  // repo is optional; when non-null, persists workbook/run/containers/fills after the run.
   RunResult execute(const RunConfig& config, DataSourceRegistry& data, StrategyRegistry& strategies,
-                    WorkbookManager& books, SymbolTable& symbols);
+                    WorkbookManager& books, SymbolTable& symbols,
+                    ActivityRepository* repo = nullptr);
 };
 
 }  // namespace algocraft

@@ -24,6 +24,7 @@ struct OrderIntent {
 struct FillEvent {
   OrderId order_id{};
   SymbolId symbol_id{0};
+  ContainerId container_id{};   // set by TradingContainer before ledger.apply_fill
   Side side{Side::Buy};
   Quantity filled_qty{};
   Price fill_price{};

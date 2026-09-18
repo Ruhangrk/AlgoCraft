@@ -1,5 +1,7 @@
 #include "algocraft/container/trading_container.hpp"
 
+#include <string>
+
 #include "algocraft/execution/execution_venue.hpp"
 #include "algocraft/strategies/make_intent.hpp"
 
@@ -128,6 +130,13 @@ void TradingContainer::on_bar(const BarEvent& bar) {
   }
   intents_.clear();
   strategy_->on_bar(bar, PortfolioView{position_, cash_}, intents_);
+  if (!intents_.empty()) {
+    SignalRecord sig{};
+    sig.timestamp = bar.timestamp;
+    sig.intent_count = static_cast<int>(intents_.size());
+    sig.indicators_json = "{\"close_paise\":" + std::to_string(bar.close.paise()) + "}";
+    signals_.push_back(std::move(sig));
+  }
   for (auto& intent : intents_) {
     intent.symbol_id = config_.symbol_id;
     intent.strategy_id = config_.strategy_id;
@@ -138,11 +147,17 @@ void TradingContainer::on_bar(const BarEvent& bar) {
                                       capital_ == nullptr ? nullptr : &capital_->ledger());
     if (!decision.ok()) {
       last_rejection_ = decision;
+      RejectionRecord rej{};
+      rej.timestamp = bar.timestamp;
+      rej.rule = decision.rule != nullptr ? decision.rule : "unknown";
+      rej.reason = decision.reason != nullptr ? decision.reason : "rejected";
+      rejections_.push_back(std::move(rej));
       continue;
     }
     auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_);
     if (fill) {
       fill->workbook_id = config_.workbook_id;
+      fill->container_id = config_.id;
       on_fill(*fill);
       if (strategy_->should_exit()) {
         exit();
@@ -232,6 +247,7 @@ void TradingContainer::flatten(Price price, bool bypass_risk) {
   auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_);
   if (fill) {
     fill->workbook_id = config_.workbook_id;
+    fill->container_id = config_.id;
     on_fill(*fill);
   }
 }

@@ -11,6 +11,7 @@
 #include "algocraft/engine/spsc_ring.hpp"
 #include "algocraft/execution/simulated_exchange.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
+#include "algocraft/persistence/activity_repository.hpp"
 #include "algocraft/portfolio/capital_manager.hpp"
 #include "algocraft/risk/risk_engine.hpp"
 #include "algocraft/routing/routing_algo_registry.hpp"
@@ -45,7 +46,7 @@ void settle(RunResult& out, WorkbookManager& books, WorkbookId wb, BorrowId borr
 
 RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
                               StrategyRegistry& strategies, WorkbookManager& books,
-                              SymbolTable& symbols) {
+                              SymbolTable& symbols, ActivityRepository* repo) {
   RunResult out{};
   const Instrument inst{};
   std::vector<SymbolId> stock_ids;
@@ -101,6 +102,9 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
 
   if (containers.empty()) {
     settle(out, books, wb, borrow.id, *ledger);
+    if (repo != nullptr) {
+      repo->persist_run(config, out, books, *ledger, symbols);
+    }
     return out;
   }
 
@@ -166,8 +170,15 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
       }
     }
   }
+  out.signals = containers.collect_signals();
+  out.rejections = containers.collect_rejections();
   out.fills = static_cast<int>(ledger->fills().size());
   settle(out, books, wb, borrow.id, *ledger);
+
+  if (repo != nullptr) {
+    repo->persist_run(config, out, books, *ledger, symbols);
+  }
+
   return out;
 }
 
