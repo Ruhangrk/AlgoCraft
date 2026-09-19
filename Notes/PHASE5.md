@@ -1,6 +1,8 @@
 # Phase 5 — Persistence, market-data cache, auth, API
 
-ARCHITECTURE.md / IMPLEMENTATION.md describe **what** Phase 5 is. This file is **how we build it**, in order. Do not start a step until the previous step is done and tested. Do not fetch Upstox 1-min history until explicitly approved.
+ARCHITECTURE.md / IMPLEMENTATION.md describe **what** Phase 5 is. This file is **how we build it**, in order. For a file-by-file map of the code as built (flows + Mermaid), see **`Notes/CODEMAP.md`**.
+
+Do not start a step until the previous step is done and tested. Do not fetch Upstox 1-min history until explicitly approved.
 
 **Stores (decided):**
 
