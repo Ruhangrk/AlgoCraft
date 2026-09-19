@@ -49,7 +49,8 @@ struct SessionDate {
   [[nodiscard]] bool ok() const { return ymd > 0; }
 
   [[nodiscard]] std::string iso() const {
-    char buf[11];
+    // 16: GCC -Wformat-truncation treats year() as unbounded int; 11 is exact for YYYY-MM-DD.
+    char buf[16];
     std::snprintf(buf, sizeof(buf), "%04d-%02d-%02d", year(), month(), day());
     return buf;
   }
