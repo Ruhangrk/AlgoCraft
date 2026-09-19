@@ -23,8 +23,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ninja
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build
+      - name: Install system deps
+        run: >
+          sudo apt-get update -qq &&
+          sudo apt-get install -y -qq
+          ninja-build pkg-config
+          librocksdb-dev libssl-dev libcurl4-openssl-dev
 
       - uses: hendrikmuhs/ccache-action@v1.2
         with:
@@ -77,8 +81,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ninja
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build
+      - name: Install system deps
+        run: >
+          sudo apt-get update -qq &&
+          sudo apt-get install -y -qq
+          ninja-build pkg-config
+          librocksdb-dev libssl-dev libcurl4-openssl-dev
 
       - uses: hendrikmuhs/ccache-action@v1.2
         with:
