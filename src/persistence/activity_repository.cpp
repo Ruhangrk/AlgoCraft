@@ -318,6 +318,77 @@ void ActivityRepository::insert_rejections_(
   }
 }
 
+void ActivityRepository::insert_routing_(std::int64_t run_db_id, std::int64_t workbook_db_id,
+                                         const RunResult& result) {
+  if (result.evaluations.empty()) {
+    return;
+  }
+  Stmt st(db_,
+          "INSERT INTO routing_decisions "
+          "(workbook_id, run_id, ticker, strategy_name, decision, score_paise, reason, "
+          " timestamp_ns) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+  for (const auto& ev : result.evaluations) {
+    const char* decision = ev.selected ? "CREATE" : "SKIP";
+    const char* reason = ev.selected ? "positive_pnl" : "non_positive_pnl";
+    sqlite3_reset(st.s);
+    sqlite3_clear_bindings(st.s);
+    sqlite3_bind_int64(st.s, 1, workbook_db_id);
+    sqlite3_bind_int64(st.s, 2, run_db_id);
+    sqlite3_bind_text(st.s, 3, ev.ticker.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(st.s, 4, ev.strategy_name.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(st.s, 5, decision, -1, SQLITE_STATIC);
+    sqlite3_bind_int64(st.s, 6, ev.pnl_paise);
+    sqlite3_bind_text(st.s, 7, reason, -1, SQLITE_STATIC);
+    sqlite3_bind_int64(st.s, 8, 0);
+    step_done(db_, st.s);
+  }
+}
+
+void ActivityRepository::insert_lifecycle_(
+    std::int64_t run_db_id, std::int64_t workbook_db_id,
+    const std::vector<std::pair<ContainerId, std::int64_t>>& cmap, const RunResult& result) {
+  Stmt st(db_,
+          "INSERT INTO container_events "
+          "(workbook_id, run_id, container_id, ticker, event_type, detail, timestamp_ns) "
+          "VALUES (?, ?, ?, ?, ?, ?, ?)");
+  for (const auto& snap : result.traded) {
+    std::int64_t db_container_id = 0;
+    for (const auto& [cid, row_id] : cmap) {
+      if (cid == snap.id) {
+        db_container_id = row_id;
+        break;
+      }
+    }
+    if (db_container_id == 0) {
+      continue;
+    }
+    const auto mode = std::string{container_mode_str(snap.mode)};
+    const auto detail = "mode=" + mode;
+    sqlite3_reset(st.s);
+    sqlite3_clear_bindings(st.s);
+    sqlite3_bind_int64(st.s, 1, workbook_db_id);
+    sqlite3_bind_int64(st.s, 2, run_db_id);
+    sqlite3_bind_int64(st.s, 3, db_container_id);
+    sqlite3_bind_text(st.s, 4, snap.ticker.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(st.s, 5, "CREATED", -1, SQLITE_STATIC);
+    sqlite3_bind_text(st.s, 6, detail.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(st.s, 7, 0);
+    step_done(db_, st.s);
+  }
+  if (result.force_stopped) {
+    sqlite3_reset(st.s);
+    sqlite3_clear_bindings(st.s);
+    sqlite3_bind_int64(st.s, 1, workbook_db_id);
+    sqlite3_bind_int64(st.s, 2, run_db_id);
+    sqlite3_bind_null(st.s, 3);
+    sqlite3_bind_text(st.s, 4, "", -1, SQLITE_STATIC);
+    sqlite3_bind_text(st.s, 5, "FORCE_STOPPED", -1, SQLITE_STATIC);
+    sqlite3_bind_text(st.s, 6, "max_replay_bars", -1, SQLITE_STATIC);
+    sqlite3_bind_int64(st.s, 7, 0);
+    step_done(db_, st.s);
+  }
+}
+
 void ActivityRepository::persist_run(const RunConfig& config, const RunResult& result,
                                       const WorkbookManager& books, const PortfolioLedger& ledger,
                                       const SymbolTable& symbols) {
@@ -353,6 +424,9 @@ void ActivityRepository::persist_run(const RunConfig& config, const RunResult& r
     // Signals + rejections (5.5)
     insert_signals_(run_db_id, wb_db_id, cmap, result, symbols);
     insert_rejections_(run_db_id, wb_db_id, cmap, result, symbols);
+    // Routing + lifecycle (S5b)
+    insert_routing_(run_db_id, wb_db_id, result);
+    insert_lifecycle_(run_db_id, wb_db_id, cmap, result);
 
     exec(db_, "COMMIT");
   } catch (...) {
@@ -364,13 +438,40 @@ void ActivityRepository::persist_run(const RunConfig& config, const RunResult& r
 // ── Read-back ─────────────────────────────────────────────────────────────────
 
 std::vector<ActivityRepository::RunRow> ActivityRepository::list_runs(
-    std::int64_t workbook_db_id) const {
+    std::int64_t workbook_db_id, const ListFilter& filter) const {
+  std::string sql =
+      "SELECT id, workbook_id, router, capital_paise, selected, skipped, fills, "
+      "returned_paise, created_at FROM runs WHERE workbook_id=? AND deleted_at IS NULL";
+  if (!filter.from_date.empty()) {
+    sql += " AND date(created_at) >= date(?)";
+  }
+  if (!filter.to_date.empty()) {
+    sql += " AND date(created_at) <= date(?)";
+  }
+  if (filter.cursor > 0) {
+    sql += " AND id < ?";
+  }
+  sql += " ORDER BY id DESC";
+  if (filter.limit > 0) {
+    sql += " LIMIT ?";
+  }
+
   std::vector<RunRow> rows;
-  Stmt st(db_,
-          "SELECT id, workbook_id, router, capital_paise, selected, skipped, fills, "
-          "returned_paise FROM runs WHERE workbook_id=? AND deleted_at IS NULL "
-          "ORDER BY id ASC");
-  sqlite3_bind_int64(st.s, 1, workbook_db_id);
+  Stmt st(db_, sql.c_str());
+  int idx = 1;
+  sqlite3_bind_int64(st.s, idx++, workbook_db_id);
+  if (!filter.from_date.empty()) {
+    sqlite3_bind_text(st.s, idx++, filter.from_date.c_str(), -1, SQLITE_TRANSIENT);
+  }
+  if (!filter.to_date.empty()) {
+    sqlite3_bind_text(st.s, idx++, filter.to_date.c_str(), -1, SQLITE_TRANSIENT);
+  }
+  if (filter.cursor > 0) {
+    sqlite3_bind_int64(st.s, idx++, filter.cursor);
+  }
+  if (filter.limit > 0) {
+    sqlite3_bind_int(st.s, idx++, filter.limit);
+  }
   while (sqlite3_step(st.s) == SQLITE_ROW) {
     RunRow r{};
     r.id = sqlite3_column_int64(st.s, 0);
@@ -383,9 +484,24 @@ std::vector<ActivityRepository::RunRow> ActivityRepository::list_runs(
     r.skipped = sqlite3_column_int(st.s, 5);
     r.fills = sqlite3_column_int(st.s, 6);
     r.returned_paise = sqlite3_column_int64(st.s, 7);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 8))) {
+      r.created_at = t;
+    }
     rows.push_back(r);
   }
   return rows;
+}
+
+bool ActivityRepository::soft_delete_run(std::int64_t workbook_db_id, std::int64_t run_id) {
+  Stmt st(db_,
+          "UPDATE runs SET deleted_at=strftime('%Y-%m-%dT%H:%M:%SZ','now') "
+          "WHERE workbook_id=? AND id=? AND deleted_at IS NULL");
+  sqlite3_bind_int64(st.s, 1, workbook_db_id);
+  sqlite3_bind_int64(st.s, 2, run_id);
+  if (sqlite3_step(st.s) != SQLITE_DONE) {
+    throw std::runtime_error(std::string("soft_delete_run: ") + sqlite3_errmsg(db_));
+  }
+  return sqlite3_changes(db_) > 0;
 }
 
 std::vector<ActivityRepository::ContainerRow> ActivityRepository::list_containers(
@@ -428,6 +544,121 @@ std::vector<ActivityRepository::FillRow> ActivityRepository::list_fills(
     r.price_paise = sqlite3_column_int64(st.s, 5);
     r.fees_paise = sqlite3_column_int64(st.s, 6);
     r.timestamp_ns = sqlite3_column_int64(st.s, 7);
+    rows.push_back(r);
+  }
+  return rows;
+}
+
+std::optional<ActivityRepository::RunRow> ActivityRepository::find_run(
+    std::int64_t workbook_db_id, std::int64_t run_id) const {
+  Stmt st(db_,
+          "SELECT id, workbook_id, router, capital_paise, selected, skipped, fills, "
+          "returned_paise, created_at FROM runs "
+          "WHERE workbook_id=? AND id=? AND deleted_at IS NULL LIMIT 1");
+  sqlite3_bind_int64(st.s, 1, workbook_db_id);
+  sqlite3_bind_int64(st.s, 2, run_id);
+  if (sqlite3_step(st.s) != SQLITE_ROW) {
+    return std::nullopt;
+  }
+  RunRow r{};
+  r.id = sqlite3_column_int64(st.s, 0);
+  r.workbook_id = sqlite3_column_int64(st.s, 1);
+  if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 2))) {
+    r.router = t;
+  }
+  r.capital_paise = sqlite3_column_int64(st.s, 3);
+  r.selected = sqlite3_column_int(st.s, 4);
+  r.skipped = sqlite3_column_int(st.s, 5);
+  r.fills = sqlite3_column_int(st.s, 6);
+  r.returned_paise = sqlite3_column_int64(st.s, 7);
+  if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 8))) {
+    r.created_at = t;
+  }
+  return r;
+}
+
+std::vector<ActivityRepository::SignalRow> ActivityRepository::list_signals(
+    std::int64_t run_db_id) const {
+  std::vector<SignalRow> rows;
+  Stmt st(db_,
+          "SELECT id, container_id, ticker, strategy_name, intent_count, indicators_json, "
+          "timestamp_ns FROM strategy_signals WHERE run_id=? ORDER BY timestamp_ns ASC, id ASC");
+  sqlite3_bind_int64(st.s, 1, run_db_id);
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    SignalRow r{};
+    r.id = sqlite3_column_int64(st.s, 0);
+    r.container_id = sqlite3_column_int64(st.s, 1);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 2))) r.ticker = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3)))
+      r.strategy_name = t;
+    r.intent_count = sqlite3_column_int(st.s, 4);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 5)))
+      r.indicators_json = t;
+    r.timestamp_ns = sqlite3_column_int64(st.s, 6);
+    rows.push_back(r);
+  }
+  return rows;
+}
+
+std::vector<ActivityRepository::RejectionRow> ActivityRepository::list_rejections(
+    std::int64_t run_db_id) const {
+  std::vector<RejectionRow> rows;
+  Stmt st(db_,
+          "SELECT id, container_id, ticker, rule_name, reason, timestamp_ns "
+          "FROM risk_rejections WHERE run_id=? ORDER BY timestamp_ns ASC, id ASC");
+  sqlite3_bind_int64(st.s, 1, run_db_id);
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    RejectionRow r{};
+    r.id = sqlite3_column_int64(st.s, 0);
+    r.container_id = sqlite3_column_int64(st.s, 1);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 2))) r.ticker = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3))) r.rule_name = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 4))) r.reason = t;
+    r.timestamp_ns = sqlite3_column_int64(st.s, 5);
+    rows.push_back(r);
+  }
+  return rows;
+}
+
+std::vector<ActivityRepository::RoutingRow> ActivityRepository::list_routing(
+    std::int64_t run_db_id) const {
+  std::vector<RoutingRow> rows;
+  Stmt st(db_,
+          "SELECT id, ticker, strategy_name, decision, score_paise, reason, timestamp_ns "
+          "FROM routing_decisions WHERE run_id=? ORDER BY id ASC");
+  sqlite3_bind_int64(st.s, 1, run_db_id);
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    RoutingRow r{};
+    r.id = sqlite3_column_int64(st.s, 0);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 1))) r.ticker = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 2)))
+      r.strategy_name = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3))) r.decision = t;
+    r.score_paise = sqlite3_column_int64(st.s, 4);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 5))) r.reason = t;
+    r.timestamp_ns = sqlite3_column_int64(st.s, 6);
+    rows.push_back(r);
+  }
+  return rows;
+}
+
+std::vector<ActivityRepository::LifecycleRow> ActivityRepository::list_lifecycle(
+    std::int64_t run_db_id) const {
+  std::vector<LifecycleRow> rows;
+  Stmt st(db_,
+          "SELECT id, container_id, ticker, event_type, detail, timestamp_ns "
+          "FROM container_events WHERE run_id=? ORDER BY id ASC");
+  sqlite3_bind_int64(st.s, 1, run_db_id);
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    LifecycleRow r{};
+    r.id = sqlite3_column_int64(st.s, 0);
+    if (sqlite3_column_type(st.s, 1) != SQLITE_NULL) {
+      r.container_id = sqlite3_column_int64(st.s, 1);
+    }
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 2))) r.ticker = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3))) r.event_type = t;
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 4))) r.detail = t;
+    r.timestamp_ns = sqlite3_column_int64(st.s, 5);
     rows.push_back(r);
   }
   return rows;

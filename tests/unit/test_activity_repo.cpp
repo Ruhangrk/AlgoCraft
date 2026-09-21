@@ -235,3 +235,86 @@ TEST(ActivityRepository, PersistRunUnderExistingWorkbookId) {
   EXPECT_EQ(runs[0].workbook_id, 99);
   EXPECT_TRUE(repo.list_runs(1).empty());
 }
+
+TEST(ActivityRepository, SoftDeleteHidesRunFromList) {
+  Fixture fix;
+  algocraft::ActivityRepository repo(fix.db.handle());
+
+  algocraft::SymbolTable symbols;
+  symbols.intern({.ticker = "RELIANCE"}, {});
+
+  auto cached = std::make_unique<algocraft::CachedProvider>(
+      std::make_unique<algocraft::CsvProvider>(ALGOCRAFT_DATA_DIR, &symbols), fix.bars, *fix.cov,
+      symbols);
+  algocraft::DataSourceRegistry registry;
+  registry.register_provider(std::move(cached));
+
+  algocraft::StrategyRegistry strategies;
+  algocraft::register_all_strategies(strategies);
+  algocraft::WorkbookManager books;
+
+  const auto cfg = empty_run_config();
+  algocraft::RunManager mgr;
+  const auto result = mgr.execute(cfg, registry, strategies, books, symbols, &repo);
+  const auto wb_db_id = uuid_low(result.workbook_id);
+
+  const auto runs = repo.list_runs(wb_db_id);
+  ASSERT_EQ(runs.size(), 1u);
+  const auto rid = runs[0].id;
+
+  EXPECT_TRUE(repo.soft_delete_run(wb_db_id, rid));
+  EXPECT_TRUE(repo.list_runs(wb_db_id).empty());
+  EXPECT_FALSE(repo.soft_delete_run(wb_db_id, rid));
+
+  // Row still present in SQLite with deleted_at set.
+  sqlite3_stmt* st = nullptr;
+  ASSERT_EQ(sqlite3_prepare_v2(fix.db.handle(),
+                               "SELECT deleted_at FROM runs WHERE id=?", -1, &st, nullptr),
+            SQLITE_OK);
+  sqlite3_bind_int64(st, 1, rid);
+  ASSERT_EQ(sqlite3_step(st), SQLITE_ROW);
+  ASSERT_NE(sqlite3_column_type(st, 0), SQLITE_NULL);
+  sqlite3_finalize(st);
+}
+
+TEST(ActivityRepository, TimelineHasRoutingAndLifecycle) {
+  Fixture fix;
+  algocraft::ActivityRepository repo(fix.db.handle());
+
+  algocraft::SymbolTable symbols;
+  symbols.intern({.ticker = "RELIANCE"}, {});
+
+  auto cached = std::make_unique<algocraft::CachedProvider>(
+      std::make_unique<algocraft::CsvProvider>(ALGOCRAFT_DATA_DIR, &symbols), fix.bars, *fix.cov,
+      symbols);
+  algocraft::DataSourceRegistry registry;
+  registry.register_provider(std::move(cached));
+
+  algocraft::StrategyRegistry strategies;
+  algocraft::register_all_strategies(strategies);
+  algocraft::WorkbookManager books;
+
+  const auto cfg = empty_run_config();
+  algocraft::RunManager mgr;
+  const auto result = mgr.execute(cfg, registry, strategies, books, symbols, &repo);
+  const auto wb_db_id = uuid_low(result.workbook_id);
+  const auto runs = repo.list_runs(wb_db_id);
+  ASSERT_EQ(runs.size(), 1u);
+  const auto rid = runs[0].id;
+
+  ASSERT_TRUE(repo.find_run(wb_db_id, rid).has_value());
+  const auto routing = repo.list_routing(rid);
+  ASSERT_FALSE(routing.empty());
+  bool saw_skip_or_create = false;
+  for (const auto& row : routing) {
+    if (row.decision == "SKIP" || row.decision == "CREATE") {
+      saw_skip_or_create = true;
+    }
+  }
+  EXPECT_TRUE(saw_skip_or_create);
+
+  // Empty-range run usually creates no containers → no lifecycle CREATED; still OK.
+  EXPECT_EQ(repo.list_signals(rid).size(), static_cast<std::size_t>(repo.count_signals(rid)));
+  EXPECT_EQ(repo.list_rejections(rid).size(),
+            static_cast<std::size_t>(repo.count_rejections(rid)));
+}

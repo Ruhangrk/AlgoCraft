@@ -61,9 +61,12 @@ TEST_F(SqliteDatabaseTest, OpenMigrateCloseIdempotent) {
     EXPECT_NE(std::find(tables.begin(), tables.end(), "runs"), tables.end());
     EXPECT_NE(std::find(tables.begin(), tables.end(), "instruments"), tables.end());
     EXPECT_NE(std::find(tables.begin(), tables.end(), "backtests"), tables.end());
+    EXPECT_NE(std::find(tables.begin(), tables.end(), "routing_decisions"), tables.end());
+    EXPECT_NE(std::find(tables.begin(), tables.end(), "container_events"), tables.end());
     EXPECT_EQ(db.applied_migrations(),
               (std::vector<std::string>{"schema_001.sql", "schema_002.sql", "schema_003.sql",
-                                        "schema_004.sql", "schema_005.sql", "schema_006.sql"}));
+                                        "schema_004.sql", "schema_005.sql", "schema_006.sql",
+                                        "schema_007.sql"}));
     db.close();
     EXPECT_FALSE(db.is_open());
   }
@@ -75,7 +78,8 @@ TEST_F(SqliteDatabaseTest, OpenMigrateCloseIdempotent) {
     db.migrate();
     EXPECT_EQ(db.applied_migrations(),
               (std::vector<std::string>{"schema_001.sql", "schema_002.sql", "schema_003.sql",
-                                        "schema_004.sql", "schema_005.sql", "schema_006.sql"}));
+                                        "schema_004.sql", "schema_005.sql", "schema_006.sql",
+                                        "schema_007.sql"}));
     db.close();
   }
 

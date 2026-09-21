@@ -29,6 +29,13 @@ struct BacktestRow {
   std::string created_at;
 };
 
+struct BacktestListFilter {
+  std::string from_date;   // YYYY-MM-DD inclusive on created_at
+  std::string to_date;
+  int limit{0};            // 0 = no LIMIT
+  std::int64_t cursor{0};  // return id < cursor
+};
+
 class BacktestRepository {
 public:
   explicit BacktestRepository(sqlite3* db);
@@ -38,7 +45,13 @@ public:
 
   [[nodiscard]] std::optional<BacktestRow> find(std::int64_t workbook_id,
                                                 std::int64_t backtest_id) const;
-  [[nodiscard]] std::vector<BacktestRow> list_for_workbook(std::int64_t workbook_id) const;
+  [[nodiscard]] std::vector<BacktestRow> list_for_workbook(std::int64_t workbook_id) const {
+    return list_for_workbook(workbook_id, BacktestListFilter{});
+  }
+  [[nodiscard]] std::vector<BacktestRow> list_for_workbook(std::int64_t workbook_id,
+                                                           const BacktestListFilter& filter) const;
+  // Soft-delete: sets deleted_at. Returns false if missing/already deleted.
+  [[nodiscard]] bool soft_delete(std::int64_t workbook_id, std::int64_t backtest_id);
 
 private:
   sqlite3* db_{nullptr};

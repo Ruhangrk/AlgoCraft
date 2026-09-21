@@ -104,17 +104,55 @@ std::optional<BacktestRow> BacktestRepository::find(std::int64_t workbook_id,
   return read_row(st.s);
 }
 
-std::vector<BacktestRow> BacktestRepository::list_for_workbook(std::int64_t workbook_id) const {
-  const std::string sql =
-      std::string(kSelectCols) +
-      "WHERE workbook_id=? AND deleted_at IS NULL ORDER BY id ASC";
+std::vector<BacktestRow> BacktestRepository::list_for_workbook(
+    std::int64_t workbook_id, const BacktestListFilter& filter) const {
+  std::string sql = std::string(kSelectCols) + "WHERE workbook_id=? AND deleted_at IS NULL";
+  if (!filter.from_date.empty()) {
+    sql += " AND date(created_at) >= date(?)";
+  }
+  if (!filter.to_date.empty()) {
+    sql += " AND date(created_at) <= date(?)";
+  }
+  if (filter.cursor > 0) {
+    sql += " AND id < ?";
+  }
+  sql += " ORDER BY id DESC";
+  if (filter.limit > 0) {
+    sql += " LIMIT ?";
+  }
+
   Stmt st(db_, sql.c_str());
-  sqlite3_bind_int64(st.s, 1, workbook_id);
+  int idx = 1;
+  sqlite3_bind_int64(st.s, idx++, workbook_id);
+  if (!filter.from_date.empty()) {
+    bind_text(st.s, idx++, filter.from_date);
+  }
+  if (!filter.to_date.empty()) {
+    bind_text(st.s, idx++, filter.to_date);
+  }
+  if (filter.cursor > 0) {
+    sqlite3_bind_int64(st.s, idx++, filter.cursor);
+  }
+  if (filter.limit > 0) {
+    sqlite3_bind_int(st.s, idx++, filter.limit);
+  }
   std::vector<BacktestRow> out;
   while (sqlite3_step(st.s) == SQLITE_ROW) {
     out.push_back(read_row(st.s));
   }
   return out;
+}
+
+bool BacktestRepository::soft_delete(std::int64_t workbook_id, std::int64_t backtest_id) {
+  Stmt st(db_,
+          "UPDATE backtests SET deleted_at=strftime('%Y-%m-%dT%H:%M:%SZ','now') "
+          "WHERE workbook_id=? AND id=? AND deleted_at IS NULL");
+  sqlite3_bind_int64(st.s, 1, workbook_id);
+  sqlite3_bind_int64(st.s, 2, backtest_id);
+  if (sqlite3_step(st.s) != SQLITE_DONE) {
+    throw std::runtime_error(std::string("backtest soft_delete: ") + sqlite3_errmsg(db_));
+  }
+  return sqlite3_changes(db_) > 0;
 }
 
 }  // namespace algocraft

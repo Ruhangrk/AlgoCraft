@@ -23,13 +23,13 @@ HTTP is **Crow**, split across route modules:
 | | **Real** WS: `/ws/workbooks/{wid}/portfolio`, `/ws/workbooks/{wid}/containers` |
 | `api/http_helpers.*` | CORS (`*`), JWT gate, JSON helpers |
 
-Still in engine but **not HTTP-exposed:** signals/rejections persist post-run; no list API yet. Manual backtests: `POST/GET .../backtests*` (S3c).
+Still in engine but **not HTTP-exposed:** (none for signals/rejections — S5a). Manual backtests: `POST/GET .../backtests*` (S3c).
 
 **Known backend bugs / gaps:**
 
 | Issue | Notes |
 |---|---|
-| Soft-delete APIs | Some `deleted_at` columns exist; no DELETE routes yet → S4. |
+| Soft-delete APIs | Workbook soft-delete still missing HTTP; runs/backtests DELETE done (S4a). |
 | Phase 5.9 live paper tape | `NullLiveFeed` only — **parked** (not in S1–S5). |
 
 **Dual market-data paths (locked):**
@@ -353,7 +353,7 @@ Optional later: paper trade, Phase 5.9 live feed, async runs + STOP, admin, AI a
 | S3a | Done | 2026-09-21 | `schema_006.sql` backtests table |
 | S3b | Done | 2026-09-21 | BacktestService ensure+run+persist+capital return |
 | S3c | Done | 2026-09-21 | POST/GET /workbooks/{wid}/backtests* |
-| S4a | Pending | | soft-delete + filters |
+| S4a | Done | 2026-09-21 | DELETE soft-delete runs/backtests; history+list filters |
 | S4b | Pending | | UI hub |
-| S5a | Pending | | events read API |
-| S5b | Pending | | extra events if needed |
+| S5a | Done | 2026-09-21 | GET .../runs/{rid}/events (signals/rejections/fills/routing/lifecycle) |
+| S5b | Done | 2026-09-21 | schema_007 routing_decisions + container_events; persist from evals |

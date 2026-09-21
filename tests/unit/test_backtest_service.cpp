@@ -128,6 +128,20 @@ TEST(BacktestService, PersistDeterministicEmaAndReturnCapital) {
   EXPECT_EQ(a.result.fills, b.result.fills);
   EXPECT_EQ(backtests.list_for_workbook(wid).size(), 2u);
 
+  EXPECT_TRUE(backtests.soft_delete(wid, a.row.id));
+  EXPECT_FALSE(backtests.find(wid, a.row.id).has_value());
+  const auto after_del = backtests.list_for_workbook(wid);
+  ASSERT_EQ(after_del.size(), 1u);
+  EXPECT_EQ(after_del[0].id, b.row.id);
+  EXPECT_FALSE(backtests.soft_delete(wid, a.row.id));
+
+  algocraft::BacktestListFilter page{};
+  page.limit = 1;
+  page.cursor = b.row.id + 1;
+  const auto paged = backtests.list_for_workbook(wid, page);
+  ASSERT_EQ(paged.size(), 1u);
+  EXPECT_EQ(paged[0].id, b.row.id);
+
   db.close();
   std::error_code ec;
   std::filesystem::remove_all(dir, ec);

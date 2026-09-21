@@ -1,5 +1,6 @@
 #include "algocraft/api/workbook_routes.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <string_view>
@@ -29,6 +30,50 @@ std::int64_t uuid_low(const Uuid& id) {
   return static_cast<std::int64_t>(val);
 }
 
+std::string query_string(const crow::request& req, const char* key) {
+  const auto* raw = req.url_params.get(key);
+  return (raw == nullptr) ? std::string{} : std::string{raw};
+}
+
+std::int64_t query_int64(const crow::request& req, const char* key, std::int64_t fallback) {
+  const auto* raw = req.url_params.get(key);
+  if (raw == nullptr || *raw == '\0') {
+    return fallback;
+  }
+  char* end = nullptr;
+  const auto v = std::strtoll(raw, &end, 10);
+  if (end == raw) {
+    return fallback;
+  }
+  return v;
+}
+
+int query_limit(const crow::request& req, int fallback, int cap) {
+  const auto v = static_cast<int>(query_int64(req, "limit", fallback));
+  if (v <= 0) {
+    return fallback;
+  }
+  return v > cap ? cap : v;
+}
+
+ActivityRepository::ListFilter run_list_filter(const crow::request& req) {
+  ActivityRepository::ListFilter f;
+  f.from_date = query_string(req, "from");
+  f.to_date = query_string(req, "to");
+  f.limit = query_limit(req, 0, 500);
+  f.cursor = query_int64(req, "cursor", 0);
+  return f;
+}
+
+BacktestListFilter backtest_list_filter(const crow::request& req) {
+  BacktestListFilter f;
+  f.from_date = query_string(req, "from");
+  f.to_date = query_string(req, "to");
+  f.limit = query_limit(req, 0, 500);
+  f.cursor = query_int64(req, "cursor", 0);
+  return f;
+}
+
 crow::json::wvalue workbooks_json(const std::vector<WorkbookRepository::Row>& rows) {
   crow::json::wvalue root = crow::json::wvalue::list();
   for (std::size_t i = 0; i < rows.size(); ++i) {
@@ -56,6 +101,7 @@ crow::json::wvalue runs_json(const std::vector<ActivityRepository::RunRow>& runs
     root[i]["fills"] = runs[i].fills;
     root[i]["selected"] = runs[i].selected;
     root[i]["returned_paise"] = runs[i].returned_paise;
+    root[i]["created_at"] = runs[i].created_at;
   }
   return root;
 }
@@ -255,9 +301,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           return json_error(500, "run workbook bind failed");
         }
         const auto runs = activity->list_runs(wid);
-
         crow::json::wvalue root;
-        root["run_id"] = runs.empty() ? 0 : runs.back().id;
+        root["run_id"] = runs.empty() ? 0 : runs.front().id;
         root["workbook_id"] = wid;
         root["selected"] = result.selected;
         root["skipped"] = result.skipped;
@@ -275,7 +320,231 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (!gate) {
           return std::move(gate.error);
         }
-        return json_ok(runs_json(activity->list_runs(wid)));
+        return json_ok(runs_json(activity->list_runs(wid, run_list_filter(req))));
+      });
+
+  CROW_ROUTE(app, "/workbooks/<int>/runs/<int>")
+      .methods(crow::HTTPMethod::Delete)([auth, workbooks, activity](const crow::request& req,
+                                                                     std::int64_t wid,
+                                                                     std::int64_t rid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        if (!activity->soft_delete_run(wid, rid)) {
+          return json_error(404, "run not found");
+        }
+        crow::json::wvalue root;
+        root["id"] = rid;
+        root["deleted"] = true;
+        return json_ok(std::move(root));
+      });
+
+  CROW_ROUTE(app, "/workbooks/<int>/runs/<int>/events")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, activity](const crow::request& req,
+                                                                  std::int64_t wid,
+                                                                  std::int64_t rid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        if (!activity->find_run(wid, rid)) {
+          return json_error(404, "run not found");
+        }
+
+        const auto include = query_string(req, "include");
+        const auto has = [&](std::string_view key) {
+          if (include.empty() || include == "all") {
+            return true;
+          }
+          // comma-separated tokens
+          std::size_t start = 0;
+          while (start <= include.size()) {
+            const auto comma = include.find(',', start);
+            const auto part = include.substr(
+                start, comma == std::string::npos ? std::string::npos : comma - start);
+            if (part == key) {
+              return true;
+            }
+            if (comma == std::string::npos) {
+              break;
+            }
+            start = comma + 1;
+          }
+          return false;
+        };
+
+        struct Item {
+          std::int64_t timestamp_ns{};
+          std::int64_t id{};
+          std::string type;
+          crow::json::wvalue body;
+        };
+        std::vector<Item> items;
+
+        if (has("signal") || has("signals")) {
+          for (const auto& s : activity->list_signals(rid)) {
+            crow::json::wvalue body;
+            body["id"] = s.id;
+            body["container_id"] = s.container_id;
+            body["ticker"] = s.ticker;
+            body["strategy"] = s.strategy_name;
+            body["intent_count"] = s.intent_count;
+            body["indicators_json"] = s.indicators_json;
+            body["timestamp_ns"] = s.timestamp_ns;
+            items.push_back({s.timestamp_ns, s.id, "signal", std::move(body)});
+          }
+        }
+        if (has("rejection") || has("rejections")) {
+          for (const auto& r : activity->list_rejections(rid)) {
+            crow::json::wvalue body;
+            body["id"] = r.id;
+            body["container_id"] = r.container_id;
+            body["ticker"] = r.ticker;
+            body["rule"] = r.rule_name;
+            body["reason"] = r.reason;
+            body["timestamp_ns"] = r.timestamp_ns;
+            items.push_back({r.timestamp_ns, r.id, "rejection", std::move(body)});
+          }
+        }
+        if (has("fill") || has("fills")) {
+          for (const auto& f : activity->list_fills(rid)) {
+            crow::json::wvalue body;
+            body["id"] = f.id;
+            body["container_id"] = f.container_id;
+            body["ticker"] = f.ticker;
+            body["side"] = f.side;
+            body["qty"] = f.qty;
+            body["price_paise"] = f.price_paise;
+            body["fees_paise"] = f.fees_paise;
+            body["timestamp_ns"] = f.timestamp_ns;
+            items.push_back({f.timestamp_ns, f.id, "fill", std::move(body)});
+          }
+        }
+        if (has("routing") || has("routing_decisions")) {
+          for (const auto& r : activity->list_routing(rid)) {
+            crow::json::wvalue body;
+            body["id"] = r.id;
+            body["ticker"] = r.ticker;
+            body["strategy"] = r.strategy_name;
+            body["decision"] = r.decision;
+            body["score_paise"] = r.score_paise;
+            body["reason"] = r.reason;
+            body["timestamp_ns"] = r.timestamp_ns;
+            items.push_back({r.timestamp_ns, r.id, "routing", std::move(body)});
+          }
+        }
+        if (has("lifecycle") || has("container_events")) {
+          for (const auto& e : activity->list_lifecycle(rid)) {
+            crow::json::wvalue body;
+            body["id"] = e.id;
+            body["container_id"] = e.container_id;
+            body["ticker"] = e.ticker;
+            body["event_type"] = e.event_type;
+            body["detail"] = e.detail;
+            body["timestamp_ns"] = e.timestamp_ns;
+            items.push_back({e.timestamp_ns, e.id, "lifecycle", std::move(body)});
+          }
+        }
+
+        std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+          if (a.timestamp_ns != b.timestamp_ns) {
+            return a.timestamp_ns < b.timestamp_ns;
+          }
+          if (a.type != b.type) {
+            return a.type < b.type;
+          }
+          return a.id < b.id;
+        });
+
+        crow::json::wvalue root = crow::json::wvalue::list();
+        for (std::size_t i = 0; i < items.size(); ++i) {
+          root[i]["type"] = items[i].type;
+          root[i]["timestamp_ns"] = items[i].timestamp_ns;
+          root[i]["id"] = items[i].id;
+          root[i]["data"] = std::move(items[i].body);
+        }
+        return json_ok(std::move(root));
+      });
+
+  CROW_ROUTE(app, "/workbooks/<int>/history")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, activity, backtests](const crow::request& req,
+                                                                            std::int64_t wid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        const auto type = query_string(req, "type");
+        const auto want_runs = type.empty() || type == "all" || type == "run" || type == "runs";
+        const auto want_bts =
+            type.empty() || type == "all" || type == "backtest" || type == "backtests";
+        if (!want_runs && !want_bts) {
+          return json_error(400, "type must be run, backtest, or all");
+        }
+
+        const auto run_f = run_list_filter(req);
+        const auto bt_f = backtest_list_filter(req);
+        // When mixing types, apply limit after merge; skip per-table cursor.
+        ActivityRepository::ListFilter run_q = run_f;
+        BacktestListFilter bt_q = bt_f;
+        if (want_runs && want_bts) {
+          run_q.cursor = 0;
+          bt_q.cursor = 0;
+          run_q.limit = 0;
+          bt_q.limit = 0;
+        }
+
+        struct Item {
+          std::string type;
+          std::string created_at;
+          std::int64_t id{};
+          crow::json::wvalue body;
+        };
+        std::vector<Item> items;
+        if (want_runs) {
+          for (const auto& r : activity->list_runs(wid, run_q)) {
+            crow::json::wvalue body;
+            body["id"] = r.id;
+            body["router"] = r.router;
+            body["fills"] = r.fills;
+            body["selected"] = r.selected;
+            body["returned_paise"] = r.returned_paise;
+            body["created_at"] = r.created_at;
+            items.push_back({"run", r.created_at, r.id, std::move(body)});
+          }
+        }
+        if (want_bts) {
+          if (backtests == nullptr) {
+            return json_error(503, "backtests not configured");
+          }
+          for (const auto& b : backtests->list_for_workbook(wid, bt_q)) {
+            auto body = backtest_json(b);
+            body["return_pct"] = b.return_pct_bp / 100.0;
+            items.push_back({"backtest", b.created_at, b.id, std::move(body)});
+          }
+        }
+        std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+          if (a.created_at != b.created_at) {
+            return a.created_at > b.created_at;
+          }
+          if (a.type != b.type) {
+            return a.type > b.type;
+          }
+          return a.id > b.id;
+        });
+        const int limit = query_limit(req, 0, 500);
+        if (limit > 0 && static_cast<int>(items.size()) > limit) {
+          items.resize(static_cast<std::size_t>(limit));
+        }
+
+        crow::json::wvalue root = crow::json::wvalue::list();
+        for (std::size_t i = 0; i < items.size(); ++i) {
+          root[i]["type"] = items[i].type;
+          root[i]["id"] = items[i].id;
+          root[i]["created_at"] = items[i].created_at;
+          root[i]["item"] = std::move(items[i].body);
+        }
+        return json_ok(std::move(root));
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/fills")
@@ -366,28 +635,37 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (backtests == nullptr) {
           return json_error(503, "backtests not configured");
         }
-        return json_ok(backtests_json(backtests->list_for_workbook(wid)));
+        return json_ok(backtests_json(backtests->list_for_workbook(wid, backtest_list_filter(req))));
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/backtests/<int>")
-      .methods(crow::HTTPMethod::GET)([auth, workbooks, backtests](const crow::request& req,
-                                                                   std::int64_t wid,
-                                                                   std::int64_t bid) {
-        auto gate = require_workbook(*auth, *workbooks, req, wid);
-        if (!gate) {
-          return std::move(gate.error);
-        }
-        if (backtests == nullptr) {
-          return json_error(503, "backtests not configured");
-        }
-        const auto row = backtests->find(wid, bid);
-        if (!row) {
-          return json_error(404, "backtest not found");
-        }
-        auto root = backtest_json(*row);
-        root["return_pct"] = row->return_pct_bp / 100.0;
-        return json_ok(std::move(root));
-      });
+      .methods(crow::HTTPMethod::GET, crow::HTTPMethod::Delete)(
+          [auth, workbooks, backtests](const crow::request& req, std::int64_t wid,
+                                       std::int64_t bid) {
+            auto gate = require_workbook(*auth, *workbooks, req, wid);
+            if (!gate) {
+              return std::move(gate.error);
+            }
+            if (backtests == nullptr) {
+              return json_error(503, "backtests not configured");
+            }
+            if (req.method == crow::HTTPMethod::Delete) {
+              if (!backtests->soft_delete(wid, bid)) {
+                return json_error(404, "backtest not found");
+              }
+              crow::json::wvalue root;
+              root["id"] = bid;
+              root["deleted"] = true;
+              return json_ok(std::move(root));
+            }
+            const auto row = backtests->find(wid, bid);
+            if (!row) {
+              return json_error(404, "backtest not found");
+            }
+            auto root = backtest_json(*row);
+            root["return_pct"] = row->return_pct_bp / 100.0;
+            return json_ok(std::move(root));
+          });
 
   auto ws_accept = [auth, workbooks](const crow::request& req, void** userdata, const char* suffix) {
     auto gate = require_user(*auth, req);

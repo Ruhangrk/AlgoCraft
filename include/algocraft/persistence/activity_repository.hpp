@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,14 @@ public:
   void persist_run(const RunConfig& config, const RunResult& result, const WorkbookManager& books,
                    const PortfolioLedger& ledger, const SymbolTable& symbols);
 
+  // Optional list filters (empty dates / 0 limit|cursor = no bound).
+  struct ListFilter {
+    std::string from_date;       // YYYY-MM-DD inclusive on created_at
+    std::string to_date;         // YYYY-MM-DD inclusive
+    int limit{0};                // 0 = no LIMIT
+    std::int64_t cursor{0};      // return id < cursor (page older when ordered DESC)
+  };
+
   // ── Read-back helpers (for tests and API) ────────────────────────────────
   struct RunRow {
     std::int64_t id{};
@@ -37,6 +46,7 @@ public:
     int skipped{};
     int fills{};
     std::int64_t returned_paise{};
+    std::string created_at;
   };
 
   struct ContainerRow {
@@ -60,9 +70,61 @@ public:
     std::int64_t timestamp_ns{};
   };
 
-  [[nodiscard]] std::vector<RunRow> list_runs(std::int64_t workbook_db_id) const;
+  struct SignalRow {
+    std::int64_t id{};
+    std::int64_t container_id{};
+    std::string ticker;
+    std::string strategy_name;
+    int intent_count{};
+    std::string indicators_json;
+    std::int64_t timestamp_ns{};
+  };
+
+  struct RejectionRow {
+    std::int64_t id{};
+    std::int64_t container_id{};
+    std::string ticker;
+    std::string rule_name;
+    std::string reason;
+    std::int64_t timestamp_ns{};
+  };
+
+  struct RoutingRow {
+    std::int64_t id{};
+    std::string ticker;
+    std::string strategy_name;
+    std::string decision;
+    std::int64_t score_paise{};
+    std::string reason;
+    std::int64_t timestamp_ns{};
+  };
+
+  struct LifecycleRow {
+    std::int64_t id{};
+    std::int64_t container_id{};  // 0 if run-level
+    std::string ticker;
+    std::string event_type;
+    std::string detail;
+    std::int64_t timestamp_ns{};
+  };
+
+  [[nodiscard]] std::optional<RunRow> find_run(std::int64_t workbook_db_id,
+                                               std::int64_t run_id) const;
+
+  [[nodiscard]] std::vector<RunRow> list_runs(std::int64_t workbook_db_id) const {
+    return list_runs(workbook_db_id, ListFilter{});
+  }
+  [[nodiscard]] std::vector<RunRow> list_runs(std::int64_t workbook_db_id,
+                                              const ListFilter& filter) const;
+  // Soft-delete: sets deleted_at. Returns false if missing/already deleted.
+  [[nodiscard]] bool soft_delete_run(std::int64_t workbook_db_id, std::int64_t run_id);
+
   [[nodiscard]] std::vector<ContainerRow> list_containers(std::int64_t run_db_id) const;
   [[nodiscard]] std::vector<FillRow> list_fills(std::int64_t run_db_id) const;
+  [[nodiscard]] std::vector<SignalRow> list_signals(std::int64_t run_db_id) const;
+  [[nodiscard]] std::vector<RejectionRow> list_rejections(std::int64_t run_db_id) const;
+  [[nodiscard]] std::vector<RoutingRow> list_routing(std::int64_t run_db_id) const;
+  [[nodiscard]] std::vector<LifecycleRow> list_lifecycle(std::int64_t run_db_id) const;
   [[nodiscard]] int count_signals(std::int64_t run_db_id) const;
   [[nodiscard]] int count_rejections(std::int64_t run_db_id) const;
 
@@ -88,6 +150,12 @@ private:
   void insert_rejections_(std::int64_t run_db_id, std::int64_t workbook_db_id,
                           const std::vector<std::pair<ContainerId, std::int64_t>>& cmap,
                           const RunResult& result, const SymbolTable& symbols);
+
+  void insert_routing_(std::int64_t run_db_id, std::int64_t workbook_db_id,
+                       const RunResult& result);
+  void insert_lifecycle_(std::int64_t run_db_id, std::int64_t workbook_db_id,
+                         const std::vector<std::pair<ContainerId, std::int64_t>>& cmap,
+                         const RunResult& result);
 };
 
 }  // namespace algocraft

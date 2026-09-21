@@ -201,6 +201,20 @@
         },
         {
           "name": "Start run",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.run_id != null) pm.environment.set('run_id', String(j.run_id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -209,7 +223,7 @@
               "raw": "{\n  \"tickers\": [\"RELIANCE\", \"INFY\"],\n  \"strategies\": [\"ema_crossover\"],\n  \"capital_paise\": 100000000,\n  \"router\": \"default_router\"\n}"
             },
             "url": "{{baseUrl}}/workbooks/{{workbook_id}}/runs/start",
-            "description": "Starts a CSV/Upstox-backed routing run for the workbook."
+            "description": "Starts a CSV/Upstox-backed routing run for the workbook. Saves `run_id`."
           }
         },
         {
@@ -217,6 +231,24 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/workbooks/{{workbook_id}}/runs"
+          }
+        },
+        {
+          "name": "Run events timeline",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/workbooks/{{workbook_id}}/runs/{{run_id}}/events?include=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["workbooks", "{{workbook_id}}", "runs", "{{run_id}}", "events"],
+              "query": [
+                {
+                  "key": "include",
+                  "value": "all",
+                  "description": "all | comma list: signals,rejections,fills,routing,lifecycle"
+                }
+              ]
+            }
           }
         },
         {
@@ -279,6 +311,39 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/workbooks/{{workbook_id}}/backtests/{{backtest_id}}"
+          }
+        },
+        {
+          "name": "History (filtered)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/workbooks/{{workbook_id}}/history?type=all&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["workbooks", "{{workbook_id}}", "history"],
+              "query": [
+                { "key": "type", "value": "all" },
+                { "key": "from", "value": "", "disabled": true },
+                { "key": "to", "value": "", "disabled": true },
+                { "key": "limit", "value": "50" },
+                { "key": "cursor", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Merged runs+backtests. type=run|backtest|all. Soft-deleted rows omitted."
+          }
+        },
+        {
+          "name": "Soft-delete backtest",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/backtests/{{backtest_id}}"
+          }
+        },
+        {
+          "name": "Soft-delete run",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/runs/{{run_id}}"
           }
         }
       ]

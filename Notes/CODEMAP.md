@@ -207,7 +207,7 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `api/http_helpers.hpp/.cpp` | CORS app type, JSON helpers, `require_user` / `require_workbook` | Crow, `AuthService`, `WorkbookRepository` |
 | `api/auth_routes.hpp/.cpp` | `/auth/register`, `/auth/login`, `/auth/me` | `AuthService` |
 | `api/market_routes.hpp/.cpp` | `/strategies`, `/routing-algos`, `/instruments*`, `/instruments/.../ohlcv`, `/market-data/ensure` | registries + `DataFetchService` + `InstrumentRepository` |
-| `api/workbook_routes.hpp/.cpp` | `/workbooks*`, `/ws/workbooks*`, runs/start, backtests/start|list|get | repos + `RunManager` + `BacktestService` |
+| `api/workbook_routes.hpp/.cpp` | `/workbooks*`, runs/backtests CRUD+soft-delete, `/history` filters | repos + `RunManager` + `BacktestService` |
 | `persistence/instrument_repository.hpp/.cpp` | SQLite instruments upsert/search/count | sqlite3 |
 | `market_data/instrument_ingest.*` | Download/gunzip/parse Upstox complete.csv; NSE_EQ+INE filter | curl, zlib, InstrumentRepository |
 | `auth/auth_service.hpp/.cpp` | Register/login; PBKDF2 password hash; HS256 JWT | `SqliteDatabase` (`users` table) |
@@ -330,6 +330,7 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `migrations/schema_004.sql` | `strategy_signals`, `risk_rejections` |
 | `migrations/schema_005.sql` | `instruments` (NSE EQ catalog; ingest in S1b) |
 | `migrations/schema_006.sql` | `backtests` (manual backtest rows; HTTP S3c) |
+| `migrations/schema_007.sql` | `routing_decisions`, `container_events` (S5b timeline) |
 | `scripts/ensure_5_stocks.py` | Calls AlgoCraft `/market-data/ensure` (not Upstox directly) |
 | `scripts/dump_rocks_session.py` | Decode one RocksDB session to OHLCV text |
 | `postman/*` | Importable API collection + local env |
@@ -412,6 +413,8 @@ flowchart TB
     F[fills]
     SIG[strategy_signals]
     REJ[risk_rejections]
+    RD[routing_decisions]
+    CLE[container_events]
     COV[symbol_data_coverage]
     INST[instruments]
     BT[backtests]
