@@ -196,7 +196,12 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 
 | File | Contains | Talks to |
 |------|----------|----------|
-| `api/http_server.hpp/.cpp` | Minimal POSIX HTTP server; JWT routes; workbook CRUD shell; runs/start; market-data/ensure; request logs via spdlog | `AuthService`, `ActivityRepository`, `WorkbookManager`, `RunManager`, `DataFetchService`, `StrategyRegistry`, `SymbolTable` |
+| `api/http_server.hpp/.cpp` | Crow listen/start/stop; registers route modules | `api::register_*_routes` |
+| `api/http_helpers.hpp/.cpp` | CORS app type, JSON helpers, `require_user` / `require_workbook` | Crow, `AuthService`, `WorkbookRepository` |
+| `api/auth_routes.hpp/.cpp` | `/auth/register`, `/auth/login`, `/auth/me` | `AuthService` |
+| `api/market_routes.hpp/.cpp` | `/strategies`, `/routing-algos`, `/market-data/ensure` | registries + `DataFetchService` |
+| `api/workbook_routes.hpp/.cpp` | `/workbooks*`, `/ws/workbooks*`, runs/start | repos + `RunManager` |
+| `persistence/workbook_repository.hpp/.cpp` | SQLite workbook create/list/find/access checks used by the API | `sqlite3` |
 | `auth/auth_service.hpp/.cpp` | Register/login; PBKDF2 password hash; HS256 JWT | `SqliteDatabase` (`users` table) |
 
 ### 5.3 Engine

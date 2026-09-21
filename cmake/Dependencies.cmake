@@ -77,3 +77,37 @@ find_package(OpenSSL REQUIRED)
 
 # --- libcurl (Upstox REST; Thread 4 / persistence path only) ---
 find_package(CURL REQUIRED)
+
+# --- ASIO (standalone; required by Crow) ---
+FetchContent_Declare(
+  asio
+  URL https://github.com/chriskohlhoff/asio/archive/asio-1-30-2.tar.gz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_GetProperties(asio)
+if(NOT asio_POPULATED)
+  FetchContent_Populate(asio)
+endif()
+set(ASIO_INCLUDE_DIR "${asio_SOURCE_DIR}/asio/include" CACHE PATH "ASIO include dir" FORCE)
+if(NOT TARGET asio::asio)
+  add_library(asio_asio INTERFACE)
+  add_library(asio::asio ALIAS asio_asio)
+  target_include_directories(asio_asio INTERFACE "${ASIO_INCLUDE_DIR}")
+  target_compile_definitions(asio_asio INTERFACE ASIO_STANDALONE)
+  find_package(Threads REQUIRED)
+  target_link_libraries(asio_asio INTERFACE Threads::Threads)
+endif()
+
+# --- Crow (Thread-4 HTTP + WebSocket; standalone ASIO) ---
+set(CROW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(CROW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(CROW_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(CROW_ENABLE_COMPRESSION OFF CACHE BOOL "" FORCE)
+set(CROW_ENABLE_SSL OFF CACHE BOOL "" FORCE)
+set(CROW_INSTALL OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  Crow
+  URL https://github.com/CrowCpp/Crow/archive/refs/tags/v1.2.1.2.tar.gz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(Crow)

@@ -19,7 +19,11 @@ include(cmake/CompilerWarnings.cmake)
 
 add_library(algocraft
   src/auth/auth_service.cpp
+  src/api/auth_routes.cpp
+  src/api/http_helpers.cpp
   src/api/http_server.cpp
+  src/api/market_routes.cpp
+  src/api/workbook_routes.cpp
   src/backtest/backtest_runner.cpp
   src/container/container_manager.cpp
   src/container/trading_container.cpp
@@ -44,6 +48,7 @@ add_library(algocraft
   src/persistence/packed_bars.cpp
   src/persistence/rocks_bar_store.cpp
   src/persistence/sqlite_database.cpp
+  src/persistence/workbook_repository.cpp
   src/portfolio/capital_manager.cpp
   src/portfolio/portfolio_ledger.cpp
   src/risk/risk_engine.cpp
@@ -74,6 +79,7 @@ target_link_libraries(algocraft
     spdlog::spdlog
     OpenSSL::Crypto
     CURL::libcurl
+    Crow::Crow
 )
 
 algocraft_set_warnings(algocraft)
