@@ -23,16 +23,12 @@ HTTP is **Crow**, split across route modules:
 | | **Real** WS: `/ws/workbooks/{wid}/portfolio`, `/ws/workbooks/{wid}/containers` |
 | `api/http_helpers.*` | CORS (`*`), JWT gate, JSON helpers |
 
-Still in engine but **not HTTP-exposed:** `BacktestRunner` / `BacktestResult`. Signals/rejections persist post-run; no list API yet.
+Still in engine but **not HTTP-exposed:** signals/rejections persist post-run; no list API yet. Manual backtests: `POST/GET .../backtests*` (S3c).
 
 **Known backend bugs / gaps:**
 
 | Issue | Notes |
 |---|---|
-| `POST .../runs/start` workbook bind | Path `wid` is ownership-checked, but `RunManager::execute` creates a **new** workbook; runs may not appear under that `wid`. Fix in **B0b**. |
-| No instruments catalog | Search/select any NSE name needs S1. |
-| No chart OHLCV API | D/W/M for UI graphs needs S2 (chart-only path). |
-| No manual backtest HTTP | CLI/`BacktestRunner` only → S3. |
 | Soft-delete APIs | Some `deleted_at` columns exist; no DELETE routes yet → S4. |
 | Phase 5.9 live paper tape | `NullLiveFeed` only — **parked** (not in S1–S5). |
 
@@ -345,18 +341,18 @@ Optional later: paper trade, Phase 5.9 live feed, async runs + STOP, admin, AI a
 | Step | Status | Date | Notes |
 |---|---|---|---|
 | A0 | Pending | | UI adopt Crow |
-| B0a | Pending | | CODEMAP WS auth + gaps |
-| B0b | Pending | | runs/start bind to wid |
-| S1a | Pending | | instruments migration |
-| S1b | Pending | | ingest + InstrumentRepository |
-| S1c | Pending | | GET /instruments |
-| S2a | Pending | | chart TF store keys |
-| S2b | Pending | | Upstox D/W/M fetch |
-| S2c | Pending | | ensure chart TFs |
-| S2d | Pending | | OHLCV API |
-| S3a | Pending | | backtests migration |
-| S3b | Pending | | backtest persist (1m) |
-| S3c | Pending | | backtest HTTP |
+| B0a | Done | 2026-09-21 | CODEMAP: WS auth Bearer/`?token=`; gaps table; Crow modules |
+| B0b | Done | 2026-09-21 | `adopt` + `existing_workbook_id`; runs/start binds path `wid` |
+| S1a | Done | 2026-09-21 | `schema_005.sql` instruments table + indexes |
+| S1b | Done | 2026-09-21 | InstrumentRepository + `instruments ingest`; NSE_EQ EQUITY INE filter |
+| S1c | Done | 2026-09-21 | GET /instruments?q=&limit= + GET /instruments/{ticker} |
+| S2a | Done | 2026-09-21 | OneMonth + year blob keys for 1d/1w/1M; 1m session keys unchanged |
+| S2b | Done | 2026-09-21 | Upstox days/weeks/months + chunk caps; short daily smoke |
+| S2c | Done | 2026-09-21 | ensure_chart_available year blobs; second ensure no vendor |
+| S2d | Done | 2026-09-21 | GET /instruments/{ticker}/ohlcv (1d/1w/1M) |
+| S3a | Done | 2026-09-21 | `schema_006.sql` backtests table |
+| S3b | Done | 2026-09-21 | BacktestService ensure+run+persist+capital return |
+| S3c | Done | 2026-09-21 | POST/GET /workbooks/{wid}/backtests* |
 | S4a | Pending | | soft-delete + filters |
 | S4b | Pending | | UI hub |
 | S5a | Pending | | events read API |

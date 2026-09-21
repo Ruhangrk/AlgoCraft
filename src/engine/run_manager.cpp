@@ -55,9 +55,20 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
     stock_ids.push_back(symbols.intern({.ticker = ticker}, inst));
   }
 
-  const auto wb = books.create(config.user_id, config.workbook_name, config.workbook_capital);
-  out.workbook_id = wb;
-  out.workbook_available_before = config.workbook_capital;
+  WorkbookId wb{};
+  if (config.existing_workbook_id) {
+    wb = *config.existing_workbook_id;
+    const auto existing = books.get_workbook(wb);
+    if (!existing) {
+      return out;
+    }
+    out.workbook_id = wb;
+    out.workbook_available_before = existing->available_capital;
+  } else {
+    wb = books.create(config.user_id, config.workbook_name, config.workbook_capital);
+    out.workbook_id = wb;
+    out.workbook_available_before = config.workbook_capital;
+  }
   const auto borrow = books.borrow_capital(wb, config.workbook_capital);
   if (!borrow.result.ok) {
     return out;

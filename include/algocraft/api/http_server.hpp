@@ -11,6 +11,8 @@
 #include "algocraft/market_data/data_fetch_service.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
+#include "algocraft/persistence/backtest_repository.hpp"
+#include "algocraft/persistence/instrument_repository.hpp"
 #include "algocraft/persistence/sqlite_database.hpp"
 #include "algocraft/persistence/workbook_repository.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
@@ -51,6 +53,8 @@ private:
   AuthService auth_;
   ActivityRepository activity_;
   WorkbookRepository workbooks_;
+  InstrumentRepository instruments_;
+  BacktestRepository backtests_;
   WorkbookManager books_{};
   std::atomic<bool> running_{false};
   std::unique_ptr<std::thread> thread_{};

@@ -19,7 +19,9 @@ HttpServer::HttpServer(Config config, SqliteDatabase& db, DataSourceRegistry& da
       fetch_{fetch},
       auth_{db.handle(), config_.jwt_secret},
       activity_{db.handle()},
-      workbooks_{db.handle()} {}
+      workbooks_{db.handle()},
+      instruments_{db.handle()},
+      backtests_{db.handle()} {}
 
 HttpServer::~HttpServer() { stop(); }
 
@@ -50,6 +52,7 @@ void HttpServer::start() {
                                        .data = data_,
                                        .symbols = symbols_,
                                        .fetch = fetch_,
+                                       .instruments = &instruments_,
                                    });
   api::register_workbook_routes(app, api::WorkbookRouteDeps{
                                          .auth = auth_,
@@ -59,6 +62,9 @@ void HttpServer::start() {
                                          .data = data_,
                                          .strategies = strategies_,
                                          .symbols = symbols_,
+                                         .fetch = fetch_,
+                                         .backtests = &backtests_,
+                                         .instruments = &instruments_,
                                      });
 
   app.loglevel(crow::LogLevel::Warning);

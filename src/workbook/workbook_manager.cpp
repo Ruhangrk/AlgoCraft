@@ -19,6 +19,39 @@ WorkbookId WorkbookManager::create(UserId user_id, std::string name, Capital ini
   return id;
 }
 
+OpResult WorkbookManager::adopt(WorkbookId id, UserId user_id, std::string name,
+                                Capital main_capital, Capital available_capital) {
+  if (books_.contains(id)) {
+    return OpResult::fail("workbook already loaded");
+  }
+  if (main_capital.paise() < 0) {
+    main_capital = Capital{};
+  }
+  if (available_capital.paise() < 0) {
+    available_capital = Capital{};
+  }
+  if (available_capital.paise() > main_capital.paise()) {
+    available_capital = main_capital;
+  }
+  Record rec{};
+  rec.book.id = id;
+  rec.book.user_id = user_id;
+  rec.book.name = std::move(name);
+  rec.book.main_capital = main_capital;
+  rec.book.available_capital = available_capital;
+  rec.book.status = WorkbookStatus::Active;
+  books_.emplace(id, std::move(rec));
+
+  std::uint64_t low = 0;
+  for (int i = 0; i < 8; ++i) {
+    low = (low << 8) | id.bytes[static_cast<std::size_t>(8 + i)];
+  }
+  if (low + 1 > next_workbook_) {
+    next_workbook_ = low + 1;
+  }
+  return OpResult::success();
+}
+
 OpResult WorkbookManager::add_capital(WorkbookId id, Capital amount) {
   auto* wb = mutable_book(id);
   if (wb == nullptr) {

@@ -104,6 +104,69 @@ std::string ymd(Timestamp ts) {
   return buf;
 }
 
+Timestamp ist_midnight(int year, unsigned month, unsigned day) {
+  using namespace std::chrono;
+  const auto utc = sys_days{std::chrono::year{year} / month / day} - hours{5} - minutes{30};
+  return Timestamp::from_nanos(duration_cast<nanoseconds>(utc.time_since_epoch()).count());
+}
+
+std::chrono::year_month_day ist_ymd(Timestamp ts) {
+  using namespace std::chrono;
+  const auto ist = sys_time<nanoseconds>{nanoseconds{ts.nanos()}} + hours{5} + minutes{30};
+  return year_month_day{floor<days>(ist)};
+}
+
+Timestamp add_calendar_days_ist(Timestamp ts, int days_delta) {
+  using namespace std::chrono;
+  const auto ymd0 = ist_ymd(ts);
+  const sys_days dp = sys_days{ymd0} + days{days_delta};
+  const year_month_day ymd1{dp};
+  return ist_midnight(static_cast<int>(ymd1.year()), static_cast<unsigned>(ymd1.month()),
+                      static_cast<unsigned>(ymd1.day()));
+}
+
+}  // namespace
+
+UpstoxHistoryUnit upstox_history_unit(BarResolution resolution) {
+  switch (resolution) {
+    case BarResolution::OneMin:
+      return {.unit = "minutes", .interval = 1, .max_window_calendar_days = 28};
+    case BarResolution::OneDay:
+      // Official max ~1 decade; AlgoCraft chunk = 9 years.
+      return {.unit = "days", .interval = 1, .max_window_calendar_days = 9 * 365};
+    case BarResolution::OneWeek:
+      // No short documented cap; still chunk generously (same as days).
+      return {.unit = "weeks", .interval = 1, .max_window_calendar_days = 9 * 365};
+    case BarResolution::OneMonth:
+      return {.unit = "months", .interval = 1, .max_window_calendar_days = 9 * 365};
+    default:
+      throw std::runtime_error("upstox: unsupported resolution");
+  }
+}
+
+std::vector<std::pair<Timestamp, Timestamp>> upstox_chunk_range(Timestamp from, Timestamp to,
+                                                                int max_window_calendar_days) {
+  std::vector<std::pair<Timestamp, Timestamp>> out;
+  if (from.nanos() > to.nanos() || max_window_calendar_days <= 0) {
+    return out;
+  }
+  Timestamp cursor = from;
+  while (cursor.nanos() <= to.nanos()) {
+    auto chunk_to = add_calendar_days_ist(cursor, max_window_calendar_days - 1);
+    if (chunk_to.nanos() > to.nanos()) {
+      chunk_to = to;
+    }
+    out.emplace_back(cursor, chunk_to);
+    if (chunk_to.nanos() >= to.nanos()) {
+      break;
+    }
+    cursor = add_calendar_days_ist(chunk_to, 1);
+  }
+  return out;
+}
+
+namespace {
+
 std::vector<BarEvent> parse_candles(SymbolId symbol_id, BarResolution resolution,
                                     std::string_view body, Timestamp from, Timestamp to) {
   std::vector<BarEvent> out;
@@ -263,14 +326,25 @@ std::string UpstoxHistoricalLoader::http_get(std::string_view url) const {
   return body;
 }
 
+std::string UpstoxHistoricalLoader::build_history_url(std::string_view encoded_key,
+                                                      BarResolution resolution, Timestamp from,
+                                                      Timestamp to) const {
+  const auto unit = upstox_history_unit(resolution);
+  // Path order: to_date then from_date (Upstox v3).
+  return config_.history_base_url + "/historical-candle/" + std::string{encoded_key} + "/" +
+         std::string{unit.unit} + "/" + std::to_string(unit.interval) + "/" + ymd(to) + "/" +
+         ymd(from);
+}
+
 std::vector<BarEvent> UpstoxHistoricalLoader::load_bars(SymbolId symbol_id, Timestamp from,
                                                         Timestamp to, BarResolution resolution) {
   if (!config_.ok()) {
     throw std::runtime_error("upstox: missing access token");
   }
-  if (resolution != BarResolution::OneMin) {
-    throw std::runtime_error("upstox: only ONE_MIN supported for now");
+  if (from.nanos() > to.nanos()) {
+    return {};
   }
+  const auto unit = upstox_history_unit(resolution);  // throws if unsupported
   const auto key = instrument_key_for(symbol_id);
   CURL* curl = curl_easy_init();
   if (curl == nullptr) {
@@ -279,13 +353,23 @@ std::vector<BarEvent> UpstoxHistoricalLoader::load_bars(SymbolId symbol_id, Time
   const auto encoded = url_encode(curl, key);
   curl_easy_cleanup(curl);
 
-  // Path order: to_date then from_date (Upstox v3).
-  const auto to_d = ymd(to);
-  const auto from_d = ymd(from);
-  const std::string url = config_.history_base_url + "/historical-candle/" + encoded +
-                          "/minutes/1/" + to_d + "/" + from_d;
-  const auto body = http_get(url);
-  return parse_candles(symbol_id, resolution, body, from, to);
+  std::vector<BarEvent> all;
+  for (const auto& [chunk_from, chunk_to] :
+       upstox_chunk_range(from, to, unit.max_window_calendar_days)) {
+    const auto url = build_history_url(encoded, resolution, chunk_from, chunk_to);
+    const auto body = http_get(url);
+    auto part = parse_candles(symbol_id, resolution, body, from, to);
+    all.insert(all.end(), part.begin(), part.end());
+  }
+  std::sort(all.begin(), all.end(), [](const BarEvent& a, const BarEvent& b) {
+    return a.timestamp < b.timestamp;
+  });
+  all.erase(std::unique(all.begin(), all.end(),
+                        [](const BarEvent& a, const BarEvent& b) {
+                          return a.timestamp == b.timestamp;
+                        }),
+            all.end());
+  return all;
 }
 
 UpstoxProvider::UpstoxProvider(UpstoxConfig config, const SymbolTable* symbols)
@@ -295,7 +379,9 @@ UpstoxProvider::UpstoxProvider(UpstoxConfig config, const SymbolTable* symbols)
 
 DataProviderCapabilities UpstoxProvider::capabilities() const {
   DataProviderCapabilities caps;
-  caps.supported_resolutions = {BarResolution::OneMin};
+  caps.supported_resolutions = {BarResolution::OneMin, BarResolution::OneDay,
+                                BarResolution::OneWeek, BarResolution::OneMonth};
+  // Tightest per-request window (1m). Chart TFs use larger chunks via upstox_history_unit.
   caps.max_historical_lookback_days = 28;
   caps.rate_limit_per_second = 0;  // ~30/min enforced in loader
   return caps;

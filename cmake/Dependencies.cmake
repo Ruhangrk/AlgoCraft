@@ -78,6 +78,9 @@ find_package(OpenSSL REQUIRED)
 # --- libcurl (Upstox REST; Thread 4 / persistence path only) ---
 find_package(CURL REQUIRED)
 
+# --- zlib (gunzip Upstox complete.csv.gz for instrument ingest) ---
+find_package(ZLIB REQUIRED)
+
 # --- ASIO (standalone; required by Crow) ---
 FetchContent_Declare(
   asio

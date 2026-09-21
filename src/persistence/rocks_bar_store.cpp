@@ -60,7 +60,7 @@ void RocksBarStore::put_session(std::string_view ticker, BarResolution resolutio
   if (ticker.empty() || !date.ok()) {
     throw std::invalid_argument("put_session requires ticker and date");
   }
-  const auto key = make_session_key(ticker, resolution, date);
+  const auto key = make_bar_blob_key(ticker, resolution, date);
   const auto value = pack_session_bars(bars);
   rocksdb::WriteOptions wo;
   wo.sync = true;
@@ -75,7 +75,7 @@ std::optional<std::vector<BarEvent>> RocksBarStore::get_session(std::string_view
                                                                 SessionDate date,
                                                                 SymbolId symbol_id) const {
   ensure_open();
-  const auto key = make_session_key(ticker, resolution, date);
+  const auto key = make_bar_blob_key(ticker, resolution, date);
   std::string value;
   const auto st = impl_->db->Get(rocksdb::ReadOptions(), key, &value);
   if (st.IsNotFound()) {
@@ -102,8 +102,8 @@ std::vector<SessionDate> RocksBarStore::list_sessions(std::string_view ticker,
   prefix.append(bar_resolution_code(resolution));
   prefix.push_back('|');
 
-  const auto start = from.ok() ? make_session_key(ticker, resolution, from) : prefix;
-  const auto end = to.ok() ? make_session_key(ticker, resolution, to) : std::string{};
+  const auto start = from.ok() ? make_bar_blob_key(ticker, resolution, from) : prefix;
+  const auto end = to.ok() ? make_bar_blob_key(ticker, resolution, to) : std::string{};
 
   std::unique_ptr<rocksdb::Iterator> it{impl_->db->NewIterator(rocksdb::ReadOptions())};
   std::vector<SessionDate> out;
@@ -119,7 +119,7 @@ std::vector<SessionDate> RocksBarStore::list_sessions(std::string_view ticker,
     if (pos == std::string::npos || pos + 1 >= key.size()) {
       continue;
     }
-    out.push_back(SessionDate::from_iso(key.substr(pos + 1)));
+    out.push_back(session_date_from_period(key.substr(pos + 1)));
   }
   if (!it->status().ok()) {
     throw std::runtime_error("rocksdb iterate failed: " + it->status().ToString());

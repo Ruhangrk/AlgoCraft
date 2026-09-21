@@ -22,6 +22,9 @@ struct BorrowOutcome {
 class WorkbookManager {
 public:
   WorkbookId create(UserId user_id, std::string name, Capital initial_capital);
+  // Seed an in-memory book at a known id (e.g. SQLite workbook row). No Created event.
+  OpResult adopt(WorkbookId id, UserId user_id, std::string name, Capital main_capital,
+                 Capital available_capital);
   OpResult add_capital(WorkbookId id, Capital amount);
   BorrowOutcome borrow_capital(WorkbookId id, Capital amount);
   OpResult return_capital(WorkbookId id, BorrowId borrow_id, Capital final_amount);

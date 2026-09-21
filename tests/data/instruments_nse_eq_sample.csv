@@ -1,0 +1,7 @@
+"instrument_key","exchange_token","tradingsymbol","name","last_price","expiry","strike","tick_size","lot_size","instrument_type","option_type","exchange"
+"NSE_EQ|INE009A01021","1594","INFY","INFOSYS LIMITED","1051.4","","","0.1","1","EQUITY","","NSE_EQ"
+"NSE_EQ|INE002A01018","2885","RELIANCE","RELIANCE INDUSTRIES LTD","1226.4","","","0.1","1","EQUITY","","NSE_EQ"
+"NSE_EQ|INE467B01029","11536","TCS","TATA CONSULTANCY SERV LT","2105.0","","","0.1","1","EQUITY","","NSE_EQ"
+"NSE_EQ|INE040A01034","1333","HDFCBANK","HDFC BANK LTD","731.0","","","0.05","1","EQUITY","","NSE_EQ"
+"NSE_EQ|IN2920250163","758718","749RJ35","SDL RJ 7.49% 2035","0","","","0.01","100","EQUITY","","NSE_EQ"
+"NSE_EQ|IN2920250171","758723","757RJ43","SDL RJ 7.57% 2043","0","","","0.01","100","EQUITY","","NSE_EQ"

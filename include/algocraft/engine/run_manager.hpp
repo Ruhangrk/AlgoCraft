@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@ struct RunConfig {
   UserId user_id{};
   std::string workbook_name{"phase4"};
   Capital workbook_capital{Capital::from_paise(10'00'00'000'00)};
+  // When set, run under this workbook (must already be adopt()'d or create()'d in books).
+  std::optional<WorkbookId> existing_workbook_id{};
   std::vector<std::string> tickers{};
   std::vector<std::string> strategies{"ema_crossover", "vwap_reversion", "consecutive_up_clip"};
   Timestamp from{};

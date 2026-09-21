@@ -35,6 +35,8 @@ public:
 private:
   [[nodiscard]] Timestamp now() const;
   SymbolId require_symbol(std::string_view ticker) const;
+  void ensure_chart_available(std::string_view ticker, Timestamp from, Timestamp to,
+                              BarResolution resolution);
   void seal_stale_live(std::string_view ticker, BarResolution resolution, SessionDate today,
                        bool today_is_session);
   void fill_closed(std::string_view ticker, SessionDate from, SessionDate to,

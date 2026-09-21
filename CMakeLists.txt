@@ -25,6 +25,7 @@ add_library(algocraft
   src/api/market_routes.cpp
   src/api/workbook_routes.cpp
   src/backtest/backtest_runner.cpp
+  src/backtest/backtest_service.cpp
   src/container/container_manager.cpp
   src/container/trading_container.cpp
   src/domain/symbol_table.cpp
@@ -40,10 +41,13 @@ add_library(algocraft
   src/market_data/data_fetch_service.cpp
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp
+  src/market_data/instrument_ingest.cpp
   src/market_data/upstox_provider.cpp
   src/persistence/activity_repository.cpp
   src/persistence/async_logger.cpp
+  src/persistence/backtest_repository.cpp
   src/persistence/coverage_repository.cpp
+  src/persistence/instrument_repository.cpp
   src/persistence/migration_runner.cpp
   src/persistence/packed_bars.cpp
   src/persistence/rocks_bar_store.cpp
@@ -79,6 +83,7 @@ target_link_libraries(algocraft
     spdlog::spdlog
     OpenSSL::Crypto
     CURL::libcurl
+    ZLIB::ZLIB
     Crow::Crow
 )
 

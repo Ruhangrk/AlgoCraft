@@ -9,6 +9,8 @@
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/market_data/dummy_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
+#include "algocraft/market_data/instrument_ingest.hpp"
+#include "algocraft/persistence/instrument_repository.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
 #include "algocraft/persistence/coverage_repository.hpp"
 #include "algocraft/persistence/rocks_bar_store.hpp"
@@ -100,6 +102,25 @@ int run_db_smoke(const char* db_path) {
   }
   db.close();
   return db.is_open() ? 1 : 0;
+}
+
+// algocraft_engine instruments ingest [source] [db_path]
+// source defaults to Upstox complete.csv.gz URL; may be a local .csv / .csv.gz path.
+int run_instruments_ingest(const char* source, const char* db_path) {
+  algocraft::PersistenceConfig cfg;
+  cfg.db_path = db_path;
+  cfg.migrations_dir = ALGOCRAFT_MIGRATIONS_DIR;
+
+  algocraft::SqliteDatabase db(cfg);
+  db.open();
+  db.migrate();
+  algocraft::InstrumentRepository repo(db.handle());
+  spdlog::info("instruments ingest source={}", source);
+  const auto stats = algocraft::ingest_upstox_instruments(repo, source);
+  spdlog::info("instruments read={} kept={} skipped={} active={}", stats.rows_read,
+               stats.rows_kept, stats.rows_skipped, repo.count_active());
+  db.close();
+  return 0;
 }
 
 int run_phase0_smoke() {
@@ -352,6 +373,16 @@ int main(int argc, char** argv) {
   if (argc >= 2 && std::strcmp(argv[1], "db") == 0) {
     const char* db_path = (argc >= 3) ? argv[2] : ALGOCRAFT_DB_PATH;
     return run_db_smoke(db_path);
+  }
+  if (argc >= 2 && std::strcmp(argv[1], "instruments") == 0) {
+    if (argc >= 3 && std::strcmp(argv[2], "ingest") == 0) {
+      const char* source =
+          (argc >= 4) ? argv[3] : algocraft::kUpstoxInstrumentsUrl.data();
+      const char* db_path = (argc >= 5) ? argv[4] : ALGOCRAFT_DB_PATH;
+      return run_instruments_ingest(source, db_path);
+    }
+    spdlog::error("usage: algocraft_engine instruments ingest [source] [db_path]");
+    return 1;
   }
   if (argc >= 2 && std::strcmp(argv[1], "serve") == 0) {
     const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;

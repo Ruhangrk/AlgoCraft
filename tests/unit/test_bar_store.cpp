@@ -22,11 +22,12 @@ std::filesystem::path make_temp_dir() {
   return dir;
 }
 
-algocraft::BarEvent sample_bar(algocraft::SymbolId id, std::int64_t ns, std::int64_t paise) {
+algocraft::BarEvent sample_bar(algocraft::SymbolId id, std::int64_t ns, std::int64_t paise,
+                               algocraft::BarResolution resolution = algocraft::BarResolution::OneMin) {
   algocraft::BarEvent bar{};
   bar.symbol_id = id;
   bar.timestamp = algocraft::Timestamp::from_nanos(ns);
-  bar.resolution = algocraft::BarResolution::OneMin;
+  bar.resolution = resolution;
   bar.open = algocraft::Price::from_paise(paise);
   bar.high = algocraft::Price::from_paise(paise + 10);
   bar.low = algocraft::Price::from_paise(paise - 10);
@@ -104,6 +105,66 @@ TEST(RocksBarStore, PutGetListAndEmptySession) {
 
   store.close();
   EXPECT_FALSE(store.is_open());
+  std::error_code ec;
+  std::filesystem::remove_all(dir, ec);
+}
+
+TEST(BarResolution, ChartCodesAndMonth) {
+  EXPECT_EQ(algocraft::bar_resolution_code(algocraft::BarResolution::OneDay), "1d");
+  EXPECT_EQ(algocraft::bar_resolution_code(algocraft::BarResolution::OneWeek), "1w");
+  EXPECT_EQ(algocraft::bar_resolution_code(algocraft::BarResolution::OneMonth), "1M");
+  EXPECT_TRUE(algocraft::is_chart_resolution(algocraft::BarResolution::OneDay));
+  EXPECT_TRUE(algocraft::is_chart_resolution(algocraft::BarResolution::OneWeek));
+  EXPECT_TRUE(algocraft::is_chart_resolution(algocraft::BarResolution::OneMonth));
+  EXPECT_FALSE(algocraft::is_chart_resolution(algocraft::BarResolution::OneMin));
+  EXPECT_EQ(algocraft::bar_resolution_from_code("1M"), algocraft::BarResolution::OneMonth);
+  EXPECT_FALSE(algocraft::bar_resolution_from_code("1y").has_value());
+}
+
+TEST(RocksBarStore, ChartDailyYearBlobRoundTrip) {
+  const auto dir = make_temp_dir();
+  algocraft::RocksBarStore store(dir);
+  store.open();
+
+  const auto period = algocraft::SessionDate::from_iso("2026-03-15");  // any day in year
+  EXPECT_EQ(algocraft::make_bar_blob_key("INFY", algocraft::BarResolution::OneDay, period),
+            "INFY|1d|2026");
+  EXPECT_EQ(algocraft::make_bar_blob_key("INFY", algocraft::BarResolution::OneWeek, period),
+            "INFY|1w|2026");
+  EXPECT_EQ(algocraft::make_bar_blob_key("INFY", algocraft::BarResolution::OneMonth, period),
+            "INFY|1M|2026");
+
+  std::vector<algocraft::BarEvent> bars{
+      sample_bar(1, 1'000, 100000, algocraft::BarResolution::OneDay),
+      sample_bar(1, 2'000, 101000, algocraft::BarResolution::OneDay),
+  };
+  store.put_session("INFY", algocraft::BarResolution::OneDay, period, bars);
+
+  // Same year key via a different calendar day.
+  const auto same_year = algocraft::SessionDate::from_iso("2026-12-01");
+  ASSERT_TRUE(store.has_session("INFY", algocraft::BarResolution::OneDay, same_year));
+  auto got = store.get_session("INFY", algocraft::BarResolution::OneDay, same_year, 1);
+  ASSERT_TRUE(got);
+  ASSERT_EQ(got->size(), 2u);
+  EXPECT_EQ(got->front().resolution, algocraft::BarResolution::OneDay);
+  EXPECT_EQ(got->front().open.paise(), 100000);
+  EXPECT_EQ(got->back().close.paise(), 101005);
+
+  // 1m path still uses full session date — no collision with year blob.
+  const auto session = algocraft::SessionDate::from_iso("2026-09-11");
+  store.put_session("INFY", algocraft::BarResolution::OneMin, session,
+                    {sample_bar(1, 50, 20000)});
+  EXPECT_EQ(algocraft::make_session_key("INFY", algocraft::BarResolution::OneMin, session),
+            "INFY|1m|2026-09-11");
+  ASSERT_TRUE(store.has_session("INFY", algocraft::BarResolution::OneMin, session));
+
+  const auto years = store.list_sessions("INFY", algocraft::BarResolution::OneDay, {}, {});
+  ASSERT_EQ(years.size(), 1u);
+  EXPECT_EQ(years[0].year(), 2026);
+  EXPECT_EQ(years[0].month(), 1);
+  EXPECT_EQ(years[0].day(), 1);
+
+  store.close();
   std::error_code ec;
   std::filesystem::remove_all(dir, ec);
 }

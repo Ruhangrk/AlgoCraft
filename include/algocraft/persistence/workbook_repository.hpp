@@ -42,6 +42,9 @@ public:
   [[nodiscard]] bool can_access(std::int64_t workbook_id, std::int64_t user_id,
                                 bool is_admin) const;
 
+  // Sets available_paise for an active workbook. Returns false if missing.
+  [[nodiscard]] bool set_available(std::int64_t workbook_id, std::int64_t available_paise);
+
 private:
   sqlite3* db_{nullptr};
 };

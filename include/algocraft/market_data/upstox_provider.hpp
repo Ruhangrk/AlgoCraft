@@ -3,6 +3,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "algocraft/domain/symbol.hpp"
 #include "algocraft/market_data/data_provider.hpp"
@@ -22,6 +24,19 @@ struct UpstoxConfig {
   [[nodiscard]] bool ok() const { return !access_token.empty(); }
 };
 
+// Maps AlgoCraft resolution → Upstox v3 path unit/interval + AlgoCraft chunk window.
+struct UpstoxHistoryUnit {
+  std::string_view unit;  // minutes | days | weeks | months
+  int interval{1};
+  int max_window_calendar_days{28};
+};
+
+[[nodiscard]] UpstoxHistoryUnit upstox_history_unit(BarResolution resolution);
+
+// Split [from, to] into inclusive chunks that each fit max_window_calendar_days.
+[[nodiscard]] std::vector<std::pair<Timestamp, Timestamp>> upstox_chunk_range(
+    Timestamp from, Timestamp to, int max_window_calendar_days);
+
 class UpstoxHistoricalLoader final : public HistoricalDataLoader {
 public:
   UpstoxHistoricalLoader(UpstoxConfig config, const SymbolTable* symbols);
@@ -37,6 +52,8 @@ public:
 private:
   [[nodiscard]] std::string instrument_key_for(SymbolId id) const;
   [[nodiscard]] std::string http_get(std::string_view url) const;
+  [[nodiscard]] std::string build_history_url(std::string_view encoded_key, BarResolution resolution,
+                                              Timestamp from, Timestamp to) const;
 
   UpstoxConfig config_{};
   const SymbolTable* symbols_{nullptr};

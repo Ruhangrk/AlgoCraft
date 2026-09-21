@@ -174,3 +174,64 @@ TEST(ActivityRepository, CapitalEventsMatchBorrowAndReturn) {
   ASSERT_NE(return_it, events.end());
   EXPECT_EQ(return_it->second, result.returned.paise());
 }
+
+TEST(ActivityRepository, PersistRunUnderExistingWorkbookId) {
+  Fixture fix;
+  algocraft::ActivityRepository repo(fix.db.handle());
+
+  // Pre-create SQLite workbook id 99 (API path wid).
+  {
+    sqlite3_stmt* st = nullptr;
+    ASSERT_EQ(sqlite3_prepare_v2(fix.db.handle(),
+                                 "INSERT INTO users (id, username, password_hash, role) "
+                                 "VALUES (9, 'bind-user', 'unset', 'user')",
+                                 -1, &st, nullptr),
+              SQLITE_OK);
+    ASSERT_EQ(sqlite3_step(st), SQLITE_DONE);
+    sqlite3_finalize(st);
+  }
+  {
+    sqlite3_stmt* st = nullptr;
+    ASSERT_EQ(sqlite3_prepare_v2(fix.db.handle(),
+                                 "INSERT INTO workbooks (id, user_id, name, main_capital_paise, "
+                                 "available_paise) VALUES (99, 9, 'bound_wb', 10000000, 10000000)",
+                                 -1, &st, nullptr),
+              SQLITE_OK);
+    ASSERT_EQ(sqlite3_step(st), SQLITE_DONE);
+    sqlite3_finalize(st);
+  }
+
+  algocraft::SymbolTable symbols;
+  symbols.intern({.ticker = "RELIANCE"}, {});
+
+  auto cached = std::make_unique<algocraft::CachedProvider>(
+      std::make_unique<algocraft::CsvProvider>(ALGOCRAFT_DATA_DIR, &symbols), fix.bars, *fix.cov,
+      symbols);
+  algocraft::DataSourceRegistry registry;
+  registry.register_provider(std::move(cached));
+
+  algocraft::StrategyRegistry strategies;
+  algocraft::register_all_strategies(strategies);
+
+  const auto wb_id = algocraft::WorkbookId::from_u64(99);
+  algocraft::WorkbookManager books;
+  ASSERT_TRUE(books
+                  .adopt(wb_id, algocraft::UserId::from_u64(9), "bound_wb",
+                         algocraft::Capital::from_paise(1'00'000'00),
+                         algocraft::Capital::from_paise(1'00'000'00))
+                  .ok);
+
+  auto cfg = empty_run_config();
+  cfg.user_id = algocraft::UserId::from_u64(9);
+  cfg.workbook_name = "bound_wb";
+  cfg.existing_workbook_id = wb_id;
+
+  algocraft::RunManager mgr;
+  const auto result = mgr.execute(cfg, registry, strategies, books, symbols, &repo);
+  EXPECT_EQ(uuid_low(result.workbook_id), 99);
+
+  const auto runs = repo.list_runs(99);
+  ASSERT_EQ(runs.size(), 1u);
+  EXPECT_EQ(runs[0].workbook_id, 99);
+  EXPECT_TRUE(repo.list_runs(1).empty());
+}

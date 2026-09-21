@@ -104,7 +104,7 @@ public:
 
   std::vector<algocraft::BarEvent> load_bars(algocraft::SymbolId, algocraft::Timestamp from,
                                              algocraft::Timestamp to,
-                                             algocraft::BarResolution) override {
+                                             algocraft::BarResolution resolution) override {
     ++calls;
     std::vector<algocraft::BarEvent> out;
     for (const auto& [_, bars] : days) {
@@ -115,7 +115,9 @@ public:
         if (to.nanos() != 0 && bar.timestamp > to) {
           continue;
         }
-        out.push_back(bar);
+        auto copy = bar;
+        copy.resolution = resolution;
+        out.push_back(copy);
       }
     }
     return out;
@@ -370,6 +372,53 @@ TEST(DataFetchService, EmptySessionStoredAndLeftExtendStops) {
                                       algocraft::SessionDate::from_iso("2026-08-28")));
   expect_contiguous_keys(stack.bars, "AAA", *row->first_date, *row->last_date);
   EXPECT_NE(row->last_date->iso(), "2026-09-02");
+  std::error_code ec;
+  std::filesystem::remove_all(dir, ec);
+}
+
+TEST(DataFetchService, ChartDailyEnsureSecondCallSkipsVendor) {
+  const auto dir = make_temp_dir();
+  CacheStack stack(dir);
+
+  algocraft::SymbolTable symbols;
+  const auto id = symbols.intern({.ticker = "INFY"}, {});
+  ScriptedLoader loader;
+  // Daily bars in 2025 and 2026 (timestamps at IST midnight-ish via 9:15 helper is fine).
+  loader.days[algocraft::SessionDate::from_iso("2025-06-15")] = {
+      bar_at(id, 2025, 6, 15, 0, 150000)};
+  loader.days[algocraft::SessionDate::from_iso("2026-01-10")] = {
+      bar_at(id, 2026, 1, 10, 0, 160000)};
+  loader.days[algocraft::SessionDate::from_iso("2026-03-01")] = {
+      bar_at(id, 2026, 3, 1, 0, 161000)};
+
+  algocraft::DataFetchService fetch(stack.bars, stack.cov(), loader, symbols, "scripted");
+  fetch.set_now(ist_ns(2026, 3, 15, 12, 0));
+
+  const auto from = ist_ns(2025, 6, 1, 0, 0);
+  const auto to = ist_ns(2026, 3, 10, 23, 59);
+  fetch.ensure_data_available("INFY", from, to, algocraft::BarResolution::OneDay);
+  const auto first_fetches = fetch.vendor_fetches();
+  EXPECT_EQ(first_fetches, 2u);  // years 2025 and 2026
+  EXPECT_EQ(loader.calls, 2);
+  EXPECT_TRUE(stack.bars.has_session("INFY", algocraft::BarResolution::OneDay,
+                                     algocraft::SessionDate::from_iso("2025-01-01")));
+  EXPECT_TRUE(stack.bars.has_session("INFY", algocraft::BarResolution::OneDay,
+                                     algocraft::SessionDate::from_iso("2026-12-01")));
+
+  const auto cov = stack.cov().get("INFY", "1d");
+  ASSERT_TRUE(cov);
+  EXPECT_EQ(cov->first_date->year(), 2025);
+  EXPECT_EQ(cov->last_date->year(), 2026);
+
+  fetch.ensure_data_available("INFY", from, to, algocraft::BarResolution::OneDay);
+  EXPECT_EQ(fetch.vendor_fetches(), first_fetches);
+  EXPECT_EQ(loader.calls, 2);
+
+  const auto bars =
+      fetch.load_bars(id, from, to, algocraft::BarResolution::OneDay);
+  ASSERT_EQ(bars.size(), 3u);
+  EXPECT_EQ(bars.front().resolution, algocraft::BarResolution::OneDay);
+
   std::error_code ec;
   std::filesystem::remove_all(dir, ec);
 }

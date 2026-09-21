@@ -156,4 +156,18 @@ bool WorkbookRepository::can_access(std::int64_t workbook_id, std::int64_t user_
   return is_admin || owner->user_id == user_id;
 }
 
+bool WorkbookRepository::set_available(std::int64_t workbook_id, std::int64_t available_paise) {
+  if (available_paise < 0) {
+    return false;
+  }
+  Stmt st(db_,
+          "UPDATE workbooks SET available_paise=? WHERE id=? AND deleted_at IS NULL");
+  sqlite3_bind_int64(st.s, 1, available_paise);
+  sqlite3_bind_int64(st.s, 2, workbook_id);
+  if (sqlite3_step(st.s) != SQLITE_DONE) {
+    throw std::runtime_error(std::string("workbook set_available: ") + sqlite3_errmsg(db_));
+  }
+  return sqlite3_changes(db_) > 0;
+}
+
 }  // namespace algocraft

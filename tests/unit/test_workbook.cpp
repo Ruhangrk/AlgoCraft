@@ -127,3 +127,22 @@ TEST(WorkbookManager, CannotReturnWhileContainersAllocated) {
   ASSERT_TRUE(ledger->give_back(algocraft::ContainerId::from(1), Capital::from_paise(40'000'00)).ok);
   EXPECT_TRUE(mgr.return_capital(id, borrow.id, ledger->settlement()).ok);
 }
+
+TEST(WorkbookManager, AdoptSeedsKnownIdWithoutCreatedEvent) {
+  WorkbookManager mgr;
+  const auto id = algocraft::WorkbookId::from_u64(42);
+  ASSERT_TRUE(mgr
+                  .adopt(id, user(7), "bound", Capital::from_paise(1'00'000'00),
+                         Capital::from_paise(80'000'00))
+                  .ok);
+  EXPECT_FALSE(mgr.adopt(id, user(7), "again", Capital::from_paise(1), Capital::from_paise(1)).ok);
+
+  const auto book = mgr.get_workbook(id);
+  ASSERT_TRUE(book.has_value());
+  EXPECT_EQ(book->main_capital.paise(), 1'00'000'00);
+  EXPECT_EQ(book->available_capital.paise(), 80'000'00);
+  EXPECT_TRUE(mgr.events(id).empty());
+
+  const auto created = mgr.create(user(7), "next", Capital::from_paise(1));
+  EXPECT_EQ(algocraft::WorkbookId::from_u64(43), created);
+}

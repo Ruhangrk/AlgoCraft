@@ -108,6 +108,12 @@ void DataFetchService::ensure_data_available(std::string_view ticker, Timestamp 
     to = now_ts;
   }
 
+  // Chart TFs (1d/1w/1M): year blobs, no session-day / live-today logic.
+  if (is_chart_resolution(resolution)) {
+    ensure_chart_available(ticker, from, to, resolution);
+    return;
+  }
+
   const auto today = SessionDate::from_ist(now_ts);
   const bool today_is_session = is_nse_session_day(today);
   const auto closed_end = last_closed_session(today);
@@ -138,6 +144,69 @@ void DataFetchService::ensure_data_available(std::string_view ticker, Timestamp 
       today_is_session && to_d >= today && (from.nanos() == 0 || SessionDate::from_ist(from) <= today);
   if (want_today) {
     refresh_today(ticker, today, resolution);
+  }
+}
+
+void DataFetchService::ensure_chart_available(std::string_view ticker, Timestamp from, Timestamp to,
+                                              BarResolution resolution) {
+  const auto now_ts = now();
+  if (to.nanos() == 0 || to > now_ts) {
+    to = now_ts;
+  }
+  const auto to_d = SessionDate::from_ist(to);
+  if (!to_d.ok()) {
+    return;
+  }
+
+  int from_year = to_d.year();
+  if (from.nanos() != 0) {
+    const auto from_d = SessionDate::from_ist(from);
+    if (from_d.ok()) {
+      from_year = from_d.year();
+    }
+  } else {
+    // Open-ended from: only backfill years already in coverage, else current year.
+    const auto row = coverage_->get(ticker, std::string{bar_resolution_code(resolution)});
+    if (row && row->first_date) {
+      from_year = row->first_date->year();
+    }
+  }
+  if (from_year > to_d.year()) {
+    return;
+  }
+
+  const auto ticker_s = std::string{ticker};
+  const auto symbol_id = require_symbol(ticker_s);
+  const auto code = std::string{bar_resolution_code(resolution)};
+
+  for (int year = from_year; year <= to_d.year(); ++year) {
+    const auto period = SessionDate::from_parts(year, 1, 1);
+    if (store_->has_session(ticker_s, resolution, period)) {
+      continue;
+    }
+
+    const auto year_from = day_start(SessionDate::from_parts(year, 1, 1));
+    auto year_to = day_end(SessionDate::from_parts(year, 12, 31));
+    if (year_to > now_ts) {
+      year_to = now_ts;
+    }
+    if (year_from > year_to) {
+      continue;
+    }
+
+    ++vendor_fetches_;
+    auto bars = vendor_->load_bars(symbol_id, year_from, year_to, resolution);
+    // Always write the year key (possibly empty) so a second ensure does not re-hit vendor.
+    store_->put_session(ticker_s, resolution, period, bars);
+
+    auto row = coverage_->get(ticker_s, code).value_or(CoverageRow{});
+    if (!row.first_date || period < *row.first_date) {
+      row.first_date = period;
+    }
+    if (!row.last_date || period > *row.last_date) {
+      row.last_date = period;
+    }
+    persist_coverage(ticker_s, resolution, row);
   }
 }
 

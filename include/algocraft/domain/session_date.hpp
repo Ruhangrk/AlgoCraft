@@ -58,16 +58,54 @@ struct SessionDate {
   constexpr auto operator<=>(const SessionDate&) const = default;
 };
 
-inline std::string make_session_key(std::string_view ticker, BarResolution resolution,
-                                    SessionDate date) {
+// Rocks period suffix: 1m (and other intraday) → YYYY-MM-DD session; chart D/W/M → YYYY year blob.
+inline std::string bar_blob_period(BarResolution resolution, SessionDate date) {
+  if (!date.ok()) {
+    throw std::invalid_argument("bar blob period requires date");
+  }
+  if (is_chart_resolution(resolution)) {
+    char buf[8];
+    std::snprintf(buf, sizeof(buf), "%04d", date.year());
+    return buf;
+  }
+  return date.iso();
+}
+
+inline SessionDate session_date_from_period(std::string_view period) {
+  if (period.size() == 4) {
+    int year = 0;
+    for (char c : period) {
+      if (c < '0' || c > '9') {
+        throw std::invalid_argument("bad bar blob period: " + std::string{period});
+      }
+      year = year * 10 + (c - '0');
+    }
+    if (year < 1970) {
+      throw std::invalid_argument("bad bar blob period: " + std::string{period});
+    }
+    return SessionDate::from_parts(year, 1, 1);
+  }
+  return SessionDate::from_iso(period);
+}
+
+// Key: {ticker}|{resolution}|{period} — e.g. RELIANCE|1m|2026-09-11 or RELIANCE|1d|2026
+inline std::string make_bar_blob_key(std::string_view ticker, BarResolution resolution,
+                                     SessionDate date) {
   std::string key;
+  const auto period = bar_blob_period(resolution, date);
   key.reserve(ticker.size() + 16);
   key.append(ticker);
   key.push_back('|');
   key.append(bar_resolution_code(resolution));
   key.push_back('|');
-  key.append(date.iso());
+  key.append(period);
   return key;
+}
+
+// Alias kept for existing 1m call sites / tests.
+inline std::string make_session_key(std::string_view ticker, BarResolution resolution,
+                                    SessionDate date) {
+  return make_bar_blob_key(ticker, resolution, date);
 }
 
 }  // namespace algocraft

@@ -15,6 +15,7 @@ add_executable(algocraft_tests
   unit/test_indicators.cpp
   unit/test_execution.cpp
   unit/test_backtest.cpp
+  unit/test_backtest_service.cpp
   unit/test_consecutive_up_clip.cpp
   unit/test_workbook.cpp
   unit/test_portfolio.cpp
@@ -24,6 +25,8 @@ add_executable(algocraft_tests
   unit/test_run.cpp
   unit/test_activity_repo.cpp
   unit/test_auth.cpp
+  unit/test_instruments.cpp
+  unit/test_upstox.cpp
 )
 
 target_link_libraries(algocraft_tests

@@ -28,7 +28,7 @@ On disk:
 | Path | Role |
 |------|------|
 | `data/algocraft.db` | SQLite (users, workbooks, runs, fills, coverage, …) |
-| `data/bars/` | RocksDB session blobs `{ticker}\|1m\|YYYY-MM-DD` |
+| `data/bars/` | RocksDB blobs: 1m `{ticker}\|1m\|YYYY-MM-DD`; chart `{ticker}\|1d\|YYYY` (also 1w/1M) |
 | `data/1min/*.csv` | Offline CSV vendor dump (CsvProvider) |
 | `migrations/schema_*.sql` | Ordered schema upgrades |
 | `~/.config/upstox/config.json` | Upstox Bearer token (never in repo) |
@@ -45,6 +45,7 @@ flowchart TB
   MAIN -->|run| RM["RunManager Phase-4 style<br/>DefaultRouter + persist"]
   MAIN -->|serve| HTTP["HttpServer :8080<br/>Auth + workbooks + ensure + runs"]
   MAIN -->|db| DBSmoke["SqliteDatabase open/migrate"]
+  MAIN -->|instruments ingest| INGEST["InstrumentRepository<br/>Upstox complete.csv.gz"]
 ```
 
 | CLI | Code path |
@@ -54,6 +55,8 @@ flowchart TB
 | `./algocraft_engine run [dir]` | `RunManager::execute` + `ActivityRepository` |
 | `./algocraft_engine serve [dir] [port]` | `HttpServer` (Upstox if token else CSV) |
 | `./algocraft_engine db [path]` | migrate smoke |
+| `./algocraft_engine instruments ingest [source] [db]` | parse/filter NSE EQ → SQLite |
+| `./algocraft_engine instruments ingest [source] [db]` | Upstox complete.csv.gz → NSE EQ catalog |
 
 ---
 
@@ -146,8 +149,11 @@ Key files: `data_fetch_service.cpp`, `rocks_bar_store.cpp`, `packed_bars.cpp`, `
 
 ```mermaid
 flowchart TB
-  START["RunManager::execute"] --> WB["WorkbookManager<br/>create + borrow capital"]
-  WB --> LEDGER["PortfolioLedger"]
+  START["RunManager::execute"] --> WB{"existing_workbook_id?"}
+  WB -->|yes| ADOPT["Use adopt()'d book<br/>borrow capital"]
+  WB -->|no| CREATE["WorkbookManager.create<br/>+ borrow capital"]
+  ADOPT --> LEDGER["PortfolioLedger"]
+  CREATE --> LEDGER
   START --> ROUTER["DefaultRouter::start"]
   ROUTER --> EVAL["Backtest eval window<br/>via DataSourceRegistry"]
   EVAL --> WIN["Winners → ContainerManager.create<br/>REAL containers"]
@@ -164,6 +170,7 @@ flowchart TB
   STOP --> PERS["ActivityRepository.persist_run<br/>SQLite workbook/run/containers/fills/signals"]
 ```
 
+**HTTP bind:** `POST /workbooks/{wid}/runs/start` loads that SQLite workbook via `WorkbookManager::adopt`, sets `RunConfig::existing_workbook_id`, then persists under **path `wid`**. CLI `run` still creates a fresh in-memory workbook.
 ### 4.4 One bar inside a container (hot path intent)
 
 ```mermaid
@@ -199,9 +206,10 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `api/http_server.hpp/.cpp` | Crow listen/start/stop; registers route modules | `api::register_*_routes` |
 | `api/http_helpers.hpp/.cpp` | CORS app type, JSON helpers, `require_user` / `require_workbook` | Crow, `AuthService`, `WorkbookRepository` |
 | `api/auth_routes.hpp/.cpp` | `/auth/register`, `/auth/login`, `/auth/me` | `AuthService` |
-| `api/market_routes.hpp/.cpp` | `/strategies`, `/routing-algos`, `/market-data/ensure` | registries + `DataFetchService` |
-| `api/workbook_routes.hpp/.cpp` | `/workbooks*`, `/ws/workbooks*`, runs/start | repos + `RunManager` |
-| `persistence/workbook_repository.hpp/.cpp` | SQLite workbook create/list/find/access checks used by the API | `sqlite3` |
+| `api/market_routes.hpp/.cpp` | `/strategies`, `/routing-algos`, `/instruments*`, `/instruments/.../ohlcv`, `/market-data/ensure` | registries + `DataFetchService` + `InstrumentRepository` |
+| `api/workbook_routes.hpp/.cpp` | `/workbooks*`, `/ws/workbooks*`, runs/start, backtests/start|list|get | repos + `RunManager` + `BacktestService` |
+| `persistence/instrument_repository.hpp/.cpp` | SQLite instruments upsert/search/count | sqlite3 |
+| `market_data/instrument_ingest.*` | Download/gunzip/parse Upstox complete.csv; NSE_EQ+INE filter | curl, zlib, InstrumentRepository |
 | `auth/auth_service.hpp/.cpp` | Register/login; PBKDF2 password hash; HS256 JWT | `SqliteDatabase` (`users` table) |
 
 ### 5.3 Engine
@@ -270,7 +278,7 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `market_data/null_live_feed.hpp` | No-op live feed | Placeholder Phase 5.9 |
 | `market_data/data_source_registry.*` | Active provider by name | Engine / HTTP |
 | `market_data/csv_provider.*` | CSV historical loader | Files under `data/1min/` |
-| `market_data/upstox_provider.*` | Upstox v3 REST candles; ISIN map; rate limit | HTTPS + token file |
+| `market_data/upstox_provider.*` | Upstox v3 REST candles (1m + 1d/1w/1M); ISIN map; rate limit; chunk windows | HTTPS + token file |
 | `market_data/dummy_provider.*` | Phase0 dummy | Phase0 |
 | `market_data/data_fetch_service.*` | Coverage logic A/B/C; Rocks then SQLite | `BarStore`, `CoverageRepository`, vendor loader |
 | `market_data/cached_provider.*` | Vendor wrapped so `historical_loader()` is the fetch service | Used by `main` for all real runs |
@@ -309,6 +317,8 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 |------|----------|----------|
 | `backtest/backtest_runner.*` | Single-symbol strategy replay + stats | Registry + strategies |
 | `backtest/backtest_result.hpp` | Result DTO | Runner / reporting |
+| `backtest/backtest_service.*` | Ensure 1m → runner → persist + capital | fetch, repos, runner |
+| `persistence/backtest_repository.*` | `backtests` insert/find/list | sqlite3 |
 
 ### 5.12 Migrations + tools
 
@@ -318,6 +328,8 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `migrations/schema_002.sql` | `symbol_data_coverage` |
 | `migrations/schema_003.sql` | users, workbooks, runs, containers, fills, capital events |
 | `migrations/schema_004.sql` | `strategy_signals`, `risk_rejections` |
+| `migrations/schema_005.sql` | `instruments` (NSE EQ catalog; ingest in S1b) |
+| `migrations/schema_006.sql` | `backtests` (manual backtest rows; HTTP S3c) |
 | `scripts/ensure_5_stocks.py` | Calls AlgoCraft `/market-data/ensure` (not Upstox directly) |
 | `scripts/dump_rocks_session.py` | Decode one RocksDB session to OHLCV text |
 | `postman/*` | Importable API collection + local env |
@@ -346,6 +358,8 @@ flowchart LR
     R5["GET .../runs|fills|containers|portfolio"]
     R6["POST /market-data/ensure"]
     R7["GET /strategies|/routing-algos"]
+    R8["GET /instruments?q=|/instruments/{ticker}"]
+    R9["GET /instruments/{ticker}/ohlcv"]
   end
 
   R1 --> AUTH
@@ -355,10 +369,34 @@ flowchart LR
   R5 --> ACT
   R6 --> DFS
   R7 --> STRAT & ROUTER
+  R8 --> INST
+  R9 --> DFS
 ```
 
-All of the above are implemented in **`src/api/http_server.cpp`** (one file). Auth logic in **`auth_service.cpp`**.
+All of the above are registered from **`src/api/http_server.cpp`** into Crow route modules (`auth_routes`, `market_routes`, `workbook_routes`). Auth logic in **`auth_service.cpp`**. JWT gate in **`http_helpers.cpp`**.
 
+### WebSocket auth
+
+Portfolio / containers sockets:
+
+- `/ws/workbooks/{wid}/portfolio`
+- `/ws/workbooks/{wid}/containers`
+
+Same JWT as REST. Pass either:
+
+1. `Authorization: Bearer <token>`, or  
+2. Query `?token=<jwt>` (handy when browser `WebSocket` cannot set headers)
+
+`onaccept` calls `require_user` then `WorkbookRepository::can_access`. Ownership failure → handshake rejected (no upgrade).
+
+### Known gaps (joint roadmap)
+
+| Gap | Notes |
+|---|---|
+| Instruments / OHLCV / backtest HTTP | S1–S3 |
+| Soft-delete DELETE routes | Columns exist; no DELETE API yet → S4 |
+| Events timeline API | Signals/rejections persist; no list API → S5 |
+| Phase 5.9 live paper tape | `NullLiveFeed` only — parked |
 ---
 
 ## 7. Storage connections
@@ -375,15 +413,18 @@ flowchart TB
     SIG[strategy_signals]
     REJ[risk_rejections]
     COV[symbol_data_coverage]
+    INST[instruments]
+    BT[backtests]
   end
 
   subgraph Rocks["data/bars"]
-    K["Key: TICKER|1m|YYYY-MM-DD<br/>Value: ACB1 packed bars"]
+    K["Key: TICKER\|1m\|YYYY-MM-DD or TICKER\|1d\|YYYY<br/>Value: ACB1 packed bars"]
   end
 
   AUTH["AuthService"] --> U
   ACT["ActivityRepository"] --> W & CE & RN & CT & F & SIG & REJ
   COVR["CoverageRepository"] --> COV
+  INSTREPO["InstrumentRepository"] --> INST
   COV -.->|"dates must exist as keys"| K
   RBS["RocksBarStore"] --> K
   DFS["DataFetchService"] --> COVR & RBS
@@ -431,7 +472,7 @@ flowchart TB
 2. `market_data/data_fetch_service.hpp` + PHASE5 market-data rules  
 3. `engine/run_manager.cpp` — one full run  
 4. `container/trading_container.cpp` — one bar  
-5. `api/http_server.cpp` — what the UI/Postman hits  
+5. `api/workbook_routes.cpp` (+ `auth_routes` / `market_routes`) — what the UI/Postman hits  
 6. `persistence/activity_repository.cpp` + `migrations/schema_003.sql`  
 
 When ARCHITECTURE.md and this file disagree, **this file + the `.cpp` files win** for “what runs today.”

@@ -100,6 +100,47 @@
             "method": "GET",
             "url": "{{baseUrl}}/routing-algos"
           }
+        },
+        {
+          "name": "Search instruments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/instruments?q=RELI&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["instruments"],
+              "query": [
+                { "key": "q", "value": "RELI" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Auth required. Cap limit at 50. Empty q returns []. Needs prior `instruments ingest`."
+          }
+        },
+        {
+          "name": "Get instrument",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/instruments/RELIANCE",
+            "description": "Auth required. 404 if unknown or inactive."
+          }
+        },
+        {
+          "name": "OHLCV chart candles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/instruments/INFY/ohlcv?resolution=1d&from=2026-01-01&to=2026-03-15",
+              "host": ["{{baseUrl}}"],
+              "path": ["instruments", "INFY", "ohlcv"],
+              "query": [
+                { "key": "resolution", "value": "1d", "description": "1d | 1w | 1M only" },
+                { "key": "from", "value": "2026-01-01" },
+                { "key": "to", "value": "2026-03-15" }
+              ]
+            },
+            "description": "Chart path only. Cold miss may hit Upstox once; warm is Rocks-only (vendor_fetches=0)."
+          }
         }
       ]
     },
@@ -197,6 +238,47 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/workbooks/{{workbook_id}}/containers"
+          }
+        },
+        {
+          "name": "Start backtest",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.id != null) pm.environment.set('backtest_id', String(j.id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticker\": \"RELIANCE\",\n  \"strategy\": \"ema_crossover\",\n  \"capital_paise\": 10000000,\n  \"from_ns\": 1787027100000000000,\n  \"to_ns\": 1787113500000000000,\n  \"order_qty\": 1,\n  \"ema_fast\": 9,\n  \"ema_slow\": 21\n}"
+            },
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/backtests/start",
+            "description": "Sync manual backtest (ensure 1m → run → persist). Saves `backtest_id`. from_ns/to_ns must cover cached 1m data."
+          }
+        },
+        {
+          "name": "List backtests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/backtests"
+          }
+        },
+        {
+          "name": "Get backtest",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/backtests/{{backtest_id}}"
           }
         }
       ]
