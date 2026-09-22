@@ -33,7 +33,8 @@ struct ManualBacktestOutcome {
   BacktestResult result{};
 };
 
-// Ensure 1m → BacktestRunner → persist backtests + return capital to workbook.
+// Ensure 1m → BacktestRunner → persist backtests row.
+// Capital is simulation-only (UI value); does not borrow/return workbook available.
 class BacktestService {
 public:
   BacktestService(WorkbookRepository& workbooks, BacktestRepository& backtests,

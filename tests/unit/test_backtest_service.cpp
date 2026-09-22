@@ -60,7 +60,7 @@ void write_ema_session(const std::filesystem::path& path) {
 
 }  // namespace
 
-TEST(BacktestService, PersistDeterministicEmaAndReturnCapital) {
+TEST(BacktestService, PersistDeterministicEmaWithoutTouchingWorkbookCapital) {
   const auto dir = make_temp_dir();
   write_ema_session(dir / "EMA.csv");
 
@@ -115,8 +115,8 @@ TEST(BacktestService, PersistDeterministicEmaAndReturnCapital) {
   EXPECT_EQ(a.row.return_pct_bp, (a.row.pnl_paise * 10000) / a.row.capital_paise);
   EXPECT_EQ(a.row.status, "completed");
 
-  const auto after = workbooks.find(wid)->available_paise;
-  EXPECT_EQ(after, before - req.capital.paise() + a.result.ending_equity_paise);
+  // Manual backtest must not touch workbook available capital.
+  EXPECT_EQ(workbooks.find(wid)->available_paise, before);
 
   const auto listed = backtests.list_for_workbook(wid);
   ASSERT_EQ(listed.size(), 1u);

@@ -220,7 +220,7 @@ Product steps (A0, S1…) may span frontend; **backend micro-steps (B0a, S1a…)
 
 | | Work |
 |---|---|
-| **Backend** | Thin helper/service: ensure **1m** range (chunked; ask OK if long/multi) → `BacktestRunner` → write `backtests` (+ fills/signals as designed). Borrow/return workbook capital. |
+| **Backend** | Thin helper/service: ensure **1m** → `BacktestRunner` → write `backtests`. Capital is **simulated** (request body); do **not** borrow/return workbook available. |
 
 **Done when:** unit/integration: known CSV/Rocks range → deterministic pnl/fees/return_pct row.
 

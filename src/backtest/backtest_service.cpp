@@ -60,12 +60,9 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
     throw std::invalid_argument("capital must be positive");
   }
 
-  const auto wb = workbooks_->find(request.workbook_id);
-  if (!wb) {
+  // Workbook is ownership/scope only — manual backtest capital is simulated, not borrowed.
+  if (!workbooks_->find(request.workbook_id)) {
     throw std::runtime_error("workbook not found");
-  }
-  if (wb->available_paise < request.capital.paise()) {
-    throw std::runtime_error("insufficient workbook capital");
   }
 
   if (instruments_ != nullptr) {
@@ -81,58 +78,38 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
     throw std::runtime_error("symbol intern failed");
   }
 
-  // Borrow capital for the activity duration.
-  const auto available_after_borrow = wb->available_paise - request.capital.paise();
-  if (!workbooks_->set_available(request.workbook_id, available_after_borrow)) {
-    throw std::runtime_error("failed to borrow workbook capital");
-  }
+  fetch_->ensure_data_available(request.ticker, request.from, request.to, BarResolution::OneMin);
 
+  BacktestRequest req{};
+  req.symbol_id = *symbol_id;
+  req.from = request.from;
+  req.to = request.to;
+  req.starting_capital = request.capital;
+  req.strategy_name = request.strategy_name;
+  req.strategy = request.strategy;
+  req.strategy.symbol_id = *symbol_id;
+
+  BacktestRunner runner;
   ManualBacktestOutcome out{};
-  try {
-    fetch_->ensure_data_available(request.ticker, request.from, request.to,
-                                  BarResolution::OneMin);
+  out.result = runner.run(*data_, *strategies_, req);
 
-    BacktestRequest req{};
-    req.symbol_id = *symbol_id;
-    req.from = request.from;
-    req.to = request.to;
-    req.starting_capital = request.capital;
-    req.strategy_name = request.strategy_name;
-    req.strategy = request.strategy;
-    req.strategy.symbol_id = *symbol_id;
-
-    BacktestRunner runner;
-    out.result = runner.run(*data_, *strategies_, req);
-
-    BacktestRow row{};
-    row.workbook_id = request.workbook_id;
-    row.strategy_name = request.strategy_name;
-    row.ticker = request.ticker;
-    row.capital_paise = request.capital.paise();
-    row.from_ns = request.from.nanos();
-    row.to_ns = request.to.nanos();
-    row.ending_equity_paise = out.result.ending_equity_paise;
-    row.pnl_paise = out.result.realized_pnl_paise;
-    row.fees_paise = out.result.fees_paise;
-    row.return_pct_bp = return_pct_bp(row.capital_paise, row.pnl_paise);
-    row.max_drawdown_paise = out.result.max_drawdown_paise;
-    row.fills = out.result.fills;
-    row.bars = static_cast<int>(out.result.bars);
-    row.status = "completed";
-    row.id = backtests_->insert(row);
-    out.row = *backtests_->find(request.workbook_id, row.id);
-
-    // Return ending equity to the workbook pool.
-    const auto available_after_return = available_after_borrow + out.result.ending_equity_paise;
-    if (!workbooks_->set_available(request.workbook_id, available_after_return)) {
-      throw std::runtime_error("failed to return workbook capital");
-    }
-  } catch (...) {
-    // Best-effort restore borrowed capital on failure before rethrow.
-    (void)workbooks_->set_available(request.workbook_id, wb->available_paise);
-    throw;
-  }
-
+  BacktestRow row{};
+  row.workbook_id = request.workbook_id;
+  row.strategy_name = request.strategy_name;
+  row.ticker = request.ticker;
+  row.capital_paise = request.capital.paise();
+  row.from_ns = request.from.nanos();
+  row.to_ns = request.to.nanos();
+  row.ending_equity_paise = out.result.ending_equity_paise;
+  row.pnl_paise = out.result.realized_pnl_paise;
+  row.fees_paise = out.result.fees_paise;
+  row.return_pct_bp = return_pct_bp(row.capital_paise, row.pnl_paise);
+  row.max_drawdown_paise = out.result.max_drawdown_paise;
+  row.fills = out.result.fills;
+  row.bars = static_cast<int>(out.result.bars);
+  row.status = "completed";
+  row.id = backtests_->insert(row);
+  out.row = *backtests_->find(request.workbook_id, row.id);
   return out;
 }
 

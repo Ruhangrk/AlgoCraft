@@ -84,9 +84,10 @@ bool read_username_password(const crow::json::rvalue& body, std::string& user, s
 std::optional<std::string> bearer_token(const crow::request& req) {
   auto auth = req.get_header_value("Authorization");
   if (auth.empty()) {
-    auth = req.url_params.get("token");
-    if (!auth.empty()) {
-      return auth;
+    // Crow returns nullptr (not "") when the query key is absent.
+    const char* q = req.url_params.get("token");
+    if (q != nullptr && *q != '\0') {
+      return std::string{q};
     }
     return std::nullopt;
   }

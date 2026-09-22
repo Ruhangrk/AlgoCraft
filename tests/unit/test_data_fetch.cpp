@@ -346,7 +346,7 @@ TEST(DataFetchService, MidnightSealsPreviousLiveAndSkipsWeekend) {
   std::filesystem::remove_all(dir, ec);
 }
 
-TEST(DataFetchService, EmptySessionStoredAndLeftExtendStops) {
+TEST(DataFetchService, EmptyClosedDaySkippedAndLeftExtendStops) {
   const auto dir = make_temp_dir();
   CacheStack stack(dir);
   algocraft::SymbolTable symbols;
@@ -358,10 +358,8 @@ TEST(DataFetchService, EmptySessionStoredAndLeftExtendStops) {
   fetch.set_now(ist_ns(2026, 9, 2, 12, 0));
   fetch.load_bars(id, ist_ns(2026, 8, 31, 0, 0), ist_ns(2026, 9, 1, 23, 59),
                   algocraft::BarResolution::OneMin);
-  auto empty = stack.bars.get_session("AAA", algocraft::BarResolution::OneMin,
-                                      algocraft::SessionDate::from_iso("2026-09-01"), id);
-  ASSERT_TRUE(empty);
-  EXPECT_TRUE(empty->empty());
+  EXPECT_FALSE(stack.bars.has_session("AAA", algocraft::BarResolution::OneMin,
+                                      algocraft::SessionDate::from_iso("2026-09-01")));
 
   fetch.load_bars(id, ist_ns(2026, 8, 24, 0, 0), ist_ns(2026, 8, 31, 23, 59),
                   algocraft::BarResolution::OneMin);
@@ -372,6 +370,31 @@ TEST(DataFetchService, EmptySessionStoredAndLeftExtendStops) {
                                       algocraft::SessionDate::from_iso("2026-08-28")));
   expect_contiguous_keys(stack.bars, "AAA", *row->first_date, *row->last_date);
   EXPECT_NE(row->last_date->iso(), "2026-09-02");
+  std::error_code ec;
+  std::filesystem::remove_all(dir, ec);
+}
+
+TEST(DataFetchService, TodayOnlyNeverEntersClosedRange) {
+  const auto dir = make_temp_dir();
+  CacheStack stack(dir);
+  algocraft::SymbolTable symbols;
+  const auto id = symbols.intern({.ticker = "AAA"}, {});
+  ScriptedLoader loader;
+  loader.days[algocraft::SessionDate::from_iso("2026-09-02")] = {bar_at(id, 2026, 9, 2, 0, 10100)};
+
+  algocraft::DataFetchService fetch(stack.bars, stack.cov(), loader, symbols);
+  fetch.set_now(ist_ns(2026, 9, 2, 12, 0));
+  fetch.load_bars(id, ist_ns(2026, 9, 2, 0, 0), ist_ns(2026, 9, 2, 12, 0),
+                  algocraft::BarResolution::OneMin);
+
+  const auto row = stack.cov().get("AAA", "1m");
+  ASSERT_TRUE(row);
+  EXPECT_FALSE(row->first_date.has_value());
+  EXPECT_FALSE(row->last_date.has_value());
+  ASSERT_TRUE(row->live_date);
+  EXPECT_EQ(row->live_date->iso(), "2026-09-02");
+  EXPECT_TRUE(stack.bars.has_session("AAA", algocraft::BarResolution::OneMin,
+                                     algocraft::SessionDate::from_iso("2026-09-02")));
   std::error_code ec;
   std::filesystem::remove_all(dir, ec);
 }

@@ -245,6 +245,37 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
             return json_ok(std::move(root), 201);
           });
 
+  CROW_ROUTE(app, "/workbooks/<int>")
+      .methods(crow::HTTPMethod::PATCH)([auth, workbooks](const crow::request& req,
+                                                          std::int64_t wid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        const auto body = body_or_empty(req);
+        const auto amount = json_int_or(body, "add_capital_paise", 0);
+        if (amount <= 0) {
+          return json_error(400, "add_capital_paise must be positive");
+        }
+        try {
+          const auto updated = workbooks->add_capital(wid, amount);
+          if (!updated) {
+            return json_error(404, "workbook not found");
+          }
+          crow::json::wvalue root;
+          root["id"] = updated->id;
+          root["name"] = updated->name;
+          root["main_capital_paise"] = updated->main_capital_paise;
+          root["available_paise"] = updated->available_paise;
+          root["added_paise"] = amount;
+          return json_ok(std::move(root));
+        } catch (const std::invalid_argument& e) {
+          return json_error(400, e.what());
+        } catch (const std::exception& e) {
+          return json_error(500, e.what());
+        }
+      });
+
   CROW_ROUTE(app, "/workbooks/<int>/runs/start")
       .methods(crow::HTTPMethod::POST)([auth, workbooks, activity, data, strategies,
                                         symbols](const crow::request& req, std::int64_t wid) {
@@ -600,7 +631,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (!wb) {
           return json_error(404, "workbook not found");
         }
-        bt.capital = Capital::from_paise(json_int_or(body, "capital_paise", wb->available_paise));
+        bt.capital = Capital::from_paise(json_int_or(body, "capital_paise", 1'00'000'00));
+        // capital_paise is simulated starting capital only — not deducted from workbook.
         bt.from = Timestamp::from_nanos(json_int_or(body, "from_ns", 0));
         bt.to = Timestamp::from_nanos(json_int_or(body, "to_ns", 0));
         if (bt.from.nanos() == 0 || bt.to.nanos() == 0) {

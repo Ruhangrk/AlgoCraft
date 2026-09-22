@@ -45,6 +45,10 @@ public:
   // Sets available_paise for an active workbook. Returns false if missing.
   [[nodiscard]] bool set_available(std::int64_t workbook_id, std::int64_t available_paise);
 
+  // Top-up: main_capital += amount, available += amount, audit capital_added event.
+  // Returns updated row; nullopt if workbook missing. Throws on amount <= 0.
+  [[nodiscard]] std::optional<Row> add_capital(std::int64_t workbook_id, std::int64_t amount_paise);
+
 private:
   sqlite3* db_{nullptr};
 };

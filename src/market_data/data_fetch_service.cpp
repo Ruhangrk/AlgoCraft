@@ -277,9 +277,14 @@ void DataFetchService::fill_closed(std::string_view ticker, SessionDate from, Se
   }
 
   std::set<SessionDate> covered;
+  // Only trust days with a non-empty Rocks blob. Empty keys (failed/partial
+  // vendor writes) used to block refetch forever → OHLCV candles=[].
   if (row && row->first_date && row->last_date) {
     for (const auto d : session_days(*row->first_date, *row->last_date)) {
-      covered.insert(d);
+      auto blob = store_->get_session(std::string{ticker}, resolution, d, /*symbol_id=*/0);
+      if (blob && !blob->empty()) {
+        covered.insert(d);
+      }
     }
   }
 
@@ -339,15 +344,31 @@ void DataFetchService::refresh_today(std::string_view ticker, SessionDate today,
   const auto code = std::string{bar_resolution_code(resolution)};
   auto row = coverage_->get(ticker, code).value_or(CoverageRow{});
   if (row.live_date && *row.live_date == today && live_fresh(row)) {
-    return;
+    const auto blob = store_->get_session(std::string{ticker}, resolution, today, /*symbol_id=*/0);
+    if (blob && !blob->empty()) {
+      return;
+    }
+    // Empty live blob: fall through and refetch (do not trust TTL alone).
   }
   fetch_and_store(ticker, {today}, resolution, false);
   row = coverage_->get(ticker, code).value_or(CoverageRow{});
-  if (row.last_date && *row.last_date == today) {
-    row.last_date = prev_session_day(today);
+  // Closed range (first/last) never includes today — only live_date may.
+  const auto closed_end = last_closed_session(today);
+  if (row.last_date && *row.last_date > closed_end) {
+    row.last_date = closed_end;
   }
-  row.live_date = today;
-  row.last_fetched_at = std::to_string(now().nanos());
+  if (row.first_date && row.last_date && *row.first_date > *row.last_date) {
+    row.first_date = row.last_date;
+  }
+  const auto blob = store_->get_session(std::string{ticker}, resolution, today, /*symbol_id=*/0);
+  if (blob && !blob->empty()) {
+    row.live_date = today;
+    row.last_fetched_at = std::to_string(now().nanos());
+  } else {
+    // Keep retrying later; do not publish an empty live day as fresh.
+    row.live_date.reset();
+    row.last_fetched_at.reset();
+  }
   persist_coverage(ticker, resolution, row);
 }
 
@@ -359,6 +380,8 @@ void DataFetchService::fetch_and_store(std::string_view ticker, const std::vecto
   const auto ticker_s = std::string{ticker};
   const auto symbol_id = require_symbol(ticker_s);
   const auto code = std::string{bar_resolution_code(resolution)};
+  // first/last are closed sessions only — never "today" (live_date owns that).
+  const auto closed_end = last_closed_session(SessionDate::from_ist(now()));
 
   for (const auto& chunk : chunk_days(days)) {
     ++vendor_fetches_;
@@ -390,19 +413,37 @@ void DataFetchService::fetch_and_store(std::string_view ticker, const std::vecto
     }
 
     for (const auto d : to_write) {
-      store_->put_session(ticker_s, resolution, d, by_day[d]);
+      const auto& day_bars = by_day[d];
+      // Do not persist empty closed-day blobs — they poison coverage/has_session.
+      // Live today may still be written empty-skipped here; refresh_today owns TTL.
+      if (day_bars.empty()) {
+        continue;
+      }
+      store_->put_session(ticker_s, resolution, d, day_bars);
     }
 
     auto row = coverage_->get(ticker_s, code).value_or(CoverageRow{});
+    bool touched = false;
     for (const auto d : to_write) {
+      if (!by_day.contains(d) || by_day[d].empty()) {
+        continue;
+      }
+      // Rocks may hold today's live blob; closed coverage range stops at closed_end.
+      if (d > closed_end) {
+        continue;
+      }
       if (!row.first_date || d < *row.first_date) {
         row.first_date = d;
+        touched = true;
       }
       if (!row.last_date || d > *row.last_date) {
         row.last_date = d;
+        touched = true;
       }
     }
-    persist_coverage(ticker_s, resolution, row);
+    if (touched && row.first_date) {
+      persist_coverage(ticker_s, resolution, row);
+    }
   }
 }
 

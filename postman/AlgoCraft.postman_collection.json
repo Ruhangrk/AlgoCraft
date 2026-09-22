@@ -134,12 +134,29 @@
               "host": ["{{baseUrl}}"],
               "path": ["instruments", "INFY", "ohlcv"],
               "query": [
-                { "key": "resolution", "value": "1d", "description": "1d | 1w | 1M only" },
+                { "key": "resolution", "value": "1d", "description": "1m | 1d | 1w | 1M (1m ≤ 28 days)" },
                 { "key": "from", "value": "2026-01-01" },
                 { "key": "to", "value": "2026-03-15" }
               ]
             },
-            "description": "Chart path only. Cold miss may hit Upstox once; warm is Rocks-only (vendor_fetches=0)."
+            "description": "Chart path (D/W/M + short 1m). Cold miss may hit Upstox; warm is Rocks-only (vendor_fetches=0)."
+          }
+        },
+        {
+          "name": "OHLCV 1m candles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/instruments/INFY/ohlcv?resolution=1m&from=2026-09-08&to=2026-09-12",
+              "host": ["{{baseUrl}}"],
+              "path": ["instruments", "INFY", "ohlcv"],
+              "query": [
+                { "key": "resolution", "value": "1m", "description": "1m ≤ 28 calendar days" },
+                { "key": "from", "value": "2026-09-08" },
+                { "key": "to", "value": "2026-09-12" }
+              ]
+            },
+            "description": "Intraday 1m chart window. Keep ranges short; vendor caps ~28 calendar days."
           }
         }
       ]
@@ -197,6 +214,19 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/workbooks"
+          }
+        },
+        {
+          "name": "Add workbook capital",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"add_capital_paise\": 20000000\n}"
+            },
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}",
+            "description": "Top-up: main_capital and available both += amount (paise). Audit event capital_added."
           }
         },
         {

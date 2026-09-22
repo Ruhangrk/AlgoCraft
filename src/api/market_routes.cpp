@@ -71,12 +71,17 @@ int parse_limit(const crow::request& req, int fallback, int cap) {
   return static_cast<int>(v > cap ? cap : v);
 }
 
-std::optional<BarResolution> parse_chart_resolution(std::string_view code) {
+std::optional<BarResolution> parse_ohlcv_resolution(std::string_view code) {
   const auto parsed = bar_resolution_from_code(code);
-  if (!parsed || !is_chart_resolution(*parsed)) {
+  if (!parsed) {
     return std::nullopt;
   }
-  return parsed;
+  // Chart TFs (D/W/M) plus short-window 1m for intraday charts. Do not widen
+  // is_chart_resolution — that flag drives Rocks year-blob keying.
+  if (is_chart_resolution(*parsed) || *parsed == BarResolution::OneMin) {
+    return parsed;
+  }
+  return std::nullopt;
 }
 
 void bind_upstox_instrument_key(DataSourceRegistry& data, std::string_view ticker,
@@ -169,9 +174,9 @@ void register_market_routes(App& app, MarketRouteDeps deps) {
 
         const auto* res_raw = req.url_params.get("resolution");
         const std::string res_code = res_raw ? res_raw : "";
-        const auto resolution = parse_chart_resolution(res_code);
+        const auto resolution = parse_ohlcv_resolution(res_code);
         if (!resolution) {
-          return json_error(400, "resolution must be 1d, 1w, or 1M");
+          return json_error(400, "resolution must be 1m, 1d, 1w, or 1M");
         }
 
         const auto* from_raw = req.url_params.get("from");
@@ -189,6 +194,14 @@ void register_market_routes(App& app, MarketRouteDeps deps) {
         }
         if (from_ts > to_ts) {
           return json_error(400, "from must be <= to");
+        }
+        // Upstox 1m history is ~1 month per request; keep chart windows bounded.
+        if (*resolution == BarResolution::OneMin) {
+          constexpr std::int64_t kDayNs = 86'400LL * 1'000'000'000LL;
+          constexpr std::int64_t kMaxDays = 28;
+          if (to_ts.nanos() - from_ts.nanos() > kMaxDays * kDayNs) {
+            return json_error(400, "1m range must be at most 28 calendar days");
+          }
         }
 
         symbols->intern({.ticker = ticker}, {});

@@ -1,9 +1,9 @@
 #include "algocraft/persistence/workbook_repository.hpp"
 
-#include <sqlite3.h>
-
 #include <stdexcept>
 #include <string>
+
+#include <sqlite3.h>
 
 namespace algocraft {
 namespace {
@@ -168,6 +168,51 @@ bool WorkbookRepository::set_available(std::int64_t workbook_id, std::int64_t av
     throw std::runtime_error(std::string("workbook set_available: ") + sqlite3_errmsg(db_));
   }
   return sqlite3_changes(db_) > 0;
+}
+
+std::optional<WorkbookRepository::Row> WorkbookRepository::add_capital(std::int64_t workbook_id,
+                                                                       std::int64_t amount_paise) {
+  if (amount_paise <= 0) {
+    throw std::invalid_argument("add_capital amount must be positive");
+  }
+  exec(db_, "BEGIN");
+  try {
+    {
+      Stmt st(db_,
+              "UPDATE workbooks SET main_capital_paise = main_capital_paise + ?, "
+              "available_paise = available_paise + ? "
+              "WHERE id=? AND deleted_at IS NULL");
+      sqlite3_bind_int64(st.s, 1, amount_paise);
+      sqlite3_bind_int64(st.s, 2, amount_paise);
+      sqlite3_bind_int64(st.s, 3, workbook_id);
+      if (sqlite3_step(st.s) != SQLITE_DONE) {
+        throw std::runtime_error(std::string("workbook add_capital: ") + sqlite3_errmsg(db_));
+      }
+      if (sqlite3_changes(db_) == 0) {
+        exec(db_, "ROLLBACK");
+        return std::nullopt;
+      }
+    }
+    {
+      Stmt st(db_,
+              "INSERT INTO workbook_capital_events (workbook_id, type, amount_paise) "
+              "VALUES (?, 'capital_added', ?)");
+      sqlite3_bind_int64(st.s, 1, workbook_id);
+      sqlite3_bind_int64(st.s, 2, amount_paise);
+      if (sqlite3_step(st.s) != SQLITE_DONE) {
+        throw std::runtime_error(std::string("workbook capital_added event: ") +
+                                 sqlite3_errmsg(db_));
+      }
+    }
+    exec(db_, "COMMIT");
+  } catch (...) {
+    try {
+      exec(db_, "ROLLBACK");
+    } catch (...) {
+    }
+    throw;
+  }
+  return find(workbook_id);
 }
 
 }  // namespace algocraft
