@@ -1,0 +1,64 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "algocraft_engine (serve)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/algocraft_engine",
+      "args": ["serve"],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "cmake: build engine"
+    },
+    {
+      "name": "algocraft_engine (serve :8080)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/algocraft_engine",
+      "args": ["serve", "${workspaceFolder}/data/1min", "8080"],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "cmake: build engine"
+    },
+    {
+      "name": "algocraft_engine (run)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/algocraft_engine",
+      "args": ["run"],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "cmake: build engine"
+    },
+    {
+      "name": "algocraft_tests (all)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/algocraft_tests",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ASAN_OPTIONS": "detect_leaks=0"
+      },
+      "preLaunchTask": "cmake: build tests"
+    },
+    {
+      "name": "algocraft_tests (filter)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/algocraft_tests",
+      "args": ["--gtest_filter=${input:gtestFilter}"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ASAN_OPTIONS": "detect_leaks=0"
+      },
+      "preLaunchTask": "cmake: build tests"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "gtestFilter",
+      "type": "promptString",
+      "description": "GoogleTest filter (e.g. ScriptedLiveFeed* or RunManager*)",
+      "default": "ScriptedLiveFeed*"
+    }
+  ]
+}

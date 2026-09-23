@@ -3,6 +3,7 @@
 #include "algocraft/api/http_helpers.hpp"
 #include "algocraft/auth/auth_service.hpp"
 #include "algocraft/domain/symbol.hpp"
+#include "algocraft/engine/live_run_service.hpp"
 #include "algocraft/market_data/data_fetch_service.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
@@ -25,6 +26,8 @@ struct WorkbookRouteDeps {
   DataFetchService* fetch{nullptr};
   BacktestRepository* backtests{nullptr};
   InstrumentRepository* instruments{nullptr};
+  LiveRunService* live_runs{nullptr};
+  StatusWsHub* status_hub{nullptr};
 };
 
 void register_workbook_routes(App& app, WorkbookRouteDeps deps);

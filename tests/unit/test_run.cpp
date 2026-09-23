@@ -195,3 +195,56 @@ TEST(RunManager, EmptySkipReturnsFullCapital) {
   EXPECT_EQ(result.real_containers, 0);
   EXPECT_EQ(result.workbook_available_after.paise(), 10'00'00'000'00);
 }
+
+TEST(RunWindows, ParseHhmm) {
+  EXPECT_EQ(algocraft::parse_hhmm("09:15"), 9 * 60 + 15);
+  EXPECT_EQ(algocraft::parse_hhmm("15:30"), 15 * 60 + 30);
+  EXPECT_FALSE(algocraft::parse_hhmm("9:15").has_value());
+  EXPECT_FALSE(algocraft::parse_hhmm("25:00").has_value());
+}
+
+TEST(RunWindows, AnchorShiftsEvalBeforeTradeDay) {
+  const auto anchor = algocraft::SessionDate::from_iso("2026-09-18");
+  const auto w = algocraft::resolve_anchor_run_windows(anchor, 3, {}, {});
+
+  EXPECT_EQ(w.anchor.iso(), "2026-09-18");
+  EXPECT_EQ(w.eval_last.iso(), "2026-09-17");
+  EXPECT_EQ(w.eval_first.iso(), "2026-09-15");
+  EXPECT_EQ(w.eval_sessions, 3);
+
+  EXPECT_EQ(algocraft::SessionDate::from_ist(w.trade_from).iso(), "2026-09-18");
+  EXPECT_EQ(algocraft::SessionDate::from_ist(w.trade_to).iso(), "2026-09-18");
+  EXPECT_LT(w.eval_to.nanos(), w.trade_from.nanos());
+}
+
+TEST(RunWindows, YesterdayVsTodayShiftsEvalByOneSession) {
+  const auto today = algocraft::SessionDate::from_iso("2026-09-18");
+  const auto yesterday = algocraft::SessionDate::from_iso("2026-09-17");
+  const auto a = algocraft::resolve_anchor_run_windows(today, 2, {}, {});
+  const auto b = algocraft::resolve_anchor_run_windows(yesterday, 2, {}, {});
+
+  EXPECT_EQ(a.eval_last.iso(), "2026-09-17");
+  EXPECT_EQ(b.eval_last.iso(), "2026-09-16");
+  EXPECT_EQ(a.eval_first.iso(), "2026-09-16");
+  EXPECT_EQ(b.eval_first.iso(), "2026-09-15");
+}
+
+TEST(RunWindows, IntradayTradeRange) {
+  const auto anchor = algocraft::SessionDate::from_iso("2026-09-18");
+  const auto w = algocraft::resolve_anchor_run_windows(anchor, 1, algocraft::parse_hhmm("09:15"),
+                                                       algocraft::parse_hhmm("15:30"));
+  EXPECT_EQ(algocraft::ist_minute_of_day(w.trade_from), 9 * 60 + 15);
+  EXPECT_EQ(algocraft::ist_minute_of_day(w.trade_to), 15 * 60 + 30);
+}
+
+TEST(RunWindows, RejectsWeekendAnchor) {
+  EXPECT_THROW(
+      algocraft::resolve_anchor_run_windows(algocraft::SessionDate::from_iso("2026-09-19"), 5, {}, {}),
+      std::invalid_argument);
+}
+
+TEST(RunWindows, RejectsBadEvalCount) {
+  EXPECT_THROW(
+      algocraft::resolve_anchor_run_windows(algocraft::SessionDate::from_iso("2026-09-18"), 0, {}, {}),
+      std::invalid_argument);
+}

@@ -26,6 +26,13 @@ struct RoutingConfig {
   Capital eval_capital{Capital::from_paise(10'00'000'00)};
 };
 
+// Universe / lookback owned by the router (HTTP no longer accepts these).
+struct RouterDefaults {
+  std::vector<std::string> tickers{};
+  std::vector<std::string> strategies{};
+  int eval_sessions{14};
+};
+
 struct StrategyEvalResult {
   SymbolId symbol_id{0};
   std::string ticker;
@@ -41,6 +48,8 @@ struct StrategyEvalResult {
 class RoutingAlgo {
 public:
   virtual ~RoutingAlgo() = default;
+
+  [[nodiscard]] virtual RouterDefaults defaults() const { return {}; }
 
   virtual void configure(const RoutingConfig& config) = 0;
   virtual void start(DataSourceRegistry& data, StrategyRegistry& strategies,

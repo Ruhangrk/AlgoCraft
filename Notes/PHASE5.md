@@ -64,7 +64,7 @@ Clamp `to` to now. Split the request:
 
 Each step: implement → unit test → stop. Next step only after you approve.
 
-**Progress (2026-09-17):** 5.1–5.8 done. 5.9 = `NullLiveFeed` stub only (no Upstox WS).
+**Progress (2026-09-23):** 5.1–5.9 done for live tape. `UpstoxLiveFeed` + `LiveRunService` when `anchor_date` is IST today; past anchors stay hist replay. Status WS hub pushes portfolio/containers during live + on settle. `NullLiveFeed` remains for history-only providers.
 **5.10 code path:** `UpstoxProvider` + `POST /market-data/ensure` wired (token from `~/.config/upstox/config.json`).
 Do not run multi-stock 1-min fetches until you intentionally start the server and call the script.
 

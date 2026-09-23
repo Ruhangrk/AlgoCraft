@@ -8,6 +8,7 @@
 
 #include "algocraft/auth/auth_service.hpp"
 #include "algocraft/domain/symbol.hpp"
+#include "algocraft/engine/live_run_service.hpp"
 #include "algocraft/market_data/data_fetch_service.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
@@ -56,6 +57,8 @@ private:
   InstrumentRepository instruments_;
   BacktestRepository backtests_;
   WorkbookManager books_{};
+  StatusWsHub status_hub_{};
+  std::unique_ptr<LiveRunService> live_runs_{};
   std::atomic<bool> running_{false};
   std::unique_ptr<std::thread> thread_{};
   void* app_{nullptr};  // crow::SimpleApp* while running

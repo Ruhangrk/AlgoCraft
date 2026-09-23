@@ -11,8 +11,11 @@
 #include "algocraft/domain/capital.hpp"
 #include "algocraft/domain/ids.hpp"
 #include "algocraft/domain/quantity.hpp"
+#include "algocraft/domain/session_date.hpp"
 #include "algocraft/domain/timestamp.hpp"
+#include "algocraft/engine/live_run_service.hpp"
 #include "algocraft/engine/run_manager.hpp"
+#include "algocraft/routing/routing_algo_registry.hpp"
 
 namespace algocraft::api {
 namespace {
@@ -348,6 +351,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
   auto* fetch = deps.fetch;
   auto* backtests = deps.backtests;
   auto* instruments = deps.instruments;
+  auto* live_runs = deps.live_runs;
+  auto* status_hub = deps.status_hub;
 
   CROW_ROUTE(app, "/workbooks")
       .methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST)(
@@ -417,8 +422,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/runs/start")
-      .methods(crow::HTTPMethod::POST)([auth, workbooks, activity, data, strategies,
-                                        symbols](const crow::request& req, std::int64_t wid) {
+      .methods(crow::HTTPMethod::POST)([auth, workbooks, activity, data, strategies, symbols, books,
+                                        live_runs](const crow::request& req, std::int64_t wid) {
         auto gate = require_workbook(*auth, *workbooks, req, wid);
         if (!gate) {
           return std::move(gate.error);
@@ -436,25 +441,116 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         cfg.workbook_capital =
             Capital::from_paise(json_int_or(body, "capital_paise", row->available_paise));
         cfg.existing_workbook_id = wb_id;
-        cfg.tickers = json_string_array(body, "tickers");
-        if (cfg.tickers.empty()) {
-          cfg.tickers = {"RELIANCE"};
-        }
-        cfg.strategies = json_string_array(body, "strategies");
-        if (cfg.strategies.empty()) {
-          cfg.strategies = {"ema_crossover"};
-        }
         cfg.router = json_string_or(body, "router", "default_router");
-        cfg.from =
-            Timestamp::from_nanos(json_int_or(body, "from_ns", 1'788'921'000'000'000'000LL));
-        cfg.to = Timestamp::from_nanos(json_int_or(body, "to_ns", 1'789'064'940'000'000'000LL));
-        cfg.trade_from =
-            Timestamp::from_nanos(json_int_or(body, "trade_from_ns", 1'789'065'000'000'000'000LL));
-        cfg.trade_to =
-            Timestamp::from_nanos(json_int_or(body, "trade_to_ns", 1'789'151'340'000'000'000LL));
+
+        // Tickers / strategies / eval_sessions come from the router, not the request body.
+        RoutingAlgoRegistry routers;
+        register_all_routers(routers);
+        std::unique_ptr<RoutingAlgo> router_probe;
+        try {
+          router_probe = routers.create(cfg.router);
+        } catch (const std::invalid_argument& e) {
+          return json_error(400, e.what());
+        }
+        const auto defaults = router_probe->defaults();
+        if (defaults.tickers.empty() || defaults.strategies.empty() || defaults.eval_sessions < 1) {
+          return json_error(500, "router defaults incomplete");
+        }
+        cfg.tickers = defaults.tickers;
+        cfg.strategies = defaults.strategies;
+
+        const auto anchor_s = json_string_or(body, "anchor_date", "");
+        if (!anchor_s.empty()) {
+          try {
+            const auto anchor = SessionDate::from_iso(anchor_s);
+            std::optional<int> from_m;
+            std::optional<int> to_m;
+            const auto tf = json_string_or(body, "trade_from", "");
+            const auto tt = json_string_or(body, "trade_to", "");
+            if (!tf.empty() || !tt.empty()) {
+              from_m = parse_hhmm(tf);
+              to_m = parse_hhmm(tt);
+              if (!from_m || !to_m) {
+                return json_error(400, "trade_from/trade_to must be HH:MM");
+              }
+            }
+            apply_run_windows(cfg,
+                              resolve_anchor_run_windows(anchor, defaults.eval_sessions, from_m, to_m));
+          } catch (const std::invalid_argument& e) {
+            return json_error(400, e.what());
+          }
+        } else {
+          cfg.from =
+              Timestamp::from_nanos(json_int_or(body, "from_ns", 1'788'921'000'000'000'000LL));
+          cfg.to = Timestamp::from_nanos(json_int_or(body, "to_ns", 1'789'064'940'000'000'000LL));
+          cfg.trade_from =
+              Timestamp::from_nanos(json_int_or(body, "trade_from_ns", 1'789'065'000'000'000'000LL));
+          cfg.trade_to =
+              Timestamp::from_nanos(json_int_or(body, "trade_to_ns", 1'789'151'340'000'000'000LL));
+        }
 
         for (const auto& t : cfg.tickers) {
           symbols->intern({.ticker = t}, {});
+        }
+
+        auto fill_run_echo = [&](crow::json::wvalue& root) {
+          root["router"] = cfg.router;
+          crow::json::wvalue tickers = crow::json::wvalue::list();
+          for (std::size_t i = 0; i < cfg.tickers.size(); ++i) {
+            tickers[i] = cfg.tickers[i];
+          }
+          root["tickers"] = std::move(tickers);
+          crow::json::wvalue strats = crow::json::wvalue::list();
+          for (std::size_t i = 0; i < cfg.strategies.size(); ++i) {
+            strats[i] = cfg.strategies[i];
+          }
+          root["strategies"] = std::move(strats);
+          if (cfg.anchor_date) {
+            root["anchor_date"] = cfg.anchor_date->iso();
+            root["eval_sessions"] = cfg.eval_sessions;
+            root["eval_from_ns"] = cfg.from.nanos();
+            root["eval_to_ns"] = cfg.to.nanos();
+            root["trade_from_ns"] = cfg.trade_from.nanos();
+            root["trade_to_ns"] = cfg.trade_to.nanos();
+          }
+        };
+
+        // Live path: anchor_date == IST today.
+        if (cfg.anchor_date && is_live_anchor(*cfg.anchor_date)) {
+          if (live_runs == nullptr) {
+            return json_error(500, "live run service unavailable");
+          }
+          if (!books->get_workbook(wb_id)) {
+            if (!books
+                     ->adopt(wb_id, cfg.user_id, cfg.workbook_name,
+                             Capital::from_paise(row->main_capital_paise),
+                             Capital::from_paise(row->available_paise))
+                     .ok) {
+              return json_error(500, "failed to load workbook");
+            }
+          }
+          const auto started = live_runs->start(cfg);
+          if (!started.ok) {
+            return json_error(409, started.error);
+          }
+          crow::json::wvalue root;
+          root["workbook_id"] = wid;
+          root["selected"] = started.result.selected;
+          root["skipped"] = started.result.skipped;
+          root["fills"] = started.result.fills;
+          root["returned_paise"] = started.result.returned.paise();
+          root["signals"] = static_cast<std::int64_t>(started.result.signals.size());
+          root["rejections"] = static_cast<std::int64_t>(started.result.rejections.size());
+          root["mode"] = "live";
+          root["live"] = started.live_started;
+          if (!started.live_started) {
+            const auto runs = activity->list_runs(wid);
+            root["run_id"] = runs.empty() ? 0 : runs.front().id;
+          } else {
+            root["run_id"] = 0;  // persisted on STOP / session end
+          }
+          fill_run_echo(root);
+          return json_ok(std::move(root), 201);
         }
 
         WorkbookManager local_books;
@@ -481,7 +577,32 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         root["returned_paise"] = result.returned.paise();
         root["signals"] = static_cast<std::int64_t>(result.signals.size());
         root["rejections"] = static_cast<std::int64_t>(result.rejections.size());
+        if (cfg.anchor_date) {
+          root["mode"] = "hist_replay";
+        }
+        fill_run_echo(root);
         return json_ok(std::move(root), 201);
+      });
+
+  CROW_ROUTE(app, "/workbooks/<int>/runs/stop")
+      .methods(crow::HTTPMethod::POST)([auth, workbooks, live_runs,
+                                        activity](const crow::request& req, std::int64_t wid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        if (live_runs == nullptr || !live_runs->is_running(wid)) {
+          return json_error(404, "no active live run");
+        }
+        if (!live_runs->stop(wid)) {
+          return json_error(404, "no active live run");
+        }
+        const auto runs = activity->list_runs(wid);
+        crow::json::wvalue root;
+        root["workbook_id"] = wid;
+        root["stopped"] = true;
+        root["run_id"] = runs.empty() ? 0 : runs.front().id;
+        return json_ok(std::move(root));
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/runs")
@@ -778,16 +899,22 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
       .onaccept([ws_accept](const crow::request& req, void** userdata) {
         return ws_accept(req, userdata, "portfolio");
       })
-      .onopen([workbooks](crow::websocket::connection& conn) {
+      .onopen([workbooks, status_hub](crow::websocket::connection& conn) {
         auto* ctx = static_cast<WsAuth*>(conn.userdata());
         if (ctx == nullptr) {
           return;
+        }
+        if (status_hub != nullptr) {
+          status_hub->register_conn(ctx->workbook_id, StatusWsHub::Channel::Portfolio, &conn);
         }
         if (const auto row = workbooks->find(ctx->workbook_id)) {
           conn.send_text(portfolio_json(ctx->workbook_id, *row).dump());
         }
       })
-      .onclose([](crow::websocket::connection& conn, const std::string&, std::uint16_t) {
+      .onclose([status_hub](crow::websocket::connection& conn, const std::string&, std::uint16_t) {
+        if (status_hub != nullptr) {
+          status_hub->unregister_conn(&conn);
+        }
         delete static_cast<WsAuth*>(conn.userdata());
       });
 
@@ -795,14 +922,20 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
       .onaccept([ws_accept](const crow::request& req, void** userdata) {
         return ws_accept(req, userdata, "containers");
       })
-      .onopen([activity](crow::websocket::connection& conn) {
+      .onopen([activity, status_hub](crow::websocket::connection& conn) {
         auto* ctx = static_cast<WsAuth*>(conn.userdata());
         if (ctx == nullptr) {
           return;
         }
+        if (status_hub != nullptr) {
+          status_hub->register_conn(ctx->workbook_id, StatusWsHub::Channel::Containers, &conn);
+        }
         conn.send_text(containers_json(*activity, ctx->workbook_id).dump());
       })
-      .onclose([](crow::websocket::connection& conn, const std::string&, std::uint16_t) {
+      .onclose([status_hub](crow::websocket::connection& conn, const std::string&, std::uint16_t) {
+        if (status_hub != nullptr) {
+          status_hub->unregister_conn(&conn);
+        }
         delete static_cast<WsAuth*>(conn.userdata());
       });
 }

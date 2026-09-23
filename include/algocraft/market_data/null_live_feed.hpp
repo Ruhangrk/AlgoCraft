@@ -4,9 +4,7 @@
 
 namespace algocraft {
 
-// 5.9 placeholder: PAPER containers subscribe via DataProvider::live_feed().
-// CsvProvider returns nullptr (history-only). A live vendor (Upstox WS) will
-// implement MarketDataFeed; do not drive paper on_bar from the REST today blob.
+// 5.9 placeholder when a vendor has no live tape.
 class NullLiveFeed final : public MarketDataFeed {
 public:
   void connect() override {}

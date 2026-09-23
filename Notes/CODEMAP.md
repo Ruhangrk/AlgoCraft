@@ -274,8 +274,10 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 |------|----------|----------|
 | `market_data/data_provider.hpp` | Abstract vendor | Registry |
 | `market_data/historical_loader.hpp` | `load_bars(symbol, from, to, res)` | Fetch + backtest |
-| `market_data/market_data_feed.hpp` | Live feed interface | Future paper |
-| `market_data/null_live_feed.hpp` | No-op live feed | Placeholder Phase 5.9 |
+| `market_data/market_data_feed.hpp` | Live feed interface + `MinuteBarBuilder` | Live tape aggregation |
+| `market_data/null_live_feed.hpp` | No-op live feed | History-only providers |
+| `market_data/upstox_live_feed.hpp` | Upstox v3 market WS (LTPC) | Live tape |
+| `engine/live_run_service.hpp` | Today-anchor live run + `StatusWsHub` | Async eval + tape + STOP + WS push |
 | `market_data/data_source_registry.*` | Active provider by name | Engine / HTTP |
 | `market_data/csv_provider.*` | CSV historical loader | Files under `data/1min/` |
 | `market_data/upstox_provider.*` | Upstox v3 REST candles (1m + 1d/1w/1M); ISIN map; rate limit; chunk windows | HTTPS + token file |
@@ -397,7 +399,7 @@ Same JWT as REST. Pass either:
 | Instruments / OHLCV / backtest HTTP | S1–S3 |
 | Soft-delete DELETE routes | Columns exist; no DELETE API yet → S4 |
 | Events timeline API | Signals/rejections persist; no list API → S5 |
-| Phase 5.9 live paper tape | `NullLiveFeed` only — parked |
+| Phase 5.9 live paper tape | `UpstoxLiveFeed` + `LiveRunService` (anchor=today); `ScriptedLiveFeed` in tests |
 ---
 
 ## 7. Storage connections
@@ -464,7 +466,7 @@ flowchart TB
 | Auth + HTTP API | Yes (minimal server) |
 | Signal/rejection rows | Captured in container; written post-run |
 | PersistenceRing Thread-2 for all writes | Phase0 demo only; activity persist is post-run sync |
-| Live Upstox WS paper tape | Stub (`NullLiveFeed`) only |
+| Live Upstox WS paper tape | `UpstoxLiveFeed` + `POST .../runs/stop`; status hub push |
 | Broker gateway | No |
 
 ---

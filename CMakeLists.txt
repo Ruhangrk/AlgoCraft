@@ -42,7 +42,9 @@ add_library(algocraft
   src/market_data/data_source_registry.cpp
   src/market_data/dummy_provider.cpp
   src/market_data/instrument_ingest.cpp
+  src/market_data/upstox_live_feed.cpp
   src/market_data/upstox_provider.cpp
+  src/engine/live_run_service.cpp
   src/persistence/activity_repository.cpp
   src/persistence/async_logger.cpp
   src/persistence/backtest_repository.cpp

@@ -250,10 +250,45 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tickers\": [\"RELIANCE\", \"INFY\"],\n  \"strategies\": [\"ema_crossover\"],\n  \"capital_paise\": 100000000,\n  \"router\": \"default_router\"\n}"
+              "raw": "{\n  \"capital_paise\": 100000000,\n  \"router\": \"default_router\",\n  \"anchor_date\": \"2026-09-18\"\n}"
             },
             "url": "{{baseUrl}}/workbooks/{{workbook_id}}/runs/start",
-            "description": "Starts a CSV/Upstox-backed routing run for the workbook. Saves `run_id`."
+            "description": "Routing run. Body: `router`, `capital_paise`, `anchor_date` (NSE session). Tickers/strategies/eval_sessions come from the router. Today → live; past → hist_replay. Response echoes router universe."
+          }
+        },
+        {
+          "name": "Start live run (anchor=today)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j.run_id != null) pm.environment.set('run_id', String(j.run_id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"capital_paise\": 100000000,\n  \"router\": \"default_router\",\n  \"anchor_date\": \"{{ist_today}}\"\n}"
+            },
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/runs/start",
+            "description": "Live path when `anchor_date` equals IST today. Router supplies tickers/strategies/eval_sessions. Stop with POST .../runs/stop."
+          }
+        },
+        {
+          "name": "Stop live run",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/runs/stop",
+            "description": "Stops an active live run for the workbook; settles capital and persists run_id."
           }
         },
         {

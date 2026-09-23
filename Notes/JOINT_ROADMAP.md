@@ -30,7 +30,7 @@ Still in engine but **not HTTP-exposed:** (none for signals/rejections — S5a).
 | Issue | Notes |
 |---|---|
 | Soft-delete APIs | Workbook soft-delete still missing HTTP; runs/backtests DELETE done (S4a). |
-| Phase 5.9 live paper tape | `NullLiveFeed` only — **parked** (not in S1–S5). |
+| Phase 5.9 live paper tape | Done — Upstox WS when `anchor_date` is today; hist replay for past. |
 
 **Dual market-data paths (locked):**
 
@@ -332,7 +332,7 @@ Optional later: paper trade, Phase 5.9 live feed, async runs + STOP, admin, AI a
 | 5 | Backtest | Sync HTTP first |
 | 6 | Vite proxy vs CORS | Keep `/api` proxy for now; both valid |
 | 7 | Soft-delete UI | After S4a backend |
-| 8 | Phase 5.9 live tape | Parked |
+| 8 | Phase 5.9 live tape | Done (UpstoxLiveFeed + LiveRunService) |
 
 ---
 

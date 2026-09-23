@@ -14,6 +14,16 @@ namespace algocraft {
 
 void DefaultRouter::configure(const RoutingConfig& config) { config_ = config; }
 
+RouterDefaults DefaultRouter::defaults() const {
+  // Same universe as CLI run / Upstox NSE EQ map.
+  return RouterDefaults{
+      .tickers = {"RELIANCE", "INFY", "TCS", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL", "ITC",
+                  "LT", "HINDUNILVR"},
+      .strategies = {"ema_crossover", "vwap_reversion", "consecutive_up_clip"},
+      .eval_sessions = 14,
+  };
+}
+
 void DefaultRouter::start(DataSourceRegistry& data, StrategyRegistry& strategies,
                           ContainerManager& containers) {
   evaluate_all(data, strategies);

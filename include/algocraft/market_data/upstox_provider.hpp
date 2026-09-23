@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -44,6 +45,10 @@ public:
   // Map trading symbol → Upstox instrument_key (NSE_EQ|ISIN).
   void set_instrument_key(std::string_view ticker, std::string instrument_key);
 
+  [[nodiscard]] const std::unordered_map<std::string, std::string>& instrument_keys() const {
+    return ticker_to_key_;
+  }
+
   std::vector<BarEvent> load_bars(SymbolId symbol_id, Timestamp from, Timestamp to,
                                   BarResolution resolution) override;
 
@@ -61,13 +66,16 @@ private:
   mutable std::uint64_t http_calls_{0};
 };
 
+class UpstoxLiveFeed;
+
 class UpstoxProvider final : public DataProvider {
 public:
   explicit UpstoxProvider(UpstoxConfig config, const SymbolTable* symbols = nullptr);
+  ~UpstoxProvider() override;
 
   std::string_view name() const override { return "upstox"; }
   HistoricalDataLoader& historical_loader() override { return loader_; }
-  MarketDataFeed* live_feed() override { return nullptr; }  // Phase 9
+  MarketDataFeed* live_feed() override;
   DataProviderCapabilities capabilities() const override;
 
   UpstoxHistoricalLoader& upstox_loader() { return loader_; }
@@ -76,7 +84,10 @@ public:
   static void register_default_nse_eq(UpstoxHistoricalLoader& loader);
 
 private:
+  UpstoxConfig config_{};
+  const SymbolTable* symbols_{nullptr};
   UpstoxHistoricalLoader loader_;
+  std::unique_ptr<UpstoxLiveFeed> live_;
 };
 
 }  // namespace algocraft

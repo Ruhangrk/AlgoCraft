@@ -1,5 +1,7 @@
 #include "algocraft/market_data/upstox_provider.hpp"
 
+#include "algocraft/market_data/upstox_live_feed.hpp"
+
 #include <curl/curl.h>
 
 #include <algorithm>
@@ -373,8 +375,17 @@ std::vector<BarEvent> UpstoxHistoricalLoader::load_bars(SymbolId symbol_id, Time
 }
 
 UpstoxProvider::UpstoxProvider(UpstoxConfig config, const SymbolTable* symbols)
-    : loader_(std::move(config), symbols) {
+    : config_(config), symbols_(symbols), loader_(std::move(config), symbols) {
   register_default_nse_eq(loader_);
+}
+
+UpstoxProvider::~UpstoxProvider() = default;
+
+MarketDataFeed* UpstoxProvider::live_feed() {
+  if (!live_) {
+    live_ = std::make_unique<UpstoxLiveFeed>(config_, symbols_, loader_.instrument_keys());
+  }
+  return live_.get();
 }
 
 DataProviderCapabilities UpstoxProvider::capabilities() const {

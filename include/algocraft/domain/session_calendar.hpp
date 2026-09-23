@@ -1,8 +1,12 @@
 #pragma once
 
+#include <chrono>
+#include <optional>
+#include <string_view>
 #include <vector>
 
 #include "algocraft/domain/session_date.hpp"
+#include "algocraft/domain/timestamp.hpp"
 
 namespace algocraft {
 
@@ -118,6 +122,33 @@ inline std::vector<SessionDate> session_days(SessionDate from, SessionDate to) {
     }
   }
   return out;
+}
+
+inline Timestamp ist_at(SessionDate date, int hour, int minute) {
+  using namespace std::chrono;
+  const auto utc = sys_days{year{date.year()} / date.month() / date.day()} + hours{hour} +
+                   minutes{minute} - hours{5} - minutes{30};
+  return Timestamp::from_nanos(duration_cast<nanoseconds>(utc.time_since_epoch()).count());
+}
+
+inline Timestamp session_day_start(SessionDate date) { return ist_at(date, 0, 0); }
+inline Timestamp session_day_end(SessionDate date) { return ist_at(date, 23, 59); }
+
+// "HH:MM" → minutes from IST midnight.
+inline std::optional<int> parse_hhmm(std::string_view text) {
+  if (text.size() != 5 || text[2] != ':') {
+    return std::nullopt;
+  }
+  if (text[0] < '0' || text[0] > '9' || text[1] < '0' || text[1] > '9' || text[3] < '0' ||
+      text[3] > '9' || text[4] < '0' || text[4] > '9') {
+    return std::nullopt;
+  }
+  const int hour = (text[0] - '0') * 10 + (text[1] - '0');
+  const int minute = (text[3] - '0') * 10 + (text[4] - '0');
+  if (hour > 23 || minute > 59) {
+    return std::nullopt;
+  }
+  return hour * 60 + minute;
 }
 
 }  // namespace algocraft

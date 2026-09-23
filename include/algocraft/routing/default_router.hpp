@@ -10,6 +10,7 @@ public:
   void configure(const RoutingConfig& config) override;
   void start(DataSourceRegistry& data, StrategyRegistry& strategies,
              ContainerManager& containers) override;
+  [[nodiscard]] RouterDefaults defaults() const override;
   [[nodiscard]] std::string name() const override { return "default_router"; }
 
 private:

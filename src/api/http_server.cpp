@@ -21,7 +21,17 @@ HttpServer::HttpServer(Config config, SqliteDatabase& db, DataSourceRegistry& da
       activity_{db.handle()},
       workbooks_{db.handle()},
       instruments_{db.handle()},
-      backtests_{db.handle()} {}
+      backtests_{db.handle()} {
+  live_runs_ = std::make_unique<LiveRunService>(LiveRunService::Deps{
+      .data = data_,
+      .strategies = strategies_,
+      .symbols = symbols_,
+      .activity = activity_,
+      .workbooks = workbooks_,
+      .books = books_,
+      .hub = &status_hub_,
+  });
+}
 
 HttpServer::~HttpServer() { stop(); }
 
@@ -65,6 +75,8 @@ void HttpServer::start() {
                                          .fetch = fetch_,
                                          .backtests = &backtests_,
                                          .instruments = &instruments_,
+                                         .live_runs = live_runs_.get(),
+                                         .status_hub = &status_hub_,
                                      });
 
   app.loglevel(crow::LogLevel::Info);

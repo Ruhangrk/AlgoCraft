@@ -28,6 +28,7 @@ add_executable(algocraft_tests
   unit/test_auth.cpp
   unit/test_instruments.cpp
   unit/test_upstox.cpp
+  unit/test_live_feed.cpp
 )
 
 target_link_libraries(algocraft_tests
