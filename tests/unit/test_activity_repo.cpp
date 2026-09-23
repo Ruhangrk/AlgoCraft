@@ -277,6 +277,54 @@ TEST(ActivityRepository, SoftDeleteHidesRunFromList) {
   sqlite3_finalize(st);
 }
 
+TEST(ActivityRepository, FindContainerIncludesAllocation) {
+  Fixture fix;
+  algocraft::ActivityRepository repo(fix.db.handle());
+
+  sqlite3* db = fix.db.handle();
+  ASSERT_EQ(sqlite3_exec(db,
+                         "INSERT INTO users (id, username, password_hash) "
+                         "VALUES (1, 't', 'x');",
+                         nullptr, nullptr, nullptr),
+            SQLITE_OK);
+  ASSERT_EQ(sqlite3_exec(db,
+                         "INSERT INTO workbooks (id, user_id, name, main_capital_paise, "
+                         "available_paise) VALUES (42, 1, 'wb', 10000000, 10000000);",
+                         nullptr, nullptr, nullptr),
+            SQLITE_OK);
+  ASSERT_EQ(sqlite3_exec(db,
+                         "INSERT INTO runs (id, workbook_id, router, capital_paise, selected, "
+                         "skipped, fills, returned_paise) "
+                         "VALUES (7, 42, 'default_router', 10000000, 1, 0, 2, 10000000);",
+                         nullptr, nullptr, nullptr),
+            SQLITE_OK);
+  ASSERT_EQ(sqlite3_exec(db,
+                         "INSERT INTO containers (id, run_id, workbook_id, ticker, strategy_name, "
+                         "mode, allocation_paise, realized_paise, fills) "
+                         "VALUES (9, 7, 42, 'INFY', 'ema_crossover', 'real', 5000000, 12345, 2);",
+                         nullptr, nullptr, nullptr),
+            SQLITE_OK);
+
+  const auto found = repo.find_container(42, 9);
+  ASSERT_TRUE(found);
+  EXPECT_EQ(found->run_id, 7);
+  EXPECT_EQ(found->workbook_id, 42);
+  EXPECT_EQ(found->ticker, "INFY");
+  EXPECT_EQ(found->strategy_name, "ema_crossover");
+  EXPECT_EQ(found->mode, "real");
+  EXPECT_EQ(found->allocation_paise, 5'000'000);
+  EXPECT_EQ(found->realized_paise, 12'345);
+  EXPECT_EQ(found->fills, 2);
+
+  const auto listed = repo.list_containers(7);
+  ASSERT_EQ(listed.size(), 1u);
+  EXPECT_EQ(listed[0].allocation_paise, 5'000'000);
+  EXPECT_EQ(listed[0].run_id, 7);
+
+  EXPECT_FALSE(repo.find_container(42, 99).has_value());
+  EXPECT_FALSE(repo.find_container(99, 9).has_value());
+}
+
 TEST(ActivityRepository, TimelineHasRoutingAndLifecycle) {
   Fixture fix;
   algocraft::ActivityRepository repo(fix.db.handle());

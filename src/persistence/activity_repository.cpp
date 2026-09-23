@@ -508,22 +508,66 @@ std::vector<ActivityRepository::ContainerRow> ActivityRepository::list_container
     std::int64_t run_db_id) const {
   std::vector<ContainerRow> rows;
   Stmt st(db_,
-          "SELECT id, run_id, ticker, strategy_name, mode, realized_paise, fills "
+          "SELECT id, run_id, workbook_id, ticker, strategy_name, mode, "
+          "allocation_paise, realized_paise, fills, created_at "
           "FROM containers WHERE run_id=? AND deleted_at IS NULL ORDER BY id ASC");
   sqlite3_bind_int64(st.s, 1, run_db_id);
   while (sqlite3_step(st.s) == SQLITE_ROW) {
     ContainerRow r{};
     r.id = sqlite3_column_int64(st.s, 0);
     r.run_id = sqlite3_column_int64(st.s, 1);
-    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 2))) r.ticker = t;
-    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3)))
+    r.workbook_id = sqlite3_column_int64(st.s, 2);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3))) {
+      r.ticker = t;
+    }
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 4))) {
       r.strategy_name = t;
-    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 4))) r.mode = t;
-    r.realized_paise = sqlite3_column_int64(st.s, 5);
-    r.fills = sqlite3_column_int(st.s, 6);
-    rows.push_back(r);
+    }
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 5))) {
+      r.mode = t;
+    }
+    r.allocation_paise = sqlite3_column_int64(st.s, 6);
+    r.realized_paise = sqlite3_column_int64(st.s, 7);
+    r.fills = sqlite3_column_int(st.s, 8);
+    if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 9))) {
+      r.created_at = t;
+    }
+    rows.push_back(std::move(r));
   }
   return rows;
+}
+
+std::optional<ActivityRepository::ContainerRow> ActivityRepository::find_container(
+    std::int64_t workbook_db_id, std::int64_t container_id) const {
+  Stmt st(db_,
+          "SELECT id, run_id, workbook_id, ticker, strategy_name, mode, "
+          "allocation_paise, realized_paise, fills, created_at "
+          "FROM containers WHERE workbook_id=? AND id=? AND deleted_at IS NULL LIMIT 1");
+  sqlite3_bind_int64(st.s, 1, workbook_db_id);
+  sqlite3_bind_int64(st.s, 2, container_id);
+  if (sqlite3_step(st.s) != SQLITE_ROW) {
+    return std::nullopt;
+  }
+  ContainerRow r{};
+  r.id = sqlite3_column_int64(st.s, 0);
+  r.run_id = sqlite3_column_int64(st.s, 1);
+  r.workbook_id = sqlite3_column_int64(st.s, 2);
+  if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 3))) {
+    r.ticker = t;
+  }
+  if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 4))) {
+    r.strategy_name = t;
+  }
+  if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 5))) {
+    r.mode = t;
+  }
+  r.allocation_paise = sqlite3_column_int64(st.s, 6);
+  r.realized_paise = sqlite3_column_int64(st.s, 7);
+  r.fills = sqlite3_column_int(st.s, 8);
+  if (auto* t = reinterpret_cast<const char*>(sqlite3_column_text(st.s, 9))) {
+    r.created_at = t;
+  }
+  return r;
 }
 
 std::vector<ActivityRepository::FillRow> ActivityRepository::list_fills(

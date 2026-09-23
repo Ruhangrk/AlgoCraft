@@ -122,19 +122,159 @@ crow::json::wvalue fills_json(ActivityRepository& activity, std::int64_t wid) {
   return root;
 }
 
+crow::json::wvalue container_json(const ActivityRepository::ContainerRow& c) {
+  crow::json::wvalue root;
+  root["id"] = c.id;
+  root["run_id"] = c.run_id;
+  root["workbook_id"] = c.workbook_id;
+  root["ticker"] = c.ticker;
+  root["strategy"] = c.strategy_name;
+  root["mode"] = c.mode;
+  root["allocation_paise"] = c.allocation_paise;
+  root["realized_paise"] = c.realized_paise;
+  root["fills"] = c.fills;
+  root["created_at"] = c.created_at;
+  return root;
+}
+
 crow::json::wvalue containers_json(ActivityRepository& activity, std::int64_t wid) {
   crow::json::wvalue root = crow::json::wvalue::list();
   std::size_t i = 0;
   for (const auto& run : activity.list_runs(wid)) {
     for (const auto& c : activity.list_containers(run.id)) {
-      root[i]["id"] = c.id;
-      root[i]["ticker"] = c.ticker;
-      root[i]["strategy"] = c.strategy_name;
-      root[i]["mode"] = c.mode;
-      root[i]["fills"] = c.fills;
-      root[i]["realized_paise"] = c.realized_paise;
+      root[i] = container_json(c);
       ++i;
     }
+  }
+  return root;
+}
+
+bool include_has(std::string_view include, std::string_view key) {
+  if (include.empty() || include == "all") {
+    return true;
+  }
+  std::size_t start = 0;
+  while (start <= include.size()) {
+    const auto comma = include.find(',', start);
+    const auto part =
+        include.substr(start, comma == std::string::npos ? std::string::npos : comma - start);
+    if (part == key) {
+      return true;
+    }
+    if (comma == std::string::npos) {
+      break;
+    }
+    start = comma + 1;
+  }
+  return false;
+}
+
+// container_id == 0 → all events for the run. Otherwise filter rows that carry container_id.
+// Routing decisions have no container_id; omitted when filtering.
+crow::json::wvalue run_events_json(ActivityRepository& activity, std::int64_t rid,
+                                   std::string_view include, std::int64_t container_id) {
+  struct Item {
+    std::int64_t timestamp_ns{};
+    std::int64_t id{};
+    std::string type;
+    crow::json::wvalue body;
+  };
+  std::vector<Item> items;
+  const bool filter = container_id > 0;
+
+  if (include_has(include, "signal") || include_has(include, "signals")) {
+    for (const auto& s : activity.list_signals(rid)) {
+      if (filter && s.container_id != container_id) {
+        continue;
+      }
+      crow::json::wvalue body;
+      body["id"] = s.id;
+      body["container_id"] = s.container_id;
+      body["ticker"] = s.ticker;
+      body["strategy"] = s.strategy_name;
+      body["intent_count"] = s.intent_count;
+      body["indicators_json"] = s.indicators_json;
+      body["timestamp_ns"] = s.timestamp_ns;
+      items.push_back({s.timestamp_ns, s.id, "signal", std::move(body)});
+    }
+  }
+  if (include_has(include, "rejection") || include_has(include, "rejections")) {
+    for (const auto& r : activity.list_rejections(rid)) {
+      if (filter && r.container_id != container_id) {
+        continue;
+      }
+      crow::json::wvalue body;
+      body["id"] = r.id;
+      body["container_id"] = r.container_id;
+      body["ticker"] = r.ticker;
+      body["rule"] = r.rule_name;
+      body["reason"] = r.reason;
+      body["timestamp_ns"] = r.timestamp_ns;
+      items.push_back({r.timestamp_ns, r.id, "rejection", std::move(body)});
+    }
+  }
+  if (include_has(include, "fill") || include_has(include, "fills")) {
+    for (const auto& f : activity.list_fills(rid)) {
+      if (filter && f.container_id != container_id) {
+        continue;
+      }
+      crow::json::wvalue body;
+      body["id"] = f.id;
+      body["container_id"] = f.container_id;
+      body["ticker"] = f.ticker;
+      body["side"] = f.side;
+      body["qty"] = f.qty;
+      body["price_paise"] = f.price_paise;
+      body["fees_paise"] = f.fees_paise;
+      body["timestamp_ns"] = f.timestamp_ns;
+      items.push_back({f.timestamp_ns, f.id, "fill", std::move(body)});
+    }
+  }
+  if (!filter && (include_has(include, "routing") || include_has(include, "routing_decisions"))) {
+    for (const auto& r : activity.list_routing(rid)) {
+      crow::json::wvalue body;
+      body["id"] = r.id;
+      body["ticker"] = r.ticker;
+      body["strategy"] = r.strategy_name;
+      body["decision"] = r.decision;
+      body["score_paise"] = r.score_paise;
+      body["reason"] = r.reason;
+      body["timestamp_ns"] = r.timestamp_ns;
+      items.push_back({r.timestamp_ns, r.id, "routing", std::move(body)});
+    }
+  }
+  if (include_has(include, "lifecycle") || include_has(include, "container_events")) {
+    for (const auto& e : activity.list_lifecycle(rid)) {
+      if (filter && e.container_id != container_id) {
+        continue;
+      }
+      crow::json::wvalue body;
+      body["id"] = e.id;
+      body["container_id"] = e.container_id;
+      body["ticker"] = e.ticker;
+      body["event_type"] = e.event_type;
+      body["detail"] = e.detail;
+      body["timestamp_ns"] = e.timestamp_ns;
+      items.push_back({e.timestamp_ns, e.id, "lifecycle", std::move(body)});
+    }
+  }
+
+  std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+    if (a.timestamp_ns != b.timestamp_ns) {
+      return a.timestamp_ns < b.timestamp_ns;
+    }
+    if (a.type != b.type) {
+      return a.type < b.type;
+    }
+    return a.id < b.id;
+  });
+
+  crow::json::wvalue root = crow::json::wvalue::list();
+  for (std::size_t i = 0; i < items.size(); ++i) {
+    root[i]["type"] = items[i].type;
+    root[i]["timestamp_ns"] = items[i].timestamp_ns;
+    root[i]["id"] = items[i].id;
+    root[i]["data"] = std::move(items[i].body);
   }
   return root;
 }
@@ -382,120 +522,9 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (!activity->find_run(wid, rid)) {
           return json_error(404, "run not found");
         }
-
         const auto include = query_string(req, "include");
-        const auto has = [&](std::string_view key) {
-          if (include.empty() || include == "all") {
-            return true;
-          }
-          // comma-separated tokens
-          std::size_t start = 0;
-          while (start <= include.size()) {
-            const auto comma = include.find(',', start);
-            const auto part = include.substr(
-                start, comma == std::string::npos ? std::string::npos : comma - start);
-            if (part == key) {
-              return true;
-            }
-            if (comma == std::string::npos) {
-              break;
-            }
-            start = comma + 1;
-          }
-          return false;
-        };
-
-        struct Item {
-          std::int64_t timestamp_ns{};
-          std::int64_t id{};
-          std::string type;
-          crow::json::wvalue body;
-        };
-        std::vector<Item> items;
-
-        if (has("signal") || has("signals")) {
-          for (const auto& s : activity->list_signals(rid)) {
-            crow::json::wvalue body;
-            body["id"] = s.id;
-            body["container_id"] = s.container_id;
-            body["ticker"] = s.ticker;
-            body["strategy"] = s.strategy_name;
-            body["intent_count"] = s.intent_count;
-            body["indicators_json"] = s.indicators_json;
-            body["timestamp_ns"] = s.timestamp_ns;
-            items.push_back({s.timestamp_ns, s.id, "signal", std::move(body)});
-          }
-        }
-        if (has("rejection") || has("rejections")) {
-          for (const auto& r : activity->list_rejections(rid)) {
-            crow::json::wvalue body;
-            body["id"] = r.id;
-            body["container_id"] = r.container_id;
-            body["ticker"] = r.ticker;
-            body["rule"] = r.rule_name;
-            body["reason"] = r.reason;
-            body["timestamp_ns"] = r.timestamp_ns;
-            items.push_back({r.timestamp_ns, r.id, "rejection", std::move(body)});
-          }
-        }
-        if (has("fill") || has("fills")) {
-          for (const auto& f : activity->list_fills(rid)) {
-            crow::json::wvalue body;
-            body["id"] = f.id;
-            body["container_id"] = f.container_id;
-            body["ticker"] = f.ticker;
-            body["side"] = f.side;
-            body["qty"] = f.qty;
-            body["price_paise"] = f.price_paise;
-            body["fees_paise"] = f.fees_paise;
-            body["timestamp_ns"] = f.timestamp_ns;
-            items.push_back({f.timestamp_ns, f.id, "fill", std::move(body)});
-          }
-        }
-        if (has("routing") || has("routing_decisions")) {
-          for (const auto& r : activity->list_routing(rid)) {
-            crow::json::wvalue body;
-            body["id"] = r.id;
-            body["ticker"] = r.ticker;
-            body["strategy"] = r.strategy_name;
-            body["decision"] = r.decision;
-            body["score_paise"] = r.score_paise;
-            body["reason"] = r.reason;
-            body["timestamp_ns"] = r.timestamp_ns;
-            items.push_back({r.timestamp_ns, r.id, "routing", std::move(body)});
-          }
-        }
-        if (has("lifecycle") || has("container_events")) {
-          for (const auto& e : activity->list_lifecycle(rid)) {
-            crow::json::wvalue body;
-            body["id"] = e.id;
-            body["container_id"] = e.container_id;
-            body["ticker"] = e.ticker;
-            body["event_type"] = e.event_type;
-            body["detail"] = e.detail;
-            body["timestamp_ns"] = e.timestamp_ns;
-            items.push_back({e.timestamp_ns, e.id, "lifecycle", std::move(body)});
-          }
-        }
-
-        std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
-          if (a.timestamp_ns != b.timestamp_ns) {
-            return a.timestamp_ns < b.timestamp_ns;
-          }
-          if (a.type != b.type) {
-            return a.type < b.type;
-          }
-          return a.id < b.id;
-        });
-
-        crow::json::wvalue root = crow::json::wvalue::list();
-        for (std::size_t i = 0; i < items.size(); ++i) {
-          root[i]["type"] = items[i].type;
-          root[i]["timestamp_ns"] = items[i].timestamp_ns;
-          root[i]["id"] = items[i].id;
-          root[i]["data"] = std::move(items[i].body);
-        }
-        return json_ok(std::move(root));
+        const auto container_id = query_int64(req, "container_id", 0);
+        return json_ok(run_events_json(*activity, rid, include, container_id));
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/history")
@@ -599,6 +628,38 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           return json_error(404, "workbook not found");
         }
         return json_ok(portfolio_json(wid, *row));
+      });
+
+  // Register detail/events before the bare /containers list is fine (Crow matches by path).
+  CROW_ROUTE(app, "/workbooks/<int>/containers/<int>/events")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, activity](const crow::request& req,
+                                                                  std::int64_t wid,
+                                                                  std::int64_t cid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        const auto row = activity->find_container(wid, cid);
+        if (!row) {
+          return json_error(404, "container not found");
+        }
+        const auto include = query_string(req, "include");
+        return json_ok(run_events_json(*activity, row->run_id, include, cid));
+      });
+
+  CROW_ROUTE(app, "/workbooks/<int>/containers/<int>")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, activity](const crow::request& req,
+                                                                  std::int64_t wid,
+                                                                  std::int64_t cid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        const auto row = activity->find_container(wid, cid);
+        if (!row) {
+          return json_error(404, "container not found");
+        }
+        return json_ok(container_json(*row));
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/containers")

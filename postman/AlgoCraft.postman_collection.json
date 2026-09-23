@@ -276,6 +276,43 @@
                   "key": "include",
                   "value": "all",
                   "description": "all | comma list: signals,rejections,fills,routing,lifecycle"
+                },
+                {
+                  "key": "container_id",
+                  "value": "{{container_id}}",
+                  "description": "optional; filter to one container (omits routing)",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get container",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/containers/{{container_id}}"
+          }
+        },
+        {
+          "name": "Container events",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/workbooks/{{workbook_id}}/containers/{{container_id}}/events?include=all",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "workbooks",
+                "{{workbook_id}}",
+                "containers",
+                "{{container_id}}",
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "include",
+                  "value": "all",
+                  "description": "signals,rejections,fills,lifecycle (no routing)"
                 }
               ]
             }

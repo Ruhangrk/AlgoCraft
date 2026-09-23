@@ -52,11 +52,14 @@ public:
   struct ContainerRow {
     std::int64_t id{};
     std::int64_t run_id{};
+    std::int64_t workbook_id{};
     std::string ticker;
     std::string strategy_name;
     std::string mode;
+    std::int64_t allocation_paise{};
     std::int64_t realized_paise{};
     int fills{};
+    std::string created_at;
   };
 
   struct FillRow {
@@ -120,6 +123,9 @@ public:
   [[nodiscard]] bool soft_delete_run(std::int64_t workbook_db_id, std::int64_t run_id);
 
   [[nodiscard]] std::vector<ContainerRow> list_containers(std::int64_t run_db_id) const;
+  // workbook-scoped lookup (404 if wrong workbook or soft-deleted).
+  [[nodiscard]] std::optional<ContainerRow> find_container(std::int64_t workbook_db_id,
+                                                           std::int64_t container_id) const;
   [[nodiscard]] std::vector<FillRow> list_fills(std::int64_t run_db_id) const;
   [[nodiscard]] std::vector<SignalRow> list_signals(std::int64_t run_db_id) const;
   [[nodiscard]] std::vector<RejectionRow> list_rejections(std::int64_t run_db_id) const;

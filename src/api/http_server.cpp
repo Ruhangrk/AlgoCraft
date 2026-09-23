@@ -67,7 +67,7 @@ void HttpServer::start() {
                                          .instruments = &instruments_,
                                      });
 
-  app.loglevel(crow::LogLevel::Warning);
+  app.loglevel(crow::LogLevel::Info);
   spdlog::info("API listening on http://{}:{} (Crow)", config_.host, config_.port);
   app.bindaddr(config_.host).port(static_cast<std::uint16_t>(config_.port)).run();
   app_ = nullptr;
