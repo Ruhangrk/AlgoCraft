@@ -155,4 +155,111 @@ bool BacktestRepository::soft_delete(std::int64_t workbook_id, std::int64_t back
   return sqlite3_changes(db_) > 0;
 }
 
+void BacktestRepository::insert_events(std::int64_t workbook_id, std::int64_t backtest_id,
+                                       const BacktestEventBatch& events) {
+  for (const auto& s : events.signals) {
+    Stmt st(db_,
+            "INSERT INTO backtest_signals (workbook_id, backtest_id, ticker, strategy_name, "
+            "intent_count, indicators_json, timestamp_ns) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    sqlite3_bind_int64(st.s, 1, workbook_id);
+    sqlite3_bind_int64(st.s, 2, backtest_id);
+    bind_text(st.s, 3, s.ticker.empty() ? "" : s.ticker);
+    bind_text(st.s, 4, s.strategy_name);
+    sqlite3_bind_int(st.s, 5, s.intent_count);
+    bind_text(st.s, 6, s.indicators_json.empty() ? "{}" : s.indicators_json);
+    sqlite3_bind_int64(st.s, 7, s.timestamp_ns);
+    if (sqlite3_step(st.s) != SQLITE_DONE) {
+      throw std::runtime_error(std::string("backtest_signals insert: ") + sqlite3_errmsg(db_));
+    }
+  }
+  for (const auto& r : events.rejections) {
+    Stmt st(db_,
+            "INSERT INTO backtest_rejections (workbook_id, backtest_id, ticker, rule_name, "
+            "reason, timestamp_ns) VALUES (?, ?, ?, ?, ?, ?)");
+    sqlite3_bind_int64(st.s, 1, workbook_id);
+    sqlite3_bind_int64(st.s, 2, backtest_id);
+    bind_text(st.s, 3, r.ticker);
+    bind_text(st.s, 4, r.rule_name);
+    bind_text(st.s, 5, r.reason);
+    sqlite3_bind_int64(st.s, 6, r.timestamp_ns);
+    if (sqlite3_step(st.s) != SQLITE_DONE) {
+      throw std::runtime_error(std::string("backtest_rejections insert: ") + sqlite3_errmsg(db_));
+    }
+  }
+  for (const auto& f : events.fills) {
+    Stmt st(db_,
+            "INSERT INTO backtest_fills (workbook_id, backtest_id, ticker, side, qty, "
+            "price_paise, fees_paise, timestamp_ns) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    sqlite3_bind_int64(st.s, 1, workbook_id);
+    sqlite3_bind_int64(st.s, 2, backtest_id);
+    bind_text(st.s, 3, f.ticker);
+    bind_text(st.s, 4, f.side);
+    sqlite3_bind_int64(st.s, 5, f.qty);
+    sqlite3_bind_int64(st.s, 6, f.price_paise);
+    sqlite3_bind_int64(st.s, 7, f.fees_paise);
+    sqlite3_bind_int64(st.s, 8, f.timestamp_ns);
+    if (sqlite3_step(st.s) != SQLITE_DONE) {
+      throw std::runtime_error(std::string("backtest_fills insert: ") + sqlite3_errmsg(db_));
+    }
+  }
+}
+
+std::vector<BacktestSignalRow> BacktestRepository::list_signals(std::int64_t backtest_id) const {
+  Stmt st(db_,
+          "SELECT id, ticker, strategy_name, intent_count, indicators_json, timestamp_ns "
+          "FROM backtest_signals WHERE backtest_id=? ORDER BY timestamp_ns ASC, id ASC");
+  sqlite3_bind_int64(st.s, 1, backtest_id);
+  std::vector<BacktestSignalRow> out;
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    BacktestSignalRow row;
+    row.id = sqlite3_column_int64(st.s, 0);
+    row.ticker = column_text(st.s, 1);
+    row.strategy_name = column_text(st.s, 2);
+    row.intent_count = sqlite3_column_int(st.s, 3);
+    row.indicators_json = column_text(st.s, 4);
+    row.timestamp_ns = sqlite3_column_int64(st.s, 5);
+    out.push_back(std::move(row));
+  }
+  return out;
+}
+
+std::vector<BacktestRejectionRow> BacktestRepository::list_rejections(
+    std::int64_t backtest_id) const {
+  Stmt st(db_,
+          "SELECT id, ticker, rule_name, reason, timestamp_ns "
+          "FROM backtest_rejections WHERE backtest_id=? ORDER BY timestamp_ns ASC, id ASC");
+  sqlite3_bind_int64(st.s, 1, backtest_id);
+  std::vector<BacktestRejectionRow> out;
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    BacktestRejectionRow row;
+    row.id = sqlite3_column_int64(st.s, 0);
+    row.ticker = column_text(st.s, 1);
+    row.rule_name = column_text(st.s, 2);
+    row.reason = column_text(st.s, 3);
+    row.timestamp_ns = sqlite3_column_int64(st.s, 4);
+    out.push_back(std::move(row));
+  }
+  return out;
+}
+
+std::vector<BacktestFillRow> BacktestRepository::list_fills(std::int64_t backtest_id) const {
+  Stmt st(db_,
+          "SELECT id, ticker, side, qty, price_paise, fees_paise, timestamp_ns "
+          "FROM backtest_fills WHERE backtest_id=? ORDER BY timestamp_ns ASC, id ASC");
+  sqlite3_bind_int64(st.s, 1, backtest_id);
+  std::vector<BacktestFillRow> out;
+  while (sqlite3_step(st.s) == SQLITE_ROW) {
+    BacktestFillRow row;
+    row.id = sqlite3_column_int64(st.s, 0);
+    row.ticker = column_text(st.s, 1);
+    row.side = column_text(st.s, 2);
+    row.qty = sqlite3_column_int64(st.s, 3);
+    row.price_paise = sqlite3_column_int64(st.s, 4);
+    row.fees_paise = sqlite3_column_int64(st.s, 5);
+    row.timestamp_ns = sqlite3_column_int64(st.s, 6);
+    out.push_back(std::move(row));
+  }
+  return out;
+}
+
 }  // namespace algocraft

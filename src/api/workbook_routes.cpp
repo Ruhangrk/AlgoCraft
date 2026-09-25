@@ -311,6 +311,76 @@ crow::json::wvalue backtests_json(const std::vector<BacktestRow>& rows) {
   return root;
 }
 
+crow::json::wvalue backtest_events_json(BacktestRepository& backtests, std::int64_t bid,
+                                        std::string_view include) {
+  struct Item {
+    std::int64_t timestamp_ns{};
+    std::int64_t id{};
+    std::string type;
+    crow::json::wvalue body;
+  };
+  std::vector<Item> items;
+
+  if (include_has(include, "signal") || include_has(include, "signals")) {
+    for (const auto& s : backtests.list_signals(bid)) {
+      crow::json::wvalue body;
+      body["id"] = s.id;
+      body["container_id"] = 0;
+      body["ticker"] = s.ticker;
+      body["strategy"] = s.strategy_name;
+      body["intent_count"] = s.intent_count;
+      body["indicators_json"] = s.indicators_json;
+      body["timestamp_ns"] = s.timestamp_ns;
+      items.push_back({s.timestamp_ns, s.id, "signal", std::move(body)});
+    }
+  }
+  if (include_has(include, "rejection") || include_has(include, "rejections")) {
+    for (const auto& r : backtests.list_rejections(bid)) {
+      crow::json::wvalue body;
+      body["id"] = r.id;
+      body["container_id"] = 0;
+      body["ticker"] = r.ticker;
+      body["rule"] = r.rule_name;
+      body["reason"] = r.reason;
+      body["timestamp_ns"] = r.timestamp_ns;
+      items.push_back({r.timestamp_ns, r.id, "rejection", std::move(body)});
+    }
+  }
+  if (include_has(include, "fill") || include_has(include, "fills")) {
+    for (const auto& f : backtests.list_fills(bid)) {
+      crow::json::wvalue body;
+      body["id"] = f.id;
+      body["container_id"] = 0;
+      body["ticker"] = f.ticker;
+      body["side"] = f.side;
+      body["qty"] = f.qty;
+      body["price_paise"] = f.price_paise;
+      body["fees_paise"] = f.fees_paise;
+      body["timestamp_ns"] = f.timestamp_ns;
+      items.push_back({f.timestamp_ns, f.id, "fill", std::move(body)});
+    }
+  }
+
+  std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+    if (a.timestamp_ns != b.timestamp_ns) {
+      return a.timestamp_ns < b.timestamp_ns;
+    }
+    if (a.type != b.type) {
+      return a.type < b.type;
+    }
+    return a.id < b.id;
+  });
+
+  crow::json::wvalue root = crow::json::wvalue::list();
+  for (std::size_t i = 0; i < items.size(); ++i) {
+    root[i]["type"] = items[i].type;
+    root[i]["timestamp_ns"] = items[i].timestamp_ns;
+    root[i]["id"] = items[i].id;
+    root[i]["data"] = std::move(items[i].body);
+  }
+  return root;
+}
+
 std::optional<std::int64_t> parse_ws_workbook_id(std::string_view url, const char* suffix) {
   constexpr std::string_view kPrefix = "/ws/workbooks/";
   if (url.rfind(kPrefix, 0) != 0) {
@@ -850,6 +920,26 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           return json_error(503, "backtests not configured");
         }
         return json_ok(backtests_json(backtests->list_for_workbook(wid, backtest_list_filter(req))));
+      });
+
+  CROW_ROUTE(app, "/workbooks/<int>/backtests/<int>/events")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, backtests](const crow::request& req,
+                                                                   std::int64_t wid,
+                                                                   std::int64_t bid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
+        }
+        if (backtests == nullptr) {
+          return json_error(503, "backtests not configured");
+        }
+        if (!backtests->find(wid, bid)) {
+          return json_error(404, "backtest not found");
+        }
+        const auto include = req.url_params.get("include")
+                                 ? std::string{req.url_params.get("include")}
+                                 : std::string{"all"};
+        return json_ok(backtest_events_json(*backtests, bid, include));
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/backtests/<int>")

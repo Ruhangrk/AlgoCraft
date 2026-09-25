@@ -11,6 +11,10 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
 
+# GCC 15 defaults to DWARF 5; CodeLLDB often crashes on it. Force DWARF 4 for Debug.
+set(CMAKE_CXX_FLAGS_DEBUG "-g -gdwarf-4" CACHE STRING "Debug C++ flags" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-g -gdwarf-4" CACHE STRING "Debug C flags" FORCE)
+
 option(ALGOCRAFT_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(ALGOCRAFT_BUILD_TESTS "Build unit tests" ON)
 
@@ -60,6 +64,7 @@ add_library(algocraft
   src/risk/risk_engine.cpp
   src/routing/default_router.cpp
   src/routing/routing_algo_registry.cpp
+  src/strategies/bajaj_custom_strategy.cpp
   src/strategies/consecutive_up_clip.cpp
   src/strategies/ema_crossover.cpp
   src/strategies/opening_range_breakout.cpp

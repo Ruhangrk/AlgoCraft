@@ -1,10 +1,12 @@
 #include "algocraft/backtest/backtest_service.hpp"
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
 #include "algocraft/backtest/backtest_runner.hpp"
 #include "algocraft/domain/bar_resolution.hpp"
+#include "algocraft/domain/enums.hpp"
 #include "algocraft/domain/instrument.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
@@ -82,6 +84,7 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
 
   BacktestRequest req{};
   req.symbol_id = *symbol_id;
+  req.workbook_id = WorkbookId::from_u64(static_cast<std::uint64_t>(request.workbook_id));
   req.from = request.from;
   req.to = request.to;
   req.starting_capital = request.capital;
@@ -109,6 +112,40 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
   row.bars = static_cast<int>(out.result.bars);
   row.status = "completed";
   row.id = backtests_->insert(row);
+
+  BacktestEventBatch events{};
+  events.signals.reserve(out.result.signals.size());
+  for (const auto& s : out.result.signals) {
+    events.signals.push_back(BacktestSignalRow{
+        .ticker = request.ticker,
+        .strategy_name = request.strategy_name,
+        .intent_count = s.intent_count,
+        .indicators_json = s.indicators_json,
+        .timestamp_ns = s.timestamp_ns,
+    });
+  }
+  events.rejections.reserve(out.result.rejections.size());
+  for (const auto& r : out.result.rejections) {
+    events.rejections.push_back(BacktestRejectionRow{
+        .ticker = request.ticker,
+        .rule_name = r.rule,
+        .reason = r.reason,
+        .timestamp_ns = r.timestamp_ns,
+    });
+  }
+  events.fills.reserve(out.result.fills_log.size());
+  for (const auto& f : out.result.fills_log) {
+    events.fills.push_back(BacktestFillRow{
+        .ticker = request.ticker,
+        .side = f.side == Side::Buy ? "buy" : "sell",
+        .qty = f.qty,
+        .price_paise = f.price_paise,
+        .fees_paise = f.fees_paise,
+        .timestamp_ns = f.timestamp_ns,
+    });
+  }
+  backtests_->insert_events(request.workbook_id, row.id, events);
+
   out.row = *backtests_->find(request.workbook_id, row.id);
   return out;
 }

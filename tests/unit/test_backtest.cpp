@@ -92,7 +92,7 @@ TEST(StrategyRegistry, ListsBuiltIns) {
   algocraft::StrategyRegistry registry;
   algocraft::register_all_strategies(registry);
   const auto names = registry.names();
-  EXPECT_EQ(names.size(), 4u);
+  EXPECT_EQ(names.size(), 5u);
   const auto ema = registry.create("ema_crossover");
   ASSERT_FALSE(ema->metadata().required_indicators.empty());
 }

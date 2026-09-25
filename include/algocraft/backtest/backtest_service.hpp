@@ -33,7 +33,8 @@ struct ManualBacktestOutcome {
   BacktestResult result{};
 };
 
-// Ensure 1m → BacktestRunner → persist backtests row.
+// Ensure 1m → BacktestRunner (BACKTEST TradingContainer replay) → persist backtests row
+// + signal/rejection/fill event rows for the detail timeline.
 // Capital is simulation-only (UI value); does not borrow/return workbook available.
 class BacktestService {
 public:

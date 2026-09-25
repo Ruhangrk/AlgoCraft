@@ -56,6 +56,7 @@ public:
   [[nodiscard]] ContainerStatus status() const { return status_; }
   [[nodiscard]] Capital cash() const { return cash_; }
   [[nodiscard]] Quantity position() const { return position_; }
+  [[nodiscard]] Price avg_entry() const { return avg_entry_; }
   [[nodiscard]] Capital realized() const { return realized_; }
   [[nodiscard]] RiskResult last_rejection() const { return last_rejection_; }
   [[nodiscard]] SymbolId symbol_id() const { return config_.symbol_id; }
@@ -63,9 +64,11 @@ public:
   [[nodiscard]] bool has_bar() const { return have_bar_; }
   [[nodiscard]] Price last_price() const { return last_bar_.close; }
   [[nodiscard]] int fills() const { return fills_; }
+  [[nodiscard]] Capital fees() const { return fees_; }
   [[nodiscard]] Capital allocation() const {
     return config_.mode == ContainerMode::Real ? config_.real_allocation : config_.sim_cash;
   }
+  [[nodiscard]] const std::vector<FillEvent>& fill_events() const { return fill_events_; }
 
   struct SignalRecord {
     Timestamp timestamp{};
@@ -103,6 +106,8 @@ private:
   std::vector<OrderIntent> intents_{};
   RiskResult last_rejection_{};
   int fills_{0};
+  Capital fees_{};
+  std::vector<FillEvent> fill_events_{};
   std::vector<SignalRecord> signals_{};
   std::vector<RejectionRecord> rejections_{};
 };

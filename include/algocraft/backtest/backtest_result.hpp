@@ -28,6 +28,18 @@ struct DailySnapshot {
   int wins{0};
 };
 
+struct LoggedSignal {
+  std::int64_t timestamp_ns{0};
+  int intent_count{0};
+  std::string indicators_json;
+};
+
+struct LoggedRejection {
+  std::int64_t timestamp_ns{0};
+  std::string rule;
+  std::string reason;
+};
+
 struct BacktestResult {
   std::string strategy_name;
   std::int64_t starting_capital_paise{0};
@@ -44,6 +56,9 @@ struct BacktestResult {
   std::size_t bars{0};
   std::vector<DailySnapshot> daily{};
   std::vector<LoggedFill> fills_log{};
+  // In-memory only for now (manual backtest does not persist these yet).
+  std::vector<LoggedSignal> signals{};
+  std::vector<LoggedRejection> rejections{};
 };
 
 }  // namespace algocraft

@@ -142,6 +142,10 @@ TEST(BacktestService, PersistDeterministicEmaWithoutTouchingWorkbookCapital) {
   ASSERT_EQ(paged.size(), 1u);
   EXPECT_EQ(paged[0].id, b.row.id);
 
+  // Soft-deleted backtest a still has orphan event rows; b is live and must have timeline data.
+  EXPECT_EQ(static_cast<int>(backtests.list_fills(b.row.id).size()), b.result.fills);
+  EXPECT_FALSE(backtests.list_signals(b.row.id).empty());
+
   db.close();
   std::error_code ec;
   std::filesystem::remove_all(dir, ec);

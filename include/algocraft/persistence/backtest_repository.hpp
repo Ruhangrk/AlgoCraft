@@ -36,12 +36,48 @@ struct BacktestListFilter {
   std::int64_t cursor{0};  // return id < cursor
 };
 
+struct BacktestSignalRow {
+  std::int64_t id{};
+  std::string ticker;
+  std::string strategy_name;
+  int intent_count{1};
+  std::string indicators_json;
+  std::int64_t timestamp_ns{};
+};
+
+struct BacktestRejectionRow {
+  std::int64_t id{};
+  std::string ticker;
+  std::string rule_name;
+  std::string reason;
+  std::int64_t timestamp_ns{};
+};
+
+struct BacktestFillRow {
+  std::int64_t id{};
+  std::string ticker;
+  std::string side;
+  std::int64_t qty{};
+  std::int64_t price_paise{};
+  std::int64_t fees_paise{};
+  std::int64_t timestamp_ns{};
+};
+
+struct BacktestEventBatch {
+  std::vector<BacktestSignalRow> signals;
+  std::vector<BacktestRejectionRow> rejections;
+  std::vector<BacktestFillRow> fills;
+};
+
 class BacktestRepository {
 public:
   explicit BacktestRepository(sqlite3* db);
 
   // Inserts a completed row; returns new id.
   [[nodiscard]] std::int64_t insert(const BacktestRow& row);
+
+  void insert_events(std::int64_t workbook_id, std::int64_t backtest_id,
+                     const BacktestEventBatch& events);
 
   [[nodiscard]] std::optional<BacktestRow> find(std::int64_t workbook_id,
                                                 std::int64_t backtest_id) const;
@@ -52,6 +88,10 @@ public:
                                                            const BacktestListFilter& filter) const;
   // Soft-delete: sets deleted_at. Returns false if missing/already deleted.
   [[nodiscard]] bool soft_delete(std::int64_t workbook_id, std::int64_t backtest_id);
+
+  [[nodiscard]] std::vector<BacktestSignalRow> list_signals(std::int64_t backtest_id) const;
+  [[nodiscard]] std::vector<BacktestRejectionRow> list_rejections(std::int64_t backtest_id) const;
+  [[nodiscard]] std::vector<BacktestFillRow> list_fills(std::int64_t backtest_id) const;
 
 private:
   sqlite3* db_{nullptr};

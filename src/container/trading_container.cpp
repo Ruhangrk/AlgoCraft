@@ -170,6 +170,8 @@ void TradingContainer::on_bar(const BarEvent& bar) {
 void TradingContainer::on_fill(const FillEvent& fill) {
   apply_fill(fill);
   ++fills_;
+  fees_ = Capital::from_paise(fees_.paise() + fill.fees.paise());
+  fill_events_.push_back(fill);
   if (strategy_ != nullptr) {
     strategy_->on_fill(fill);
   }

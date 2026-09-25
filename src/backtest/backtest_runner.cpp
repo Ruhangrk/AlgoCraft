@@ -3,13 +3,15 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <type_traits>
+#include <memory>
 #include <vector>
 
-#include "algocraft/engine/spsc_ring.hpp"
-#include "algocraft/indicators/indicator_library.hpp"
+#include "algocraft/container/trading_container.hpp"
+#include "algocraft/domain/enums.hpp"
+#include "algocraft/domain/events.hpp"
+#include "algocraft/execution/simulated_exchange.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
-#include "algocraft/strategies/make_intent.hpp"
+#include "algocraft/risk/risk_engine.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
 
 namespace algocraft {
@@ -17,8 +19,6 @@ namespace {
 
 constexpr std::int64_t kNanosPerDay = 86'400'000'000'000LL;
 constexpr std::int64_t kNanosPerSecond = 1'000'000'000LL;
-
-static_assert(std::is_trivially_copyable_v<BarEvent>);
 
 double sharpe_from_equity(const std::vector<std::int64_t>& equity) {
   if (equity.size() < 3) {
@@ -55,65 +55,15 @@ double sharpe_from_equity(const std::vector<std::int64_t>& equity) {
 
 std::int64_t utc_day(const BarEvent& bar) { return bar.timestamp.nanos() / kNanosPerDay; }
 
-struct Book {
-  Capital cash{};
-  Quantity position{};
-  Price avg_entry{};
-  Capital entry_fees{};
-  Timestamp entry_ts{};
-  Capital realized{};
-  Capital fees{};
-  int fills{0};
-  int round_trips{0};
-  int wins{0};
-  std::int64_t hold_ns_sum{0};
-};
-
-void apply_fill(Book& book, const FillEvent& fill) {
-  book.cash = Capital::from_paise(book.cash.paise() + fill.net_cash_impact.paise());
-  book.fees = Capital::from_paise(book.fees.paise() + fill.fees.paise());
-  ++book.fills;
-  if (fill.side == Side::Buy) {
-    if (book.position.shares() == 0) {
-      book.position = fill.filled_qty;
-      book.avg_entry = fill.fill_price;
-      book.entry_fees = fill.fees;
-      book.entry_ts = fill.timestamp;
-    } else {
-      const auto old_n = book.avg_entry.paise() * book.position.shares();
-      const auto add_n = fill.fill_price.paise() * fill.filled_qty.shares();
-      const auto new_q = book.position.shares() + fill.filled_qty.shares();
-      book.position = Quantity::from_shares(new_q);
-      book.avg_entry = Price::from_paise((old_n + add_n) / new_q);
-      book.entry_fees = Capital::from_paise(book.entry_fees.paise() + fill.fees.paise());
-    }
-    return;
-  }
-  const auto pnl = notional(fill.fill_price, fill.filled_qty).paise() -
-                   notional(book.avg_entry, fill.filled_qty).paise() - fill.fees.paise() -
-                   book.entry_fees.paise();
-  book.realized = Capital::from_paise(book.realized.paise() + pnl);
-  ++book.round_trips;
-  if (pnl > 0) {
-    ++book.wins;
-  }
-  if (book.entry_ts.nanos() != 0) {
-    book.hold_ns_sum += fill.timestamp.nanos() - book.entry_ts.nanos();
-  }
-  book.position = {};
-  book.avg_entry = {};
-  book.entry_fees = {};
-  book.entry_ts = {};
-}
-
-std::int64_t marked_equity(const Book& book, const BarEvent& bar, TradingMode mode) {
-  std::int64_t eq = book.cash.paise();
-  if (book.position.shares() == 0) {
+std::int64_t marked_equity(const TradingContainer& c, const BarEvent& bar, TradingMode mode) {
+  std::int64_t eq = c.cash().paise();
+  if (c.position().shares() == 0) {
     return eq;
   }
   const int leverage = (mode == TradingMode::Mis) ? 5 : 1;
-  const auto loan = book.avg_entry.paise() * book.position.shares() * (leverage - 1) / leverage;
-  return eq + bar.close.paise() * book.position.shares() - loan;
+  const auto loan =
+      c.avg_entry().paise() * c.position().shares() * (leverage - 1) / leverage;
+  return eq + bar.close.paise() * c.position().shares() - loan;
 }
 
 }  // namespace
@@ -121,107 +71,80 @@ std::int64_t marked_equity(const Book& book, const BarEvent& bar, TradingMode mo
 BacktestResult BacktestRunner::run(DataSourceRegistry& registry, StrategyRegistry& strategies,
                                    const BacktestRequest& request) {
   auto strategy = strategies.create(request.strategy_name);
-  IndicatorLibrary lib;
   StrategyConfig cfg = request.strategy;
   cfg.symbol_id = request.symbol_id;
-  strategy->configure(cfg, lib);
   const auto mode = strategy->metadata().trading_mode;
+  const auto resolution = strategy->metadata().required_resolution;
 
   auto bars = registry.active_provider().historical_loader().load_bars(
-      request.symbol_id, request.from, request.to, strategy->metadata().required_resolution);
+      request.symbol_id, request.from, request.to, resolution);
 
-  SimulatedExchange exchange;
-  Book book{};
-  book.cash = request.starting_capital;
-  std::int64_t peak = book.cash.paise();
+  SimulatedExchange venue;
+  RiskEngine risk;
+  TradingContainerConfig ccfg{};
+  ccfg.id = ContainerId::from(1);
+  ccfg.workbook_id = request.workbook_id;
+  ccfg.symbol_id = request.symbol_id;
+  ccfg.strategy_id = StrategyId::from(1);
+  ccfg.trading_mode = mode;
+  ccfg.mode = ContainerMode::Backtest;
+  ccfg.sim_cash = request.starting_capital;
+  ccfg.real_allocation = request.starting_capital;
+  ccfg.strategy_name = request.strategy_name;
+  ccfg.strategy = cfg;
+
+  TradingContainer container(std::move(ccfg), std::move(strategy), venue, risk, nullptr);
+  const auto started = container.start();
+  if (!started.ok) {
+    BacktestResult empty{};
+    empty.strategy_name = request.strategy_name;
+    empty.starting_capital_paise = request.starting_capital.paise();
+    empty.ending_equity_paise = request.starting_capital.paise();
+    empty.bars = bars.size();
+    return empty;
+  }
+
+  std::int64_t peak = request.starting_capital.paise();
   std::int64_t max_dd = 0;
   std::vector<std::int64_t> equity;
   equity.reserve(bars.size());
-  std::vector<OrderIntent> intents;
-  intents.reserve(4);
-  std::vector<LoggedFill> fills_log;
-
-  SpscRing<BarEvent, 1024> ring;
-  std::size_t next = 0;
-  std::size_t processed = 0;
-  bool have_last = false;
-  BarEvent last{};
   std::vector<DailySnapshot> daily;
   std::int64_t day_realized0 = 0;
   std::int64_t day_fees0 = 0;
   int day_fills0 = 0;
-  int day_trips0 = 0;
-  int day_wins0 = 0;
+  bool have_last = false;
+  BarEvent last{};
 
   auto close_day = [&](const BarEvent& day_bar) {
     DailySnapshot snap{};
     snap.timestamp_ns = day_bar.timestamp.nanos();
-    snap.realized_pnl_paise = book.realized.paise() - day_realized0;
-    snap.fees_paise = book.fees.paise() - day_fees0;
-    snap.eod_equity_paise = marked_equity(book, day_bar, mode);
-    snap.fills = book.fills - day_fills0;
-    snap.round_trips = book.round_trips - day_trips0;
-    snap.wins = book.wins - day_wins0;
+    snap.realized_pnl_paise = container.realized().paise() - day_realized0;
+    snap.fees_paise = container.fees().paise() - day_fees0;
+    snap.eod_equity_paise = marked_equity(container, day_bar, mode);
+    snap.fills = container.fills() - day_fills0;
     daily.push_back(snap);
-    day_realized0 = book.realized.paise();
-    day_fees0 = book.fees.paise();
-    day_fills0 = book.fills;
-    day_trips0 = book.round_trips;
-    day_wins0 = book.wins;
+    day_realized0 = container.realized().paise();
+    day_fees0 = container.fees().paise();
+    day_fills0 = container.fills();
   };
 
-  auto submit_and_apply = [&](const OrderIntent& intent, const BarEvent& px) {
-    const auto fill =
-        exchange.submit(intent, px, mode, book.cash, book.position, book.avg_entry);
-    if (!fill) {
-      return;
+  for (const auto& bar : bars) {
+    if (have_last && mode == TradingMode::Mis && utc_day(bar) != utc_day(last)) {
+      SystemEvent sq{};
+      sq.type = SystemEventType::MisSquareoffWarning;
+      sq.timestamp = last.timestamp;
+      container.on_system_event(sq);
+      close_day(last);
+      SystemEvent sess{};
+      sess.type = SystemEventType::SessionStart;
+      sess.timestamp = bar.timestamp;
+      container.on_system_event(sess);
     }
-    apply_fill(book, *fill);
-    fills_log.push_back(LoggedFill{
-        .timestamp_ns = fill->timestamp.nanos(),
-        .side = fill->side,
-        .price_paise = fill->fill_price.paise(),
-        .qty = fill->filled_qty.shares(),
-        .fees_paise = fill->fees.paise(),
-    });
-    strategy->on_fill(*fill);
-  };
-
-  auto flatten = [&](const BarEvent& px) {
-    if (book.position.shares() <= 0) {
-      return;
-    }
-    submit_and_apply(
-        make_intent(StrategyId::from(0), request.symbol_id, Side::Sell, book.position), px);
-  };
-
-  while (processed < bars.size()) {
-    while (next < bars.size() && ring.try_push(bars[next])) {
-      ++next;
-    }
-    BarEvent bar{};
-    if (!ring.try_pop(bar)) {
+    if (container.status() != ContainerStatus::Active) {
       break;
     }
-    ++processed;
-
-    if (have_last && mode == TradingMode::Mis && utc_day(bar) != utc_day(last)) {
-      flatten(last);
-      close_day(last);
-    }
-
-    lib.update(bar);
-    PortfolioView view{.position = book.position, .cash = book.cash};
-    intents.clear();
-    strategy->on_bar(bar, view, intents);
-    for (const auto& intent : intents) {
-      submit_and_apply(intent, bar);
-    }
-    if (strategy->should_exit()) {
-      flatten(bar);
-    }
-
-    const auto eq = marked_equity(book, bar, mode);
+    container.on_bar(bar);
+    const auto eq = marked_equity(container, bar, mode);
     equity.push_back(eq);
     peak = std::max(peak, eq);
     max_dd = std::max(max_dd, peak - eq);
@@ -229,33 +152,102 @@ BacktestResult BacktestRunner::run(DataSourceRegistry& registry, StrategyRegistr
     last = bar;
   }
 
-  if (have_last) {
-    flatten(last);
+  if (have_last && container.status() == ContainerStatus::Active) {
+    container.exit();
     if (!equity.empty()) {
-      equity.back() = marked_equity(book, last, mode);
+      equity.back() = marked_equity(container, last, mode);
     }
     close_day(last);
+  } else if (container.status() != ContainerStatus::Stopped) {
+    container.stop();
+  }
+
+  int round_trips = 0;
+  int wins = 0;
+  std::int64_t hold_ns_sum = 0;
+  std::int64_t entry_ts = 0;
+  std::int64_t entry_fees = 0;
+  std::int64_t avg_entry = 0;
+  std::int64_t pos = 0;
+  // Rebuild round-trip stats from fill events (container realized omits entry fees).
+  std::int64_t realized_with_entry_fees = 0;
+  for (const auto& fill : container.fill_events()) {
+    if (fill.side == Side::Buy) {
+      if (pos == 0) {
+        pos = fill.filled_qty.shares();
+        avg_entry = fill.fill_price.paise();
+        entry_fees = fill.fees.paise();
+        entry_ts = fill.timestamp.nanos();
+      } else {
+        const auto old_n = avg_entry * pos;
+        const auto add_n = fill.fill_price.paise() * fill.filled_qty.shares();
+        pos += fill.filled_qty.shares();
+        avg_entry = (old_n + add_n) / pos;
+        entry_fees += fill.fees.paise();
+      }
+    } else {
+      const auto pnl = fill.fill_price.paise() * fill.filled_qty.shares() -
+                       avg_entry * fill.filled_qty.shares() - fill.fees.paise() - entry_fees;
+      realized_with_entry_fees += pnl;
+      ++round_trips;
+      if (pnl > 0) {
+        ++wins;
+      }
+      if (entry_ts != 0) {
+        hold_ns_sum += fill.timestamp.nanos() - entry_ts;
+      }
+      pos = 0;
+      avg_entry = 0;
+      entry_fees = 0;
+      entry_ts = 0;
+    }
   }
 
   BacktestResult result{};
   result.strategy_name = request.strategy_name;
   result.starting_capital_paise = request.starting_capital.paise();
-  result.ending_equity_paise = equity.empty() ? book.cash.paise() : equity.back();
-  result.realized_pnl_paise = book.realized.paise();
-  result.fees_paise = book.fees.paise();
+  result.ending_equity_paise =
+      equity.empty() ? container.cash().paise() : equity.back();
+  result.realized_pnl_paise = realized_with_entry_fees;
+  result.fees_paise = container.fees().paise();
   result.max_drawdown_paise = max_dd;
-  result.fills = book.fills;
-  result.round_trips = book.round_trips;
-  result.winning_round_trips = book.wins;
-  result.win_rate = book.round_trips == 0 ? 0.0 : static_cast<double>(book.wins) / book.round_trips;
+  result.fills = container.fills();
+  result.round_trips = round_trips;
+  result.winning_round_trips = wins;
+  result.win_rate = round_trips == 0 ? 0.0 : static_cast<double>(wins) / round_trips;
   result.sharpe = sharpe_from_equity(equity);
-  result.avg_hold_seconds = book.round_trips == 0
+  result.avg_hold_seconds = round_trips == 0
                                 ? 0.0
-                                : static_cast<double>(book.hold_ns_sum) /
-                                      static_cast<double>(book.round_trips * kNanosPerSecond);
+                                : static_cast<double>(hold_ns_sum) /
+                                      static_cast<double>(round_trips * kNanosPerSecond);
   result.bars = bars.size();
   result.daily = std::move(daily);
-  result.fills_log = std::move(fills_log);
+  result.fills_log.reserve(container.fill_events().size());
+  for (const auto& fill : container.fill_events()) {
+    result.fills_log.push_back(LoggedFill{
+        .timestamp_ns = fill.timestamp.nanos(),
+        .side = fill.side,
+        .price_paise = fill.fill_price.paise(),
+        .qty = fill.filled_qty.shares(),
+        .fees_paise = fill.fees.paise(),
+    });
+  }
+  result.signals.reserve(container.signals().size());
+  for (const auto& s : container.signals()) {
+    result.signals.push_back(LoggedSignal{
+        .timestamp_ns = s.timestamp.nanos(),
+        .intent_count = s.intent_count,
+        .indicators_json = s.indicators_json,
+    });
+  }
+  result.rejections.reserve(container.rejections().size());
+  for (const auto& r : container.rejections()) {
+    result.rejections.push_back(LoggedRejection{
+        .timestamp_ns = r.timestamp.nanos(),
+        .rule = r.rule,
+        .reason = r.reason,
+    });
+  }
   return result;
 }
 
