@@ -36,6 +36,10 @@ struct StrategyConfig {
   int stop_bps{30};
   int add_max_dip_bps{25};
   std::int64_t clip_paise{20'00'000'00};
+  // Initial container allocation (paise). Strategies may size clips as a fraction of this.
+  std::int64_t alloc_paise{0};
+  // Daily SMA period (e.g. 200DMA). Strategies that declare SMA use this.
+  int sma_period{200};
 };
 
 class Strategy {

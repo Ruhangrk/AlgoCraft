@@ -17,6 +17,8 @@ add_executable(algocraft_tests
   unit/test_backtest.cpp
   unit/test_backtest_service.cpp
   unit/test_consecutive_up_clip.cpp
+  unit/test_two_consecutive_bars.cpp
+  unit/test_reliance_prev5_avg_break.cpp
   unit/test_workbook.cpp
   unit/test_workbook_repo.cpp
   unit/test_portfolio.cpp

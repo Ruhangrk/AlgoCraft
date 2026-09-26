@@ -4,6 +4,8 @@
 #include "algocraft/strategies/consecutive_up_clip.hpp"
 #include "algocraft/strategies/ema_crossover.hpp"
 #include "algocraft/strategies/opening_range_breakout.hpp"
+#include "algocraft/strategies/reliance_prev5_avg_break.hpp"
+#include "algocraft/strategies/two_consecutive_bars.hpp"
 #include "algocraft/strategies/vwap_reversion.hpp"
 
 #include <stdexcept>
@@ -37,6 +39,8 @@ void register_all_strategies(StrategyRegistry& registry) {
   registry.add("opening_range_breakout", [] { return std::make_unique<OpeningRangeBreakout>(); });
   registry.add("consecutive_up_clip", [] { return std::make_unique<ConsecutiveUpClip>(); });
   registry.add("bajaj_custom_strategy", [] { return std::make_unique<BajajCustomStrategy>(); });
+  registry.add("two_consecutive_bars", [] { return std::make_unique<TwoConsecutiveBars>(); });
+  registry.add("reliance_prev5_avg_break", [] { return std::make_unique<ReliancePrev5AvgBreak>(); });
 }
 
 }  // namespace algocraft

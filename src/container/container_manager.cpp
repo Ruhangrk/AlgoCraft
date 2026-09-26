@@ -26,10 +26,14 @@ std::optional<ContainerId> ContainerManager::create(const CreateRequest& req) {
   cfg.strategy.symbol_id = req.symbol_id;
   cfg.strategy.order_qty = position_for_capital(req.allocation, req.last_price);
   cfg.strategy.clip_paise = 20'00'000'00;
+  cfg.strategy.alloc_paise = req.allocation.paise();
   auto strategy = strategies_.create(req.strategy_name);
   auto container =
       std::make_unique<TradingContainer>(std::move(cfg), std::move(strategy), venue_, risk_,
                                          &capital_);
+  if (!req.warmup_bars.empty()) {
+    container->warmup(req.warmup_bars);
+  }
   const auto started = container->start();
   if (!started.ok) {
     return std::nullopt;

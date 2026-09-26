@@ -38,7 +38,9 @@ add_library(algocraft
   src/execution/cost_calculator.cpp
   src/execution/simulated_exchange.cpp
   src/indicators/ema.cpp
+  src/indicators/lagged_sma.cpp
   src/indicators/rsi.cpp
+  src/indicators/sma.cpp
   src/indicators/vwap.cpp
   src/market_data/cached_provider.cpp
   src/market_data/csv_provider.cpp
@@ -68,7 +70,9 @@ add_library(algocraft
   src/strategies/consecutive_up_clip.cpp
   src/strategies/ema_crossover.cpp
   src/strategies/opening_range_breakout.cpp
+  src/strategies/reliance_prev5_avg_break.cpp
   src/strategies/strategy_registrations.cpp
+  src/strategies/two_consecutive_bars.cpp
   src/strategies/vwap_reversion.cpp
   src/workbook/workbook_manager.cpp
 )

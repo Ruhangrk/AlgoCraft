@@ -25,6 +25,14 @@ struct WsAuth {
   std::int64_t workbook_id{};
 };
 
+void release_ws_auth(crow::websocket::connection& conn) {
+  auto* ctx = static_cast<WsAuth*>(conn.userdata());
+  // Crow may invoke onclose more than once (check_destroy without setting its
+  // close-handler guard). Null before delete so a second call is a no-op.
+  conn.userdata(nullptr);
+  delete ctx;
+}
+
 std::int64_t uuid_low(const Uuid& id) {
   std::uint64_t val = 0;
   for (int i = 0; i < 8; ++i) {
@@ -400,8 +408,9 @@ std::optional<std::int64_t> parse_ws_workbook_id(std::string_view url, const cha
   if (path_rest != suffix) {
     return std::nullopt;
   }
+  const std::string id_str{id_part};
   char* end = nullptr;
-  const auto wid = std::strtoll(std::string(id_part).c_str(), &end, 10);
+  const auto wid = std::strtoll(id_str.c_str(), &end, 10);
   if (end == nullptr || *end != '\0') {
     return std::nullopt;
   }
@@ -892,6 +901,7 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         }
         bt.strategy.order_qty =
             Quantity::from_shares(json_int_or(body, "order_qty", 1));
+        bt.strategy.alloc_paise = bt.capital.paise();
         bt.strategy.ema_fast = static_cast<int>(json_int_or(body, "ema_fast", 9));
         bt.strategy.ema_slow = static_cast<int>(json_int_or(body, "ema_slow", 21));
 
@@ -985,7 +995,9 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
     return true;
   };
 
-  CROW_WEBSOCKET_ROUTE(app, "/ws/workbooks/<path>/portfolio")
+  // Use <int>, not <path>: Crow's <path> greedily consumes the rest of the URL, so
+  // "/ws/workbooks/<path>/portfolio" never matches "/ws/workbooks/13/portfolio".
+  CROW_WEBSOCKET_ROUTE(app, "/ws/workbooks/<int>/portfolio")
       .onaccept([ws_accept](const crow::request& req, void** userdata) {
         return ws_accept(req, userdata, "portfolio");
       })
@@ -1005,10 +1017,10 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (status_hub != nullptr) {
           status_hub->unregister_conn(&conn);
         }
-        delete static_cast<WsAuth*>(conn.userdata());
+        release_ws_auth(conn);
       });
 
-  CROW_WEBSOCKET_ROUTE(app, "/ws/workbooks/<path>/containers")
+  CROW_WEBSOCKET_ROUTE(app, "/ws/workbooks/<int>/containers")
       .onaccept([ws_accept](const crow::request& req, void** userdata) {
         return ws_accept(req, userdata, "containers");
       })
@@ -1026,7 +1038,7 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (status_hub != nullptr) {
           status_hub->unregister_conn(&conn);
         }
-        delete static_cast<WsAuth*>(conn.userdata());
+        release_ws_auth(conn);
       });
 }
 

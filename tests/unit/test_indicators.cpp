@@ -1,7 +1,9 @@
 #include "algocraft/domain/bar_event.hpp"
+#include "algocraft/domain/bar_resolution.hpp"
 #include "algocraft/indicators/ema.hpp"
 #include "algocraft/indicators/indicator_library.hpp"
 #include "algocraft/indicators/rsi.hpp"
+#include "algocraft/indicators/sma.hpp"
 #include "algocraft/indicators/vwap.hpp"
 
 #include <gtest/gtest.h>
@@ -9,10 +11,12 @@
 namespace {
 
 algocraft::BarEvent close_bar(algocraft::SymbolId id, std::int64_t ns, std::int64_t close_paise,
-                              std::int64_t volume = 1000) {
+                              std::int64_t volume = 1000,
+                              algocraft::BarResolution res = algocraft::BarResolution::OneMin) {
   algocraft::BarEvent bar{};
   bar.symbol_id = id;
   bar.timestamp = algocraft::Timestamp::from_nanos(ns);
+  bar.resolution = res;
   bar.open = algocraft::Price::from_paise(close_paise);
   bar.high = algocraft::Price::from_paise(close_paise);
   bar.low = algocraft::Price::from_paise(close_paise);
@@ -60,4 +64,27 @@ TEST(Indicators, RsiReadyAfterPeriod) {
   rsi.update(close_bar(1, 4, 10300));
   EXPECT_TRUE(rsi.ready());
   EXPECT_GT(rsi.value(), 50.0);
+}
+
+TEST(Indicators, SmaIgnoresWrongResolution) {
+  algocraft::Sma sma(3);
+  sma.update(close_bar(1, 1, 10000, 1000, algocraft::BarResolution::OneMin));
+  sma.update(close_bar(1, 2, 11000, 1000, algocraft::BarResolution::OneMin));
+  EXPECT_FALSE(sma.ready());
+  sma.update(close_bar(1, 3, 10000, 1000, algocraft::BarResolution::OneDay));
+  sma.update(close_bar(1, 4, 11000, 1000, algocraft::BarResolution::OneDay));
+  sma.update(close_bar(1, 5, 12000, 1000, algocraft::BarResolution::OneDay));
+  ASSERT_TRUE(sma.ready());
+  EXPECT_NEAR(sma.value(), 11000.0, 0.1);
+}
+
+TEST(Indicators, SmaRollingWindow) {
+  algocraft::Sma sma(2);
+  const auto d = algocraft::BarResolution::OneDay;
+  sma.update(close_bar(1, 1, 10000, 1, d));
+  sma.update(close_bar(1, 2, 20000, 1, d));
+  ASSERT_TRUE(sma.ready());
+  EXPECT_NEAR(sma.value(), 15000.0, 0.1);
+  sma.update(close_bar(1, 3, 30000, 1, d));
+  EXPECT_NEAR(sma.value(), 25000.0, 0.1);
 }

@@ -31,6 +31,8 @@ public:
     Capital allocation{};
     ContainerMode mode{ContainerMode::Backtest};
     Price last_price{};
+    // Optional indicator seed (e.g. daily bars for 200DMA) before start/trading.
+    std::vector<BarEvent> warmup_bars{};
   };
 
   ContainerManager(WorkbookId workbook_id, ExecutionVenue& venue, RiskEngine& risk,

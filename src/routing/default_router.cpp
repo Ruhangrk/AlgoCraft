@@ -7,6 +7,8 @@
 #include "algocraft/container/container_manager.hpp"
 #include "algocraft/domain/bar_resolution.hpp"
 #include "algocraft/domain/enums.hpp"
+#include "algocraft/domain/timestamp.hpp"
+#include "algocraft/indicators/daily_sma_warmup.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
 #include "algocraft/routing/position_sizer.hpp"
 
@@ -52,6 +54,15 @@ void DefaultRouter::start(DataSourceRegistry& data, StrategyRegistry& strategies
     req.allocation = alloc;
     req.mode = ContainerMode::Real;
     req.last_price = winner->last_price;
+    // Seed daily SMA via DataFetch (Rocks ensure) before live/1m trading starts.
+    {
+      auto probe = strategies.create(winner->strategy_name);
+      if (probe && strategy_needs_daily_sma(probe->metadata())) {
+        const auto as_of = config_.to.nanos() != 0 ? config_.to : Timestamp::now();
+        req.warmup_bars = load_daily_sma_warmup(data.active_provider().historical_loader(),
+                                                winner->symbol_id, as_of);
+      }
+    }
     (void)containers.create(req);
   }
 }
@@ -86,6 +97,7 @@ void DefaultRouter::evaluate_all(DataSourceRegistry& data, StrategyRegistry& str
       req.strategy.order_qty = position_for_capital(config_.eval_capital, row.last_price);
       req.strategy.symbol_id = symbol_id;
       req.strategy.clip_paise = 20'00'000'00;
+      req.strategy.alloc_paise = config_.eval_capital.paise();
       const auto result = runner.run(data, strategies, req);
       row.pnl_paise = result.realized_pnl_paise;
       row.fills = result.fills;

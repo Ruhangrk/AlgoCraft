@@ -10,6 +10,7 @@
 #include "algocraft/domain/enums.hpp"
 #include "algocraft/domain/events.hpp"
 #include "algocraft/execution/simulated_exchange.hpp"
+#include "algocraft/indicators/daily_sma_warmup.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
 #include "algocraft/risk/risk_engine.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
@@ -73,8 +74,10 @@ BacktestResult BacktestRunner::run(DataSourceRegistry& registry, StrategyRegistr
   auto strategy = strategies.create(request.strategy_name);
   StrategyConfig cfg = request.strategy;
   cfg.symbol_id = request.symbol_id;
-  const auto mode = strategy->metadata().trading_mode;
-  const auto resolution = strategy->metadata().required_resolution;
+  const auto meta = strategy->metadata();
+  const auto mode = meta.trading_mode;
+  const auto resolution = meta.required_resolution;
+  const bool need_sma = strategy_needs_daily_sma(meta);
 
   auto bars = registry.active_provider().historical_loader().load_bars(
       request.symbol_id, request.from, request.to, resolution);
@@ -94,6 +97,14 @@ BacktestResult BacktestRunner::run(DataSourceRegistry& registry, StrategyRegistr
   ccfg.strategy = cfg;
 
   TradingContainer container(std::move(ccfg), std::move(strategy), venue, risk, nullptr);
+  // Seed daily SMA (DataFetch → Rocks ensure) before the 1m tape.
+  if (need_sma) {
+    auto daily = load_daily_sma_warmup(registry.active_provider().historical_loader(),
+                                       request.symbol_id, request.from);
+    if (!daily.empty()) {
+      container.warmup(daily);
+    }
+  }
   const auto started = container.start();
   if (!started.ok) {
     BacktestResult empty{};

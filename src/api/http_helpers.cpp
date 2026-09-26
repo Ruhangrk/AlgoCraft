@@ -83,14 +83,16 @@ bool read_username_password(const crow::json::rvalue& body, std::string& user, s
 std::optional<std::string> bearer_token(const crow::request& req) {
   const auto auth = req.get_header_value("Authorization");
   constexpr std::string_view kPrefix = "Bearer ";
-  if (auth.size() <= kPrefix.size()) {
-    return std::nullopt;
+  if (auth.size() > kPrefix.size() &&
+      (auth.compare(0, kPrefix.size(), "Bearer ") == 0 ||
+       auth.compare(0, kPrefix.size(), "bearer ") == 0)) {
+    return auth.substr(kPrefix.size());
   }
-  if (auth.compare(0, kPrefix.size(), "Bearer ") != 0 &&
-      auth.compare(0, kPrefix.size(), "bearer ") != 0) {
-    return std::nullopt;
+  // Browser WebSockets cannot set Authorization; UI uses ?token=.
+  if (const auto* q = req.url_params.get("token"); q != nullptr && *q != '\0') {
+    return std::string{q};
   }
-  return auth.substr(kPrefix.size());
+  return std::nullopt;
 }
 
 AuthGate require_user(AuthService& auth, const crow::request& req) {
