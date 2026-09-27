@@ -66,13 +66,29 @@ add_library(algocraft
   src/risk/risk_engine.cpp
   src/routing/default_router.cpp
   src/routing/routing_algo_registry.cpp
+  src/strategies/atr_expansion_long.cpp
   src/strategies/bajaj_custom_strategy.cpp
+  src/strategies/bull_engulf_long.cpp
+  src/strategies/bull_harami_break.cpp
+  src/strategies/compression_break.cpp
   src/strategies/consecutive_up_clip.cpp
+  src/strategies/dip5_mean_revert.cpp
   src/strategies/ema_crossover.cpp
+  src/strategies/ema_trend_pullback.cpp
+  src/strategies/five_bar_high_break.cpp
+  src/strategies/hammer_reversal.cpp
+  src/strategies/morning_star_long.cpp
+  src/strategies/nr7_breakout.cpp
+  src/strategies/open_dump_fade.cpp
   src/strategies/opening_range_breakout.cpp
+  src/strategies/piercing_line_long.cpp
   src/strategies/reliance_prev5_avg_break.cpp
   src/strategies/strategy_registrations.cpp
+  src/strategies/three_red_bounce.cpp
+  src/strategies/three_white_soldiers.cpp
   src/strategies/two_consecutive_bars.cpp
+  src/strategies/two_green_thrust.cpp
+  src/strategies/vwap_reclaim_long.cpp
   src/strategies/vwap_reversion.cpp
   src/workbook/workbook_manager.cpp
 )

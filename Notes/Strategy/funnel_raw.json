@@ -1,0 +1,772 @@
+[
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -466.31,
+    "return_pct": -0.04,
+    "fills": 2,
+    "fees_rs": 154.19,
+    "bars": 1875
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -5724.92,
+    "return_pct": -0.57,
+    "fills": 26,
+    "fees_rs": 1999.72,
+    "bars": 1875
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": -2506.2,
+    "return_pct": -0.25,
+    "fills": 28,
+    "fees_rs": 2154.5,
+    "bars": 1875
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": 1791.55,
+    "return_pct": 0.17,
+    "fills": 10,
+    "fees_rs": 772.59,
+    "bars": 1875
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": 2751.28,
+    "return_pct": 0.27,
+    "fills": 8,
+    "fees_rs": 618.47,
+    "bars": 1875
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": 446.22,
+    "return_pct": 0.04,
+    "fills": 4,
+    "fees_rs": 308.78,
+    "bars": 1875
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -9875.58,
+    "return_pct": -0.98,
+    "fills": 122,
+    "fees_rs": 9381.52,
+    "bars": 1875
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -7215.17,
+    "return_pct": -0.72,
+    "fills": 132,
+    "fees_rs": 10162.85,
+    "bars": 1875
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": 1778.76,
+    "return_pct": 0.17,
+    "fills": 136,
+    "fees_rs": 10493.8,
+    "bars": 1875
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": -7732.62,
+    "return_pct": -0.77,
+    "fills": 124,
+    "fees_rs": 9545.35,
+    "bars": 1875
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": 3878.19,
+    "return_pct": 0.38,
+    "fills": 72,
+    "fees_rs": 5561.18,
+    "bars": 1875
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -4733.01,
+    "return_pct": -0.47,
+    "fills": 78,
+    "fees_rs": 6007.75,
+    "bars": 1875
+  },
+  {
+    "strategy": "bull_engulf_long",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -10604.54,
+    "return_pct": -1.06,
+    "fills": 42,
+    "fees_rs": 3224.58,
+    "bars": 1875
+  },
+  {
+    "strategy": "bull_engulf_long",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -3626.72,
+    "return_pct": -0.36,
+    "fills": 42,
+    "fees_rs": 3232.3,
+    "bars": 1875
+  },
+  {
+    "strategy": "bull_engulf_long",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": -2527.28,
+    "return_pct": -0.25,
+    "fills": 38,
+    "fees_rs": 2933.24,
+    "bars": 1875
+  },
+  {
+    "strategy": "bull_engulf_long",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": -3535.89,
+    "return_pct": -0.35,
+    "fills": 44,
+    "fees_rs": 3388.22,
+    "bars": 1875
+  },
+  {
+    "strategy": "bull_engulf_long",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": -3031.37,
+    "return_pct": -0.3,
+    "fills": 32,
+    "fees_rs": 2467.47,
+    "bars": 1875
+  },
+  {
+    "strategy": "bull_engulf_long",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -7820.93,
+    "return_pct": -0.78,
+    "fills": 32,
+    "fees_rs": 2460.31,
+    "bars": 1875
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -2906.8,
+    "return_pct": -0.29,
+    "fills": 60,
+    "fees_rs": 5021.8,
+    "bars": 1875
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -17858.8,
+    "return_pct": -1.78,
+    "fills": 90,
+    "fees_rs": 7497.04,
+    "bars": 1875
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": -6096.87,
+    "return_pct": -0.6,
+    "fills": 58,
+    "fees_rs": 4847.53,
+    "bars": 1875
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": 1789.57,
+    "return_pct": 0.17,
+    "fills": 64,
+    "fees_rs": 5368.42,
+    "bars": 1875
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": -11135.3,
+    "return_pct": -1.11,
+    "fills": 98,
+    "fees_rs": 8193.5,
+    "bars": 1875
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -12219.28,
+    "return_pct": -1.22,
+    "fills": 76,
+    "fees_rs": 6341.04,
+    "bars": 1875
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -7717.2,
+    "return_pct": -0.77,
+    "fills": 82,
+    "fees_rs": 6305.88,
+    "bars": 1875
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -10019.26,
+    "return_pct": -1,
+    "fills": 64,
+    "fees_rs": 4917.16,
+    "bars": 1875
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": -7178.31,
+    "return_pct": -0.71,
+    "fills": 70,
+    "fees_rs": 5376.09,
+    "bars": 1875
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": 164.52,
+    "return_pct": 0.01,
+    "fills": 44,
+    "fees_rs": 3393.36,
+    "bars": 1875
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": -3192.69,
+    "return_pct": -0.31,
+    "fills": 64,
+    "fees_rs": 4938.93,
+    "bars": 1875
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -9850.58,
+    "return_pct": -0.98,
+    "fills": 76,
+    "fees_rs": 5844.42,
+    "bars": 1875
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": 0.0,
+    "return_pct": 0,
+    "fills": 0,
+    "fees_rs": 0.0,
+    "bars": 1875
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -767.3,
+    "return_pct": -0.07,
+    "fills": 6,
+    "fees_rs": 462.04,
+    "bars": 1875
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": 1863.67,
+    "return_pct": 0.18,
+    "fills": 6,
+    "fees_rs": 462.63,
+    "bars": 1875
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": 0.0,
+    "return_pct": 0,
+    "fills": 0,
+    "fees_rs": 0.0,
+    "bars": 1875
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": 2196.17,
+    "return_pct": 0.21,
+    "fills": 4,
+    "fees_rs": 309.47,
+    "bars": 1875
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -1494.99,
+    "return_pct": -0.14,
+    "fills": 2,
+    "fees_rs": 153.87,
+    "bars": 1875
+  },
+  {
+    "strategy": "five_bar_high_break",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -15835.6,
+    "return_pct": -1.58,
+    "fills": 126,
+    "fees_rs": 9662.78,
+    "bars": 1875
+  },
+  {
+    "strategy": "five_bar_high_break",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -13777.1,
+    "return_pct": -1.37,
+    "fills": 102,
+    "fees_rs": 7834.6,
+    "bars": 1875
+  },
+  {
+    "strategy": "five_bar_high_break",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": -12681.93,
+    "return_pct": -1.26,
+    "fills": 120,
+    "fees_rs": 9205.45,
+    "bars": 1875
+  },
+  {
+    "strategy": "five_bar_high_break",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": -9569.4,
+    "return_pct": -0.95,
+    "fills": 112,
+    "fees_rs": 8593.43,
+    "bars": 1875
+  },
+  {
+    "strategy": "five_bar_high_break",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": -15793.36,
+    "return_pct": -1.57,
+    "fills": 102,
+    "fees_rs": 7825.08,
+    "bars": 1875
+  },
+  {
+    "strategy": "five_bar_high_break",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -11529.83,
+    "return_pct": -1.15,
+    "fills": 104,
+    "fees_rs": 7987.41,
+    "bars": 1875
+  },
+  {
+    "strategy": "compression_break",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -1044.52,
+    "return_pct": -0.1,
+    "fills": 2,
+    "fees_rs": 153.92,
+    "bars": 1875
+  },
+  {
+    "strategy": "compression_break",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": 0.0,
+    "return_pct": 0,
+    "fills": 0,
+    "fees_rs": 0.0,
+    "bars": 1875
+  },
+  {
+    "strategy": "compression_break",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": 0.0,
+    "return_pct": 0,
+    "fills": 0,
+    "fees_rs": 0.0,
+    "bars": 1875
+  },
+  {
+    "strategy": "compression_break",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": 0.0,
+    "return_pct": 0,
+    "fills": 0,
+    "fees_rs": 0.0,
+    "bars": 1875
+  },
+  {
+    "strategy": "compression_break",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": -1383.34,
+    "return_pct": -0.13,
+    "fills": 2,
+    "fees_rs": 154.03,
+    "bars": 1875
+  },
+  {
+    "strategy": "compression_break",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": 0.0,
+    "return_pct": 0,
+    "fills": 0,
+    "fees_rs": 0.0,
+    "bars": 1875
+  },
+  {
+    "strategy": "two_green_thrust",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": -16131.16,
+    "return_pct": -1.61,
+    "fills": 160,
+    "fees_rs": 12271.7,
+    "bars": 1875
+  },
+  {
+    "strategy": "two_green_thrust",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -18943.89,
+    "return_pct": -1.89,
+    "fills": 176,
+    "fees_rs": 13489.77,
+    "bars": 1875
+  },
+  {
+    "strategy": "two_green_thrust",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": -15738.97,
+    "return_pct": -1.57,
+    "fills": 208,
+    "fees_rs": 15915.13,
+    "bars": 1875
+  },
+  {
+    "strategy": "two_green_thrust",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": -15309.57,
+    "return_pct": -1.53,
+    "fills": 172,
+    "fees_rs": 13198.93,
+    "bars": 1875
+  },
+  {
+    "strategy": "two_green_thrust",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": -18824.86,
+    "return_pct": -1.88,
+    "fills": 136,
+    "fees_rs": 10423.02,
+    "bars": 1875
+  },
+  {
+    "strategy": "two_green_thrust",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -18396.19,
+    "return_pct": -1.83,
+    "fills": 190,
+    "fees_rs": 14549.53,
+    "bars": 1875
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "RELIANCE",
+    "window": "week",
+    "pnl_rs": 1507.22,
+    "return_pct": 0.15,
+    "fills": 4,
+    "fees_rs": 362.5,
+    "bars": 1875
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "INFY",
+    "window": "week",
+    "pnl_rs": -4095.1,
+    "return_pct": -0.4,
+    "fills": 4,
+    "fees_rs": 360.38,
+    "bars": 1875
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "TCS",
+    "window": "week",
+    "pnl_rs": 2123.59,
+    "return_pct": 0.21,
+    "fills": 12,
+    "fees_rs": 1084.09,
+    "bars": 1875
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "HDFCBANK",
+    "window": "week",
+    "pnl_rs": -3807.37,
+    "return_pct": -0.38,
+    "fills": 6,
+    "fees_rs": 542.04,
+    "bars": 1875
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "ITC",
+    "window": "week",
+    "pnl_rs": 1364.18,
+    "return_pct": 0.13,
+    "fills": 4,
+    "fees_rs": 363.4,
+    "bars": 1875
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "SBIN",
+    "window": "week",
+    "pnl_rs": -1106.27,
+    "return_pct": -0.11,
+    "fills": 2,
+    "fees_rs": 180.83,
+    "bars": 1875
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "HDFCBANK",
+    "window": "twoweek",
+    "pnl_rs": 1836.01,
+    "return_pct": 0.18,
+    "fills": 22,
+    "fees_rs": 1697.86,
+    "bars": 3375
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "ITC",
+    "window": "twoweek",
+    "pnl_rs": 847.22,
+    "return_pct": 0.08,
+    "fills": 16,
+    "fees_rs": 1234.28,
+    "bars": 3375
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "SBIN",
+    "window": "twoweek",
+    "pnl_rs": 1164.95,
+    "return_pct": 0.11,
+    "fills": 6,
+    "fees_rs": 463.29,
+    "bars": 3375
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "TCS",
+    "window": "twoweek",
+    "pnl_rs": -6082.94,
+    "return_pct": -0.6,
+    "fills": 256,
+    "fees_rs": 19642.96,
+    "bars": 3375
+  },
+  {
+    "strategy": "three_red_bounce",
+    "ticker": "ITC",
+    "window": "twoweek",
+    "pnl_rs": -2310.02,
+    "return_pct": -0.23,
+    "fills": 144,
+    "fees_rs": 11080.59,
+    "bars": 3375
+  },
+  {
+    "strategy": "ema_trend_pullback",
+    "ticker": "HDFCBANK",
+    "window": "twoweek",
+    "pnl_rs": -312.94,
+    "return_pct": -0.03,
+    "fills": 118,
+    "fees_rs": 9867.52,
+    "bars": 3375
+  },
+  {
+    "strategy": "vwap_reclaim_long",
+    "ticker": "HDFCBANK",
+    "window": "twoweek",
+    "pnl_rs": -7562.81,
+    "return_pct": -0.75,
+    "fills": 120,
+    "fees_rs": 9204.54,
+    "bars": 3375
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "TCS",
+    "window": "twoweek",
+    "pnl_rs": 3185.87,
+    "return_pct": 0.31,
+    "fills": 12,
+    "fees_rs": 925.89,
+    "bars": 3375
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "ITC",
+    "window": "twoweek",
+    "pnl_rs": 2156.53,
+    "return_pct": 0.21,
+    "fills": 6,
+    "fees_rs": 463.83,
+    "bars": 3375
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "RELIANCE",
+    "window": "twoweek",
+    "pnl_rs": -3759.64,
+    "return_pct": -0.37,
+    "fills": 12,
+    "fees_rs": 1082.38,
+    "bars": 3375
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "TCS",
+    "window": "twoweek",
+    "pnl_rs": -15069.68,
+    "return_pct": -1.5,
+    "fills": 22,
+    "fees_rs": 1962.78,
+    "bars": 3375
+  },
+  {
+    "strategy": "reliance_prev5_avg_break",
+    "ticker": "ITC",
+    "window": "twoweek",
+    "pnl_rs": 11208.8,
+    "return_pct": 1.12,
+    "fills": 16,
+    "fees_rs": 1458.57,
+    "bars": 3375
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "HDFCBANK",
+    "window": "month",
+    "pnl_rs": 6013.76,
+    "return_pct": 0.6,
+    "fills": 48,
+    "fees_rs": 3711.72,
+    "bars": 6750
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "ITC",
+    "window": "month",
+    "pnl_rs": -1901.91,
+    "return_pct": -0.19,
+    "fills": 42,
+    "fees_rs": 3233.92,
+    "bars": 6750
+  },
+  {
+    "strategy": "dip5_mean_revert",
+    "ticker": "SBIN",
+    "window": "month",
+    "pnl_rs": 1435.33,
+    "return_pct": 0.14,
+    "fills": 28,
+    "fees_rs": 2160.51,
+    "bars": 6750
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "TCS",
+    "window": "month",
+    "pnl_rs": 1830.6,
+    "return_pct": 0.18,
+    "fills": 24,
+    "fees_rs": 1849.04,
+    "bars": 6750
+  },
+  {
+    "strategy": "open_dump_fade",
+    "ticker": "ITC",
+    "window": "month",
+    "pnl_rs": 1964.66,
+    "return_pct": 0.19,
+    "fills": 16,
+    "fees_rs": 1235.23,
+    "bars": 6750
+  }
+]

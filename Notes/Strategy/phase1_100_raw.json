@@ -1,0 +1,5585 @@
+{
+  "rows": [
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "RELIANCE",
+      "pnl_rs": 2779.81,
+      "fills": 20,
+      "fees_rs": 1545.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "RELIANCE",
+      "pnl_rs": -8790.55,
+      "fills": 28,
+      "fees_rs": 2151.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "RELIANCE",
+      "pnl_rs": -5291.13,
+      "fills": 62,
+      "fees_rs": 4774.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "RELIANCE",
+      "pnl_rs": -6631.76,
+      "fills": 28,
+      "fees_rs": 2153.46,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "RELIANCE",
+      "pnl_rs": -1932.41,
+      "fills": 28,
+      "fees_rs": 2157.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "RELIANCE",
+      "pnl_rs": -6617.96,
+      "fills": 124,
+      "fees_rs": 9537.76,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "RELIANCE",
+      "pnl_rs": -13719.4,
+      "fills": 150,
+      "fees_rs": 11507.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "INFY",
+      "pnl_rs": 2562.52,
+      "fills": 16,
+      "fees_rs": 1235.26,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "INFY",
+      "pnl_rs": -4826.59,
+      "fills": 22,
+      "fees_rs": 1691.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "INFY",
+      "pnl_rs": -9330.61,
+      "fills": 48,
+      "fees_rs": 3690.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "INFY",
+      "pnl_rs": -1066.63,
+      "fills": 28,
+      "fees_rs": 2155.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "INFY",
+      "pnl_rs": -844.11,
+      "fills": 10,
+      "fees_rs": 770.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "INFY",
+      "pnl_rs": -13718.98,
+      "fills": 82,
+      "fees_rs": 6299.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "INFY",
+      "pnl_rs": -14026.24,
+      "fills": 138,
+      "fees_rs": 10604.3,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TCS",
+      "pnl_rs": -1560.52,
+      "fills": 18,
+      "fees_rs": 1387.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TCS",
+      "pnl_rs": 5899.51,
+      "fills": 32,
+      "fees_rs": 2473.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TCS",
+      "pnl_rs": -9974.58,
+      "fills": 60,
+      "fees_rs": 4607.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TCS",
+      "pnl_rs": 3505.14,
+      "fills": 36,
+      "fees_rs": 2777.88,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TCS",
+      "pnl_rs": 2265.11,
+      "fills": 18,
+      "fees_rs": 1387.67,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TCS",
+      "pnl_rs": -18422.4,
+      "fills": 88,
+      "fees_rs": 6741.72,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TCS",
+      "pnl_rs": -16743.69,
+      "fills": 178,
+      "fees_rs": 13642.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HDFCBANK",
+      "pnl_rs": 1932.48,
+      "fills": 18,
+      "fees_rs": 1389.16,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HDFCBANK",
+      "pnl_rs": 396.55,
+      "fills": 30,
+      "fees_rs": 2310.4,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HDFCBANK",
+      "pnl_rs": -5784.25,
+      "fills": 56,
+      "fees_rs": 4305.78,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HDFCBANK",
+      "pnl_rs": -2319.59,
+      "fills": 32,
+      "fees_rs": 2463.32,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HDFCBANK",
+      "pnl_rs": -1965.24,
+      "fills": 26,
+      "fees_rs": 2003.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HDFCBANK",
+      "pnl_rs": -1956.99,
+      "fills": 76,
+      "fees_rs": 5856.97,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HDFCBANK",
+      "pnl_rs": -11423.02,
+      "fills": 160,
+      "fees_rs": 12269.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -4214.13,
+      "fills": 16,
+      "fees_rs": 1230.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -2236.36,
+      "fills": 20,
+      "fees_rs": 1540.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -11428.09,
+      "fills": 60,
+      "fees_rs": 4610.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -10578.06,
+      "fills": 28,
+      "fees_rs": 2149.24,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -2598.7,
+      "fills": 30,
+      "fees_rs": 2310.62,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -14134.96,
+      "fills": 90,
+      "fees_rs": 6902.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ICICIBANK",
+      "pnl_rs": -19899.58,
+      "fills": 166,
+      "fees_rs": 12720.68,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SBIN",
+      "pnl_rs": -1548.18,
+      "fills": 16,
+      "fees_rs": 1231.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SBIN",
+      "pnl_rs": 464.59,
+      "fills": 16,
+      "fees_rs": 1233.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SBIN",
+      "pnl_rs": -6435.97,
+      "fills": 54,
+      "fees_rs": 4153.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SBIN",
+      "pnl_rs": -7891.1,
+      "fills": 30,
+      "fees_rs": 2305.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SBIN",
+      "pnl_rs": -4453.97,
+      "fills": 46,
+      "fees_rs": 3541.89,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SBIN",
+      "pnl_rs": -8687.63,
+      "fills": 94,
+      "fees_rs": 7225.15,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SBIN",
+      "pnl_rs": -19478.4,
+      "fills": 150,
+      "fees_rs": 11485.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -526.94,
+      "fills": 6,
+      "fees_rs": 462.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -14193.63,
+      "fills": 26,
+      "fees_rs": 1990.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -11877.21,
+      "fills": 58,
+      "fees_rs": 4447.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -11073.9,
+      "fills": 30,
+      "fees_rs": 2300.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -2624.95,
+      "fills": 18,
+      "fees_rs": 1385.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -8263.44,
+      "fills": 82,
+      "fees_rs": 6289.06,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BHARTIARTL",
+      "pnl_rs": -21223.24,
+      "fills": 154,
+      "fees_rs": 11775.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ITC",
+      "pnl_rs": 2341.52,
+      "fills": 22,
+      "fees_rs": 1700.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ITC",
+      "pnl_rs": -1616.67,
+      "fills": 12,
+      "fees_rs": 926.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ITC",
+      "pnl_rs": -2085.26,
+      "fills": 36,
+      "fees_rs": 2776.4,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ITC",
+      "pnl_rs": 854.51,
+      "fills": 32,
+      "fees_rs": 2470.24,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ITC",
+      "pnl_rs": -2889.79,
+      "fills": 20,
+      "fees_rs": 1541.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ITC",
+      "pnl_rs": -4972.05,
+      "fills": 70,
+      "fees_rs": 5391.07,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ITC",
+      "pnl_rs": -15697.08,
+      "fills": 118,
+      "fees_rs": 9059.32,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "LT",
+      "pnl_rs": -8099.41,
+      "fills": 24,
+      "fees_rs": 1838.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "LT",
+      "pnl_rs": -6258.7,
+      "fills": 32,
+      "fees_rs": 2452.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "LT",
+      "pnl_rs": -8398.38,
+      "fills": 56,
+      "fees_rs": 4293.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "LT",
+      "pnl_rs": -6529.09,
+      "fills": 34,
+      "fees_rs": 2605.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "LT",
+      "pnl_rs": -1479.46,
+      "fills": 16,
+      "fees_rs": 1230.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "LT",
+      "pnl_rs": -3723.28,
+      "fills": 102,
+      "fees_rs": 7823.56,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "LT",
+      "pnl_rs": -13048.75,
+      "fills": 152,
+      "fees_rs": 11640.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -2238.27,
+      "fills": 18,
+      "fees_rs": 1383.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -5553.09,
+      "fills": 18,
+      "fees_rs": 1380.07,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -2351.72,
+      "fills": 36,
+      "fees_rs": 2767.72,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -780.9,
+      "fills": 22,
+      "fees_rs": 1689.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -2258.66,
+      "fills": 14,
+      "fees_rs": 1077.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -8967.01,
+      "fills": 96,
+      "fees_rs": 7379.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HINDUNILVR",
+      "pnl_rs": -15715.58,
+      "fills": 156,
+      "fees_rs": 11937.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "AXISBANK",
+      "pnl_rs": -1756.17,
+      "fills": 22,
+      "fees_rs": 1694.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "AXISBANK",
+      "pnl_rs": -3771.88,
+      "fills": 30,
+      "fees_rs": 2307.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "AXISBANK",
+      "pnl_rs": -4307.23,
+      "fills": 62,
+      "fees_rs": 4769.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "AXISBANK",
+      "pnl_rs": -5978.8,
+      "fills": 40,
+      "fees_rs": 3073.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "AXISBANK",
+      "pnl_rs": -226.71,
+      "fills": 22,
+      "fees_rs": 1695.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "AXISBANK",
+      "pnl_rs": -2847.81,
+      "fills": 78,
+      "fees_rs": 6005.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "AXISBANK",
+      "pnl_rs": -19153.38,
+      "fills": 160,
+      "fees_rs": 12241.1,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -5198.22,
+      "fills": 16,
+      "fees_rs": 1231.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -2634.36,
+      "fills": 26,
+      "fees_rs": 2004.62,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -8747.39,
+      "fills": 46,
+      "fees_rs": 3541.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -6072.47,
+      "fills": 28,
+      "fees_rs": 2155.16,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -5099.84,
+      "fills": 22,
+      "fees_rs": 1693.61,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -11288.11,
+      "fills": 72,
+      "fees_rs": 5539.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "KOTAKBANK",
+      "pnl_rs": -24855.31,
+      "fills": 128,
+      "fees_rs": 9792.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -4400.93,
+      "fills": 22,
+      "fees_rs": 1691.63,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -4794.23,
+      "fills": 38,
+      "fees_rs": 2928.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -8803.58,
+      "fills": 56,
+      "fees_rs": 4307.62,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -5740.37,
+      "fills": 42,
+      "fees_rs": 3230.89,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -1722.31,
+      "fills": 16,
+      "fees_rs": 1233.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -9899.77,
+      "fills": 100,
+      "fees_rs": 7683.35,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BAJFINANCE",
+      "pnl_rs": -20481.58,
+      "fills": 166,
+      "fees_rs": 12693.52,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "MARUTI",
+      "pnl_rs": -828.42,
+      "fills": 20,
+      "fees_rs": 1535.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "MARUTI",
+      "pnl_rs": -4640.08,
+      "fills": 18,
+      "fees_rs": 1372.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "MARUTI",
+      "pnl_rs": -8079.81,
+      "fills": 46,
+      "fees_rs": 3512.63,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "MARUTI",
+      "pnl_rs": -9663.78,
+      "fills": 28,
+      "fees_rs": 2134.16,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "MARUTI",
+      "pnl_rs": -1822.56,
+      "fills": 14,
+      "fees_rs": 1074.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "MARUTI",
+      "pnl_rs": -8983.86,
+      "fills": 80,
+      "fees_rs": 6115.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "MARUTI",
+      "pnl_rs": -14495.74,
+      "fills": 134,
+      "fees_rs": 10219.52,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -515.76,
+      "fills": 18,
+      "fees_rs": 1384.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -2031.57,
+      "fills": 32,
+      "fees_rs": 2464.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -7459.38,
+      "fills": 56,
+      "fees_rs": 4296.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -8140.27,
+      "fills": 26,
+      "fees_rs": 1994.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -1458.42,
+      "fills": 22,
+      "fees_rs": 1694.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -7033.03,
+      "fills": 100,
+      "fees_rs": 7689.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SUNPHARMA",
+      "pnl_rs": -20515.11,
+      "fills": 164,
+      "fees_rs": 12556.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TITAN",
+      "pnl_rs": 473.22,
+      "fills": 14,
+      "fees_rs": 1077.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TITAN",
+      "pnl_rs": 784.7,
+      "fills": 28,
+      "fees_rs": 2157.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TITAN",
+      "pnl_rs": -2250.99,
+      "fills": 50,
+      "fees_rs": 3847.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TITAN",
+      "pnl_rs": 4854.72,
+      "fills": 44,
+      "fees_rs": 3389.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TITAN",
+      "pnl_rs": -991.56,
+      "fills": 28,
+      "fees_rs": 2148.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TITAN",
+      "pnl_rs": -6612.33,
+      "fills": 120,
+      "fees_rs": 9223.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TITAN",
+      "pnl_rs": -13434.49,
+      "fills": 154,
+      "fees_rs": 11809.07,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -11227.14,
+      "fills": 18,
+      "fees_rs": 1376.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -5224.21,
+      "fills": 22,
+      "fees_rs": 1687.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -7738.25,
+      "fills": 60,
+      "fees_rs": 4604.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -7391.24,
+      "fills": 24,
+      "fees_rs": 1838.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -2186.85,
+      "fills": 18,
+      "fees_rs": 1386.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -5712.29,
+      "fills": 82,
+      "fees_rs": 6297.37,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ASIANPAINT",
+      "pnl_rs": -15175.63,
+      "fills": 166,
+      "fees_rs": 12696.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -4347.57,
+      "fills": 28,
+      "fees_rs": 2145.09,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -7271.36,
+      "fills": 16,
+      "fees_rs": 1221.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -1919.81,
+      "fills": 58,
+      "fees_rs": 4447.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -2225.21,
+      "fills": 36,
+      "fees_rs": 2754.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -4451.14,
+      "fills": 28,
+      "fees_rs": 2133.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -7107.37,
+      "fills": 114,
+      "fees_rs": 8688.09,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ULTRACEMCO",
+      "pnl_rs": -8963.74,
+      "fills": 144,
+      "fees_rs": 10953.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "NTPC",
+      "pnl_rs": -2567.81,
+      "fills": 26,
+      "fees_rs": 2005.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "NTPC",
+      "pnl_rs": -1058.2,
+      "fills": 10,
+      "fees_rs": 772.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "NTPC",
+      "pnl_rs": -5840.37,
+      "fills": 46,
+      "fees_rs": 3539.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "NTPC",
+      "pnl_rs": -3920.74,
+      "fills": 32,
+      "fees_rs": 2468.09,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "NTPC",
+      "pnl_rs": -2876.19,
+      "fills": 22,
+      "fees_rs": 1695.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "NTPC",
+      "pnl_rs": -6345.21,
+      "fills": 98,
+      "fees_rs": 7545.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "NTPC",
+      "pnl_rs": -12428.94,
+      "fills": 116,
+      "fees_rs": 8908.27,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "POWERGRID",
+      "pnl_rs": -2336.07,
+      "fills": 14,
+      "fees_rs": 1078.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "POWERGRID",
+      "pnl_rs": -1173.89,
+      "fills": 6,
+      "fees_rs": 463.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "POWERGRID",
+      "pnl_rs": -3507.54,
+      "fills": 36,
+      "fees_rs": 2773.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "POWERGRID",
+      "pnl_rs": -1696.19,
+      "fills": 32,
+      "fees_rs": 2468.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "POWERGRID",
+      "pnl_rs": -4811.29,
+      "fills": 38,
+      "fees_rs": 2927.52,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "POWERGRID",
+      "pnl_rs": -14757.48,
+      "fills": 134,
+      "fees_rs": 10297.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "POWERGRID",
+      "pnl_rs": -7621.11,
+      "fills": 96,
+      "fees_rs": 7385.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ONGC",
+      "pnl_rs": 11682.42,
+      "fills": 22,
+      "fees_rs": 1708.58,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ONGC",
+      "pnl_rs": 12129.27,
+      "fills": 18,
+      "fees_rs": 1396.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ONGC",
+      "pnl_rs": -5053.51,
+      "fills": 50,
+      "fees_rs": 3854.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ONGC",
+      "pnl_rs": 9386.2,
+      "fills": 18,
+      "fees_rs": 1396.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ONGC",
+      "pnl_rs": -1254.94,
+      "fills": 10,
+      "fees_rs": 771.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ONGC",
+      "pnl_rs": -11079.03,
+      "fills": 126,
+      "fees_rs": 9695.3,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ONGC",
+      "pnl_rs": -16886.34,
+      "fills": 172,
+      "fees_rs": 13210.06,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "COALINDIA",
+      "pnl_rs": 4665.25,
+      "fills": 12,
+      "fees_rs": 928.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "COALINDIA",
+      "pnl_rs": 5197.14,
+      "fills": 14,
+      "fees_rs": 1082.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "COALINDIA",
+      "pnl_rs": -7518.3,
+      "fills": 54,
+      "fees_rs": 4153.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "COALINDIA",
+      "pnl_rs": 4582.32,
+      "fills": 28,
+      "fees_rs": 2164.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "COALINDIA",
+      "pnl_rs": -3022.65,
+      "fills": 32,
+      "fees_rs": 2466.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "COALINDIA",
+      "pnl_rs": -6239.5,
+      "fills": 78,
+      "fees_rs": 5993.68,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "COALINDIA",
+      "pnl_rs": -18661.78,
+      "fills": 140,
+      "fees_rs": 10750.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "WIPRO",
+      "pnl_rs": 2895.08,
+      "fills": 26,
+      "fees_rs": 2010.16,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "WIPRO",
+      "pnl_rs": 2020.15,
+      "fills": 18,
+      "fees_rs": 1391.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "WIPRO",
+      "pnl_rs": -5945.84,
+      "fills": 46,
+      "fees_rs": 3541.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "WIPRO",
+      "pnl_rs": -702.74,
+      "fills": 32,
+      "fees_rs": 2466.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "WIPRO",
+      "pnl_rs": -114.58,
+      "fills": 18,
+      "fees_rs": 1389.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "WIPRO",
+      "pnl_rs": -11171.96,
+      "fills": 78,
+      "fees_rs": 5996.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "WIPRO",
+      "pnl_rs": -18878.03,
+      "fills": 160,
+      "fees_rs": 12263.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HCLTECH",
+      "pnl_rs": -156.48,
+      "fills": 26,
+      "fees_rs": 2007.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HCLTECH",
+      "pnl_rs": 2391.26,
+      "fills": 28,
+      "fees_rs": 2161.68,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HCLTECH",
+      "pnl_rs": 5761.28,
+      "fills": 62,
+      "fees_rs": 4803.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HCLTECH",
+      "pnl_rs": 1997.75,
+      "fills": 48,
+      "fees_rs": 3713.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HCLTECH",
+      "pnl_rs": 1409.9,
+      "fills": 22,
+      "fees_rs": 1697.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HCLTECH",
+      "pnl_rs": -17430.27,
+      "fills": 104,
+      "fees_rs": 7979.97,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HCLTECH",
+      "pnl_rs": -5943.32,
+      "fills": 146,
+      "fees_rs": 11262.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TECHM",
+      "pnl_rs": 3544.92,
+      "fills": 26,
+      "fees_rs": 2009.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TECHM",
+      "pnl_rs": 1349.48,
+      "fills": 30,
+      "fees_rs": 2315.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TECHM",
+      "pnl_rs": -2526.4,
+      "fills": 60,
+      "fees_rs": 4621.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TECHM",
+      "pnl_rs": 6894.73,
+      "fills": 28,
+      "fees_rs": 2167.15,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TECHM",
+      "pnl_rs": -4120.17,
+      "fills": 20,
+      "fees_rs": 1538.89,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TECHM",
+      "pnl_rs": -7629.17,
+      "fills": 92,
+      "fees_rs": 7081.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TECHM",
+      "pnl_rs": -9527.09,
+      "fills": 170,
+      "fees_rs": 13078.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ADANIENT",
+      "pnl_rs": -9184.0,
+      "fills": 28,
+      "fees_rs": 2144.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ADANIENT",
+      "pnl_rs": -2641.16,
+      "fills": 30,
+      "fees_rs": 2306.46,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ADANIENT",
+      "pnl_rs": -9921.27,
+      "fills": 58,
+      "fees_rs": 4445.49,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ADANIENT",
+      "pnl_rs": -16612.29,
+      "fills": 34,
+      "fees_rs": 2600.37,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ADANIENT",
+      "pnl_rs": -1347.83,
+      "fills": 12,
+      "fees_rs": 922.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ADANIENT",
+      "pnl_rs": -8660.4,
+      "fills": 64,
+      "fees_rs": 4915.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ADANIENT",
+      "pnl_rs": -23414.02,
+      "fills": 170,
+      "fees_rs": 12953.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": 671.96,
+      "fills": 24,
+      "fees_rs": 1852.14,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": -3353.65,
+      "fills": 24,
+      "fees_rs": 1847.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": -2122.72,
+      "fills": 54,
+      "fees_rs": 4156.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": -1268.6,
+      "fills": 36,
+      "fees_rs": 2772.3,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": -2150.57,
+      "fills": 24,
+      "fees_rs": 1847.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": -10170.1,
+      "fills": 106,
+      "fees_rs": 8125.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ADANIPORTS",
+      "pnl_rs": -8993.52,
+      "fills": 160,
+      "fees_rs": 12279.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -7230.79,
+      "fills": 22,
+      "fees_rs": 1693.67,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -9133.26,
+      "fills": 30,
+      "fees_rs": 2307.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -3189.11,
+      "fills": 56,
+      "fees_rs": 4312.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -8450.42,
+      "fills": 42,
+      "fees_rs": 3227.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -966.63,
+      "fills": 20,
+      "fees_rs": 1540.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -8820.84,
+      "fills": 98,
+      "fees_rs": 7530.76,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "JSWSTEEL",
+      "pnl_rs": -16905.96,
+      "fills": 156,
+      "fees_rs": 11946.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TATASTEEL",
+      "pnl_rs": 443.1,
+      "fills": 14,
+      "fees_rs": 1080.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TATASTEEL",
+      "pnl_rs": -1817.18,
+      "fills": 24,
+      "fees_rs": 1850.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TATASTEEL",
+      "pnl_rs": 264.53,
+      "fills": 58,
+      "fees_rs": 4473.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TATASTEEL",
+      "pnl_rs": 988.0,
+      "fills": 50,
+      "fees_rs": 3859.67,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TATASTEEL",
+      "pnl_rs": -2402.68,
+      "fills": 20,
+      "fees_rs": 1541.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TATASTEEL",
+      "pnl_rs": -8159.47,
+      "fills": 114,
+      "fees_rs": 8785.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TATASTEEL",
+      "pnl_rs": -16078.63,
+      "fills": 156,
+      "fees_rs": 11972.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HINDALCO",
+      "pnl_rs": -2424.03,
+      "fills": 24,
+      "fees_rs": 1848.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HINDALCO",
+      "pnl_rs": -3128.99,
+      "fills": 30,
+      "fees_rs": 2309.23,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HINDALCO",
+      "pnl_rs": -3315.22,
+      "fills": 42,
+      "fees_rs": 3232.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HINDALCO",
+      "pnl_rs": -9860.42,
+      "fills": 32,
+      "fees_rs": 2455.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HINDALCO",
+      "pnl_rs": -4068.47,
+      "fills": 38,
+      "fees_rs": 2925.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HINDALCO",
+      "pnl_rs": -9576.03,
+      "fills": 118,
+      "fees_rs": 9063.37,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HINDALCO",
+      "pnl_rs": -18492.31,
+      "fills": 160,
+      "fees_rs": 12247.29,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "CIPLA",
+      "pnl_rs": -6744.46,
+      "fills": 28,
+      "fees_rs": 2148.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "CIPLA",
+      "pnl_rs": 816.67,
+      "fills": 30,
+      "fees_rs": 2311.23,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "CIPLA",
+      "pnl_rs": -4867.1,
+      "fills": 42,
+      "fees_rs": 3233.56,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "CIPLA",
+      "pnl_rs": -3300.41,
+      "fills": 44,
+      "fees_rs": 3389.09,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "CIPLA",
+      "pnl_rs": -3869.21,
+      "fills": 32,
+      "fees_rs": 2462.51,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "CIPLA",
+      "pnl_rs": -4195.43,
+      "fills": 100,
+      "fees_rs": 7696.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "CIPLA",
+      "pnl_rs": -12582.94,
+      "fills": 162,
+      "fees_rs": 12428.16,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "DRREDDY",
+      "pnl_rs": 930.29,
+      "fills": 12,
+      "fees_rs": 926.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "DRREDDY",
+      "pnl_rs": -2196.79,
+      "fills": 24,
+      "fees_rs": 1846.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "DRREDDY",
+      "pnl_rs": -796.0,
+      "fills": 42,
+      "fees_rs": 3239.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "DRREDDY",
+      "pnl_rs": -11244.54,
+      "fills": 30,
+      "fees_rs": 2304.64,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "DRREDDY",
+      "pnl_rs": -2238.25,
+      "fills": 26,
+      "fees_rs": 2003.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "DRREDDY",
+      "pnl_rs": -8865.55,
+      "fills": 98,
+      "fees_rs": 7540.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "DRREDDY",
+      "pnl_rs": -13620.0,
+      "fills": 150,
+      "fees_rs": 11502.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -3215.46,
+      "fills": 26,
+      "fees_rs": 1986.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -561.88,
+      "fills": 24,
+      "fees_rs": 1832.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -6997.41,
+      "fills": 68,
+      "fees_rs": 5192.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -1412.41,
+      "fills": 26,
+      "fees_rs": 1989.49,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -2832.02,
+      "fills": 36,
+      "fees_rs": 2749.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -13854.36,
+      "fills": 118,
+      "fees_rs": 8998.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "APOLLOHOSP",
+      "pnl_rs": -15485.56,
+      "fills": 156,
+      "fees_rs": 11886.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "DIVISLAB",
+      "pnl_rs": 6029.59,
+      "fills": 24,
+      "fees_rs": 1842.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "DIVISLAB",
+      "pnl_rs": 3892.57,
+      "fills": 26,
+      "fees_rs": 1992.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "DIVISLAB",
+      "pnl_rs": -11303.65,
+      "fills": 60,
+      "fees_rs": 4590.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "DIVISLAB",
+      "pnl_rs": -758.13,
+      "fills": 34,
+      "fees_rs": 2602.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "DIVISLAB",
+      "pnl_rs": -1624.19,
+      "fills": 14,
+      "fees_rs": 1069.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "DIVISLAB",
+      "pnl_rs": 1787.39,
+      "fills": 102,
+      "fees_rs": 7814.29,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "DIVISLAB",
+      "pnl_rs": -17800.87,
+      "fills": 184,
+      "fees_rs": 14005.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "NESTLEIND",
+      "pnl_rs": -8002.43,
+      "fills": 36,
+      "fees_rs": 2768.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "NESTLEIND",
+      "pnl_rs": -7743.32,
+      "fills": 28,
+      "fees_rs": 2152.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "NESTLEIND",
+      "pnl_rs": -12005.02,
+      "fills": 56,
+      "fees_rs": 4298.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "NESTLEIND",
+      "pnl_rs": -10984.06,
+      "fills": 34,
+      "fees_rs": 2610.72,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "NESTLEIND",
+      "pnl_rs": 426.94,
+      "fills": 10,
+      "fees_rs": 771.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "NESTLEIND",
+      "pnl_rs": -11113.58,
+      "fills": 112,
+      "fees_rs": 8595.36,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "NESTLEIND",
+      "pnl_rs": -25536.86,
+      "fills": 164,
+      "fees_rs": 12528.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -7383.25,
+      "fills": 18,
+      "fees_rs": 1377.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -2574.75,
+      "fills": 16,
+      "fees_rs": 1227.07,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -10752.97,
+      "fills": 46,
+      "fees_rs": 3519.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -5974.77,
+      "fills": 24,
+      "fees_rs": 1835.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -3202.25,
+      "fills": 16,
+      "fees_rs": 1228.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -11882.42,
+      "fills": 98,
+      "fees_rs": 7496.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BRITANNIA",
+      "pnl_rs": -19581.26,
+      "fills": 126,
+      "fees_rs": 9602.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": 484.71,
+      "fills": 14,
+      "fees_rs": 1076.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": -1970.52,
+      "fills": 28,
+      "fees_rs": 2153.36,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": -3563.61,
+      "fills": 50,
+      "fees_rs": 3845.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": -9266.82,
+      "fills": 38,
+      "fees_rs": 2904.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": -3397.84,
+      "fills": 32,
+      "fees_rs": 2456.4,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": -4682.35,
+      "fills": 124,
+      "fees_rs": 9515.49,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HEROMOTOCO",
+      "pnl_rs": -16198.0,
+      "fills": 170,
+      "fees_rs": 12975.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -5870.8,
+      "fills": 12,
+      "fees_rs": 914.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -6900.82,
+      "fills": 30,
+      "fees_rs": 2290.24,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -6549.75,
+      "fills": 36,
+      "fees_rs": 2752.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -9020.03,
+      "fills": 36,
+      "fees_rs": 2748.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -5965.39,
+      "fills": 44,
+      "fees_rs": 3368.67,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -16102.39,
+      "fills": 114,
+      "fees_rs": 8691.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "EICHERMOT",
+      "pnl_rs": -9311.09,
+      "fills": 132,
+      "fees_rs": 10098.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -4436.07,
+      "fills": 20,
+      "fees_rs": 1525.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -3017.84,
+      "fills": 20,
+      "fees_rs": 1526.24,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -7461.73,
+      "fills": 48,
+      "fees_rs": 3667.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -11987.22,
+      "fills": 32,
+      "fees_rs": 2439.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -4254.83,
+      "fills": 22,
+      "fees_rs": 1677.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -9678.91,
+      "fills": 92,
+      "fees_rs": 7029.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BAJAJ-AUTO",
+      "pnl_rs": -21158.72,
+      "fills": 164,
+      "fees_rs": 12507.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -5422.37,
+      "fills": 14,
+      "fees_rs": 1076.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -3737.25,
+      "fills": 20,
+      "fees_rs": 1539.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -2516.11,
+      "fills": 62,
+      "fees_rs": 4771.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -6083.33,
+      "fills": 34,
+      "fees_rs": 2612.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -6503.85,
+      "fills": 34,
+      "fees_rs": 2615.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -7533.87,
+      "fills": 80,
+      "fees_rs": 6154.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "INDUSINDBK",
+      "pnl_rs": -24317.47,
+      "fills": 160,
+      "fees_rs": 12245.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BEL",
+      "pnl_rs": -1957.62,
+      "fills": 18,
+      "fees_rs": 1388.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BEL",
+      "pnl_rs": -2740.24,
+      "fills": 16,
+      "fees_rs": 1235.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BEL",
+      "pnl_rs": -4327.28,
+      "fills": 32,
+      "fees_rs": 2464.4,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BEL",
+      "pnl_rs": -6421.23,
+      "fills": 30,
+      "fees_rs": 2308.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BEL",
+      "pnl_rs": -1988.7,
+      "fills": 18,
+      "fees_rs": 1388.14,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BEL",
+      "pnl_rs": -6681.18,
+      "fills": 102,
+      "fees_rs": 7859.14,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BEL",
+      "pnl_rs": -17437.46,
+      "fills": 142,
+      "fees_rs": 10897.04,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TRENT",
+      "pnl_rs": -10761.54,
+      "fills": 22,
+      "fees_rs": 1688.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TRENT",
+      "pnl_rs": -18633.53,
+      "fills": 36,
+      "fees_rs": 2752.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TRENT",
+      "pnl_rs": -4319.65,
+      "fills": 56,
+      "fees_rs": 4301.27,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TRENT",
+      "pnl_rs": -25954.61,
+      "fills": 48,
+      "fees_rs": 3655.93,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TRENT",
+      "pnl_rs": -1390.25,
+      "fills": 8,
+      "fees_rs": 616.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TRENT",
+      "pnl_rs": -9486.54,
+      "fills": 96,
+      "fees_rs": 7360.4,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TRENT",
+      "pnl_rs": -16189.21,
+      "fills": 156,
+      "fees_rs": 11926.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -7136.83,
+      "fills": 32,
+      "fees_rs": 2456.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -13137.79,
+      "fills": 28,
+      "fees_rs": 2141.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -11057.81,
+      "fills": 44,
+      "fees_rs": 3375.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -14669.96,
+      "fills": 40,
+      "fees_rs": 3059.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -2638.71,
+      "fills": 16,
+      "fees_rs": 1231.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -16664.73,
+      "fills": 114,
+      "fees_rs": 8732.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PIDILITIND",
+      "pnl_rs": -20076.31,
+      "fills": 152,
+      "fees_rs": 11611.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "GODREJCP",
+      "pnl_rs": 430.64,
+      "fills": 16,
+      "fees_rs": 1235.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "GODREJCP",
+      "pnl_rs": -3270.13,
+      "fills": 24,
+      "fees_rs": 1846.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "GODREJCP",
+      "pnl_rs": -8553.93,
+      "fills": 44,
+      "fees_rs": 3385.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "GODREJCP",
+      "pnl_rs": -7227.92,
+      "fills": 42,
+      "fees_rs": 3226.63,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "GODREJCP",
+      "pnl_rs": -1738.78,
+      "fills": 22,
+      "fees_rs": 1695.35,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "GODREJCP",
+      "pnl_rs": -19375.88,
+      "fills": 142,
+      "fees_rs": 10863.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "GODREJCP",
+      "pnl_rs": -19882.58,
+      "fills": 142,
+      "fees_rs": 10880.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "DABUR",
+      "pnl_rs": -345.65,
+      "fills": 26,
+      "fees_rs": 2004.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "DABUR",
+      "pnl_rs": -5616.9,
+      "fills": 10,
+      "fees_rs": 768.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "DABUR",
+      "pnl_rs": -3914.79,
+      "fills": 30,
+      "fees_rs": 2310.78,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "DABUR",
+      "pnl_rs": -2278.16,
+      "fills": 28,
+      "fees_rs": 2157.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "DABUR",
+      "pnl_rs": -3283.86,
+      "fills": 26,
+      "fees_rs": 2003.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "DABUR",
+      "pnl_rs": -11911.79,
+      "fills": 100,
+      "fees_rs": 7683.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "DABUR",
+      "pnl_rs": -18050.79,
+      "fills": 136,
+      "fees_rs": 10420.04,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HAVELLS",
+      "pnl_rs": -2572.07,
+      "fills": 16,
+      "fees_rs": 1232.27,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HAVELLS",
+      "pnl_rs": -564.82,
+      "fills": 22,
+      "fees_rs": 1694.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HAVELLS",
+      "pnl_rs": -13908.62,
+      "fills": 56,
+      "fees_rs": 4291.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HAVELLS",
+      "pnl_rs": -14260.62,
+      "fills": 40,
+      "fees_rs": 3059.66,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HAVELLS",
+      "pnl_rs": 454.85,
+      "fills": 6,
+      "fees_rs": 463.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HAVELLS",
+      "pnl_rs": -9701.1,
+      "fills": 102,
+      "fees_rs": 7847.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HAVELLS",
+      "pnl_rs": -14790.2,
+      "fills": 146,
+      "fees_rs": 11206.72,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "VOLTAS",
+      "pnl_rs": -6715.73,
+      "fills": 30,
+      "fees_rs": 2303.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "VOLTAS",
+      "pnl_rs": 6198.67,
+      "fills": 34,
+      "fees_rs": 2623.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "VOLTAS",
+      "pnl_rs": -5958.58,
+      "fills": 54,
+      "fees_rs": 4152.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "VOLTAS",
+      "pnl_rs": -4911.69,
+      "fills": 48,
+      "fees_rs": 3680.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "VOLTAS",
+      "pnl_rs": -2936.24,
+      "fills": 22,
+      "fees_rs": 1694.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "VOLTAS",
+      "pnl_rs": -8563.84,
+      "fills": 104,
+      "fees_rs": 7976.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "VOLTAS",
+      "pnl_rs": -20971.96,
+      "fills": 188,
+      "fees_rs": 14374.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SIEMENS",
+      "pnl_rs": 136.18,
+      "fills": 16,
+      "fees_rs": 1229.1,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SIEMENS",
+      "pnl_rs": -6081.74,
+      "fills": 44,
+      "fees_rs": 3374.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SIEMENS",
+      "pnl_rs": 34.62,
+      "fills": 38,
+      "fees_rs": 2920.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SIEMENS",
+      "pnl_rs": 127.65,
+      "fills": 34,
+      "fees_rs": 2608.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SIEMENS",
+      "pnl_rs": -4939.75,
+      "fills": 32,
+      "fees_rs": 2454.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SIEMENS",
+      "pnl_rs": -7684.39,
+      "fills": 150,
+      "fees_rs": 11494.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SIEMENS",
+      "pnl_rs": -20061.79,
+      "fills": 174,
+      "fees_rs": 13282.07,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ABB",
+      "pnl_rs": -5740.06,
+      "fills": 16,
+      "fees_rs": 1225.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ABB",
+      "pnl_rs": -9170.31,
+      "fills": 28,
+      "fees_rs": 2139.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ABB",
+      "pnl_rs": -8411.64,
+      "fills": 36,
+      "fees_rs": 2762.72,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ABB",
+      "pnl_rs": -18805.75,
+      "fills": 38,
+      "fees_rs": 2889.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ABB",
+      "pnl_rs": -4552.81,
+      "fills": 36,
+      "fees_rs": 2761.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ABB",
+      "pnl_rs": -10726.6,
+      "fills": 116,
+      "fees_rs": 8872.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ABB",
+      "pnl_rs": -23387.32,
+      "fills": 164,
+      "fees_rs": 12458.34,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HAL",
+      "pnl_rs": -5119.76,
+      "fills": 28,
+      "fees_rs": 2149.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HAL",
+      "pnl_rs": -12180.43,
+      "fills": 30,
+      "fees_rs": 2297.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HAL",
+      "pnl_rs": -5236.18,
+      "fills": 48,
+      "fees_rs": 3680.52,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HAL",
+      "pnl_rs": -16647.78,
+      "fills": 40,
+      "fees_rs": 3047.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HAL",
+      "pnl_rs": -728.51,
+      "fills": 14,
+      "fees_rs": 1076.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HAL",
+      "pnl_rs": -8018.75,
+      "fills": 108,
+      "fees_rs": 8284.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HAL",
+      "pnl_rs": -18286.54,
+      "fills": 160,
+      "fees_rs": 12209.4,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "GRASIM",
+      "pnl_rs": -4092.99,
+      "fills": 16,
+      "fees_rs": 1227.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "GRASIM",
+      "pnl_rs": -5946.33,
+      "fills": 22,
+      "fees_rs": 1686.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "GRASIM",
+      "pnl_rs": -7854.21,
+      "fills": 48,
+      "fees_rs": 3679.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "GRASIM",
+      "pnl_rs": -2085.45,
+      "fills": 24,
+      "fees_rs": 1843.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "GRASIM",
+      "pnl_rs": -3624.79,
+      "fills": 22,
+      "fees_rs": 1690.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "GRASIM",
+      "pnl_rs": -9376.59,
+      "fills": 88,
+      "fees_rs": 6746.51,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "GRASIM",
+      "pnl_rs": -14869.45,
+      "fills": 160,
+      "fees_rs": 12248.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SHREECEM",
+      "pnl_rs": -6488.11,
+      "fills": 12,
+      "fees_rs": 901.15,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SHREECEM",
+      "pnl_rs": -6776.16,
+      "fills": 14,
+      "fees_rs": 1043.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SHREECEM",
+      "pnl_rs": -8733.62,
+      "fills": 26,
+      "fees_rs": 1939.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SHREECEM",
+      "pnl_rs": -9270.98,
+      "fills": 44,
+      "fees_rs": 3263.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SHREECEM",
+      "pnl_rs": -838.77,
+      "fills": 20,
+      "fees_rs": 1515.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SHREECEM",
+      "pnl_rs": -25654.89,
+      "fills": 186,
+      "fees_rs": 13785.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SHREECEM",
+      "pnl_rs": -5733.69,
+      "fills": 48,
+      "fees_rs": 3600.89,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -2597.58,
+      "fills": 24,
+      "fees_rs": 1848.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -8634.29,
+      "fills": 20,
+      "fees_rs": 1536.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -2400.51,
+      "fills": 40,
+      "fees_rs": 3081.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -11350.28,
+      "fills": 28,
+      "fees_rs": 2146.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -5753.63,
+      "fills": 26,
+      "fees_rs": 2000.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -8016.61,
+      "fills": 84,
+      "fees_rs": 6458.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "AMBUJACEM",
+      "pnl_rs": -21558.5,
+      "fills": 134,
+      "fees_rs": 10258.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "DLF",
+      "pnl_rs": 259.52,
+      "fills": 16,
+      "fees_rs": 1235.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "DLF",
+      "pnl_rs": 2630.43,
+      "fills": 26,
+      "fees_rs": 2011.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "DLF",
+      "pnl_rs": -2457.38,
+      "fills": 44,
+      "fees_rs": 3393.58,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "DLF",
+      "pnl_rs": 2472.34,
+      "fills": 42,
+      "fees_rs": 3245.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "DLF",
+      "pnl_rs": -1857.39,
+      "fills": 26,
+      "fees_rs": 2003.63,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "DLF",
+      "pnl_rs": -1608.08,
+      "fills": 110,
+      "fees_rs": 8477.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "DLF",
+      "pnl_rs": -10487.47,
+      "fills": 176,
+      "fees_rs": 13515.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -9240.57,
+      "fills": 18,
+      "fees_rs": 1382.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -15858.83,
+      "fills": 28,
+      "fees_rs": 2144.95,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -8884.75,
+      "fills": 54,
+      "fees_rs": 4148.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -10253.75,
+      "fills": 54,
+      "fees_rs": 4132.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -4319.25,
+      "fills": 38,
+      "fees_rs": 2923.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -14544.77,
+      "fills": 94,
+      "fees_rs": 7208.09,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "GODREJPROP",
+      "pnl_rs": -18596.68,
+      "fills": 170,
+      "fees_rs": 12996.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BANKBARODA",
+      "pnl_rs": 903.04,
+      "fills": 14,
+      "fees_rs": 1081.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BANKBARODA",
+      "pnl_rs": -4270.17,
+      "fills": 20,
+      "fees_rs": 1541.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BANKBARODA",
+      "pnl_rs": -3669.7,
+      "fills": 48,
+      "fees_rs": 3698.73,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BANKBARODA",
+      "pnl_rs": -5821.37,
+      "fills": 28,
+      "fees_rs": 2155.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BANKBARODA",
+      "pnl_rs": -2711.92,
+      "fills": 28,
+      "fees_rs": 2159.0,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BANKBARODA",
+      "pnl_rs": -9864.04,
+      "fills": 92,
+      "fees_rs": 7076.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BANKBARODA",
+      "pnl_rs": -19472.88,
+      "fills": 172,
+      "fees_rs": 13195.52,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PNB",
+      "pnl_rs": 390.76,
+      "fills": 12,
+      "fees_rs": 926.26,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PNB",
+      "pnl_rs": 2990.73,
+      "fills": 24,
+      "fees_rs": 1854.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PNB",
+      "pnl_rs": -2488.63,
+      "fills": 42,
+      "fees_rs": 3239.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PNB",
+      "pnl_rs": -438.95,
+      "fills": 28,
+      "fees_rs": 2162.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PNB",
+      "pnl_rs": -1154.01,
+      "fills": 18,
+      "fees_rs": 1388.49,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PNB",
+      "pnl_rs": -10842.27,
+      "fills": 114,
+      "fees_rs": 8759.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PNB",
+      "pnl_rs": -22543.58,
+      "fills": 158,
+      "fees_rs": 12093.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "CANBK",
+      "pnl_rs": 3346.16,
+      "fills": 20,
+      "fees_rs": 1546.73,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "CANBK",
+      "pnl_rs": 3996.56,
+      "fills": 22,
+      "fees_rs": 1702.23,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "CANBK",
+      "pnl_rs": 3606.36,
+      "fills": 38,
+      "fees_rs": 2938.51,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "CANBK",
+      "pnl_rs": 2602.81,
+      "fills": 22,
+      "fees_rs": 1701.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "CANBK",
+      "pnl_rs": -3047.05,
+      "fills": 30,
+      "fees_rs": 2312.78,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "CANBK",
+      "pnl_rs": -10878.48,
+      "fills": 106,
+      "fees_rs": 8153.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "CANBK",
+      "pnl_rs": -14855.25,
+      "fills": 150,
+      "fees_rs": 11520.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "UNIONBANK",
+      "pnl_rs": 1227.38,
+      "fills": 22,
+      "fees_rs": 1697.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "UNIONBANK",
+      "pnl_rs": 8617.91,
+      "fills": 26,
+      "fees_rs": 2017.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "UNIONBANK",
+      "pnl_rs": -12947.66,
+      "fills": 58,
+      "fees_rs": 4455.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "UNIONBANK",
+      "pnl_rs": 14681.17,
+      "fills": 36,
+      "fees_rs": 2792.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "UNIONBANK",
+      "pnl_rs": -557.34,
+      "fills": 20,
+      "fees_rs": 1542.23,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "UNIONBANK",
+      "pnl_rs": -14090.32,
+      "fills": 104,
+      "fees_rs": 7984.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "UNIONBANK",
+      "pnl_rs": -16797.59,
+      "fills": 164,
+      "fees_rs": 12564.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PFC",
+      "pnl_rs": 855.88,
+      "fills": 16,
+      "fees_rs": 1235.61,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PFC",
+      "pnl_rs": -2255.38,
+      "fills": 16,
+      "fees_rs": 1231.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PFC",
+      "pnl_rs": -5005.5,
+      "fills": 40,
+      "fees_rs": 3077.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PFC",
+      "pnl_rs": -10731.16,
+      "fills": 32,
+      "fees_rs": 2459.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PFC",
+      "pnl_rs": -3264.24,
+      "fills": 24,
+      "fees_rs": 1849.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PFC",
+      "pnl_rs": -12489.6,
+      "fills": 110,
+      "fees_rs": 8447.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PFC",
+      "pnl_rs": -18896.25,
+      "fills": 136,
+      "fees_rs": 10416.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "IRCTC",
+      "pnl_rs": -3101.54,
+      "fills": 18,
+      "fees_rs": 1386.64,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "IRCTC",
+      "pnl_rs": -10546.54,
+      "fills": 18,
+      "fees_rs": 1380.97,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "IRCTC",
+      "pnl_rs": -6357.0,
+      "fills": 36,
+      "fees_rs": 2771.63,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "IRCTC",
+      "pnl_rs": -5018.5,
+      "fills": 18,
+      "fees_rs": 1384.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "IRCTC",
+      "pnl_rs": -4761.41,
+      "fills": 20,
+      "fees_rs": 1539.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "IRCTC",
+      "pnl_rs": -13617.44,
+      "fills": 58,
+      "fees_rs": 4447.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "IRCTC",
+      "pnl_rs": -20002.75,
+      "fills": 136,
+      "fees_rs": 10414.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PAYTM",
+      "pnl_rs": -7467.81,
+      "fills": 24,
+      "fees_rs": 1843.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PAYTM",
+      "pnl_rs": -15189.31,
+      "fills": 28,
+      "fees_rs": 2145.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PAYTM",
+      "pnl_rs": -21531.13,
+      "fills": 70,
+      "fees_rs": 5353.97,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PAYTM",
+      "pnl_rs": -11670.17,
+      "fills": 48,
+      "fees_rs": 3679.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PAYTM",
+      "pnl_rs": -212.96,
+      "fills": 14,
+      "fees_rs": 1079.34,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PAYTM",
+      "pnl_rs": -19324.61,
+      "fills": 90,
+      "fees_rs": 6903.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PAYTM",
+      "pnl_rs": -42932.86,
+      "fills": 186,
+      "fees_rs": 14108.68,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "MOTHERSON",
+      "pnl_rs": -1540.89,
+      "fills": 18,
+      "fees_rs": 1388.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "MOTHERSON",
+      "pnl_rs": 3434.57,
+      "fills": 26,
+      "fees_rs": 2008.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "MOTHERSON",
+      "pnl_rs": -1486.21,
+      "fills": 44,
+      "fees_rs": 3396.62,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "MOTHERSON",
+      "pnl_rs": -4294.22,
+      "fills": 42,
+      "fees_rs": 3230.76,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "MOTHERSON",
+      "pnl_rs": 1053.37,
+      "fills": 24,
+      "fees_rs": 1851.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "MOTHERSON",
+      "pnl_rs": -8670.18,
+      "fills": 102,
+      "fees_rs": 7840.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "MOTHERSON",
+      "pnl_rs": -16670.93,
+      "fills": 168,
+      "fees_rs": 12884.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": 3449.08,
+      "fills": 16,
+      "fees_rs": 1134.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": -2465.48,
+      "fills": 16,
+      "fees_rs": 1134.36,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": -8535.43,
+      "fills": 32,
+      "fees_rs": 2268.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": -6677.43,
+      "fills": 30,
+      "fees_rs": 2125.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": -2571.47,
+      "fills": 16,
+      "fees_rs": 1135.35,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": -15816.39,
+      "fills": 142,
+      "fees_rs": 10066.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BOSCHLTD",
+      "pnl_rs": -17274.71,
+      "fills": 96,
+      "fees_rs": 6802.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "MRF",
+      "pnl_rs": 1192.83,
+      "fills": 6,
+      "fees_rs": 456.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "MRF",
+      "pnl_rs": -3689.04,
+      "fills": 10,
+      "fees_rs": 763.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "MRF",
+      "pnl_rs": -1025.95,
+      "fills": 4,
+      "fees_rs": 305.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "MRF",
+      "pnl_rs": -3708.62,
+      "fills": 14,
+      "fees_rs": 1068.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "MRF",
+      "pnl_rs": -2733.83,
+      "fills": 14,
+      "fees_rs": 1068.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "MRF",
+      "pnl_rs": -23099.19,
+      "fills": 166,
+      "fees_rs": 12384.37,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "MRF",
+      "pnl_rs": -2400.51,
+      "fills": 22,
+      "fees_rs": 1679.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PAGEIND",
+      "pnl_rs": 3586.74,
+      "fills": 14,
+      "fees_rs": 1061.86,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PAGEIND",
+      "pnl_rs": -4766.35,
+      "fills": 14,
+      "fees_rs": 1064.95,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PAGEIND",
+      "pnl_rs": -2245.3,
+      "fills": 40,
+      "fees_rs": 3041.3,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PAGEIND",
+      "pnl_rs": 3218.71,
+      "fills": 36,
+      "fees_rs": 2727.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PAGEIND",
+      "pnl_rs": -2339.19,
+      "fills": 32,
+      "fees_rs": 2435.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PAGEIND",
+      "pnl_rs": -8519.74,
+      "fills": 154,
+      "fees_rs": 11609.46,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PAGEIND",
+      "pnl_rs": -4473.38,
+      "fills": 100,
+      "fees_rs": 7613.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -3360.18,
+      "fills": 20,
+      "fees_rs": 1536.58,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -639.31,
+      "fills": 24,
+      "fees_rs": 1839.85,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -1798.81,
+      "fills": 52,
+      "fees_rs": 3988.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -3550.61,
+      "fills": 38,
+      "fees_rs": 2912.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -291.43,
+      "fills": 26,
+      "fees_rs": 1996.51,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -8330.2,
+      "fills": 88,
+      "fees_rs": 6722.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PERSISTENT",
+      "pnl_rs": -18888.88,
+      "fills": 178,
+      "fees_rs": 13589.32,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "COFORGE",
+      "pnl_rs": -3396.47,
+      "fills": 26,
+      "fees_rs": 2003.51,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "COFORGE",
+      "pnl_rs": -289.86,
+      "fills": 22,
+      "fees_rs": 1696.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "COFORGE",
+      "pnl_rs": -6864.07,
+      "fills": 76,
+      "fees_rs": 5841.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "COFORGE",
+      "pnl_rs": -3388.16,
+      "fills": 36,
+      "fees_rs": 2768.78,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "COFORGE",
+      "pnl_rs": -1988.35,
+      "fills": 18,
+      "fees_rs": 1385.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "COFORGE",
+      "pnl_rs": -13443.21,
+      "fills": 112,
+      "fees_rs": 8589.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "COFORGE",
+      "pnl_rs": -15424.2,
+      "fills": 190,
+      "fees_rs": 14541.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "OFSS",
+      "pnl_rs": -4047.73,
+      "fills": 44,
+      "fees_rs": 3347.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "OFSS",
+      "pnl_rs": -10100.53,
+      "fills": 44,
+      "fees_rs": 3349.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "OFSS",
+      "pnl_rs": -21903.34,
+      "fills": 70,
+      "fees_rs": 5311.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "OFSS",
+      "pnl_rs": -15066.65,
+      "fills": 64,
+      "fees_rs": 4861.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "OFSS",
+      "pnl_rs": -865.34,
+      "fills": 14,
+      "fees_rs": 1067.56,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "OFSS",
+      "pnl_rs": -33651.31,
+      "fills": 132,
+      "fees_rs": 9999.35,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "OFSS",
+      "pnl_rs": -37262.74,
+      "fills": 198,
+      "fees_rs": 14869.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "MPHASIS",
+      "pnl_rs": 2256.93,
+      "fills": 24,
+      "fees_rs": 1852.03,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "MPHASIS",
+      "pnl_rs": 9547.8,
+      "fills": 34,
+      "fees_rs": 2633.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "MPHASIS",
+      "pnl_rs": 355.34,
+      "fills": 48,
+      "fees_rs": 3702.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "MPHASIS",
+      "pnl_rs": 4351.54,
+      "fills": 42,
+      "fees_rs": 3239.12,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "MPHASIS",
+      "pnl_rs": -5276.83,
+      "fills": 28,
+      "fees_rs": 2151.95,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "MPHASIS",
+      "pnl_rs": -16502.34,
+      "fills": 114,
+      "fees_rs": 8734.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "MPHASIS",
+      "pnl_rs": -18487.06,
+      "fills": 184,
+      "fees_rs": 14084.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -7596.66,
+      "fills": 28,
+      "fees_rs": 2152.68,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -5072.74,
+      "fills": 18,
+      "fees_rs": 1386.3,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -7910.64,
+      "fills": 44,
+      "fees_rs": 3383.24,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -17313.19,
+      "fills": 32,
+      "fees_rs": 2452.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -707.61,
+      "fills": 8,
+      "fees_rs": 616.67,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -6565.45,
+      "fills": 88,
+      "fees_rs": 6770.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TATACONSUM",
+      "pnl_rs": -15281.33,
+      "fills": 136,
+      "fees_rs": 10449.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TATAPOWER",
+      "pnl_rs": 1326.22,
+      "fills": 16,
+      "fees_rs": 1235.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TATAPOWER",
+      "pnl_rs": 28.53,
+      "fills": 14,
+      "fees_rs": 1079.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TATAPOWER",
+      "pnl_rs": -297.38,
+      "fills": 26,
+      "fees_rs": 2006.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TATAPOWER",
+      "pnl_rs": -2372.94,
+      "fills": 22,
+      "fees_rs": 1694.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TATAPOWER",
+      "pnl_rs": -4107.68,
+      "fills": 24,
+      "fees_rs": 1848.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TATAPOWER",
+      "pnl_rs": -10549.97,
+      "fills": 100,
+      "fees_rs": 7684.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TATAPOWER",
+      "pnl_rs": -17666.48,
+      "fills": 146,
+      "fees_rs": 11188.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -5747.04,
+      "fills": 36,
+      "fees_rs": 2750.86,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -14167.49,
+      "fills": 36,
+      "fees_rs": 2751.15,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -11849.21,
+      "fills": 76,
+      "fees_rs": 5816.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -13074.79,
+      "fills": 38,
+      "fees_rs": 2897.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -170.5,
+      "fills": 10,
+      "fees_rs": 769.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -6359.99,
+      "fills": 94,
+      "fees_rs": 7215.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TVSMOTOR",
+      "pnl_rs": -20007.52,
+      "fills": 180,
+      "fees_rs": 13726.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -3496.09,
+      "fills": 20,
+      "fees_rs": 1537.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -10423.34,
+      "fills": 24,
+      "fees_rs": 1838.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -3255.47,
+      "fills": 38,
+      "fees_rs": 2924.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -14553.55,
+      "fills": 32,
+      "fees_rs": 2448.11,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -1080.6,
+      "fills": 10,
+      "fees_rs": 769.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -5838.98,
+      "fills": 80,
+      "fees_rs": 6159.62,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BAJAJFINSV",
+      "pnl_rs": -22240.85,
+      "fills": 156,
+      "fees_rs": 11941.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": -6602.82,
+      "fills": 34,
+      "fees_rs": 2612.16,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": -589.03,
+      "fills": 32,
+      "fees_rs": 2465.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": 1144.53,
+      "fills": 50,
+      "fees_rs": 3851.82,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": 6040.31,
+      "fills": 42,
+      "fees_rs": 3235.46,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": -852.78,
+      "fills": 10,
+      "fees_rs": 771.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": -6324.72,
+      "fills": 98,
+      "fees_rs": 7543.28,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "HDFCLIFE",
+      "pnl_rs": 4439.91,
+      "fills": 168,
+      "fees_rs": 12976.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SBILIFE",
+      "pnl_rs": -6195.75,
+      "fills": 26,
+      "fees_rs": 1997.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SBILIFE",
+      "pnl_rs": -4559.57,
+      "fills": 22,
+      "fees_rs": 1692.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SBILIFE",
+      "pnl_rs": -8520.57,
+      "fills": 56,
+      "fees_rs": 4298.27,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SBILIFE",
+      "pnl_rs": 2452.26,
+      "fills": 38,
+      "fees_rs": 2934.44,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SBILIFE",
+      "pnl_rs": 4242.75,
+      "fills": 24,
+      "fees_rs": 1854.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SBILIFE",
+      "pnl_rs": -15720.35,
+      "fills": 96,
+      "fees_rs": 7355.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SBILIFE",
+      "pnl_rs": -14410.11,
+      "fills": 180,
+      "fees_rs": 13792.33,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -3487.28,
+      "fills": 26,
+      "fees_rs": 2004.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -2700.29,
+      "fills": 52,
+      "fees_rs": 4004.55,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -6090.09,
+      "fills": 54,
+      "fees_rs": 4157.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -7471.95,
+      "fills": 52,
+      "fees_rs": 3990.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -4183.36,
+      "fills": 38,
+      "fees_rs": 2926.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -10873.98,
+      "fills": 116,
+      "fees_rs": 8913.32,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ICICIPRULI",
+      "pnl_rs": -23267.15,
+      "fills": 168,
+      "fees_rs": 12849.29,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ICICIGI",
+      "pnl_rs": -7172.67,
+      "fills": 20,
+      "fees_rs": 1536.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ICICIGI",
+      "pnl_rs": 8042.96,
+      "fills": 30,
+      "fees_rs": 2327.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ICICIGI",
+      "pnl_rs": 3489.3,
+      "fills": 44,
+      "fees_rs": 3393.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ICICIGI",
+      "pnl_rs": 8313.02,
+      "fills": 40,
+      "fees_rs": 3095.72,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ICICIGI",
+      "pnl_rs": -851.5,
+      "fills": 26,
+      "fees_rs": 2003.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ICICIGI",
+      "pnl_rs": -26805.54,
+      "fills": 130,
+      "fees_rs": 9910.04,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ICICIGI",
+      "pnl_rs": -20899.4,
+      "fills": 160,
+      "fees_rs": 12232.0,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PIIND",
+      "pnl_rs": 6879.58,
+      "fills": 26,
+      "fees_rs": 2009.86,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PIIND",
+      "pnl_rs": -4659.97,
+      "fills": 26,
+      "fees_rs": 1996.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PIIND",
+      "pnl_rs": 226.55,
+      "fills": 54,
+      "fees_rs": 4156.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PIIND",
+      "pnl_rs": -10923.76,
+      "fills": 48,
+      "fees_rs": 3676.1,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PIIND",
+      "pnl_rs": -3468.37,
+      "fills": 32,
+      "fees_rs": 2462.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PIIND",
+      "pnl_rs": -19176.7,
+      "fills": 136,
+      "fees_rs": 10395.34,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PIIND",
+      "pnl_rs": -20795.71,
+      "fills": 144,
+      "fees_rs": 11016.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SRF",
+      "pnl_rs": -6001.07,
+      "fills": 16,
+      "fees_rs": 1226.93,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SRF",
+      "pnl_rs": -7543.96,
+      "fills": 24,
+      "fees_rs": 1836.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SRF",
+      "pnl_rs": -2885.2,
+      "fills": 34,
+      "fees_rs": 2611.9,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SRF",
+      "pnl_rs": -4056.97,
+      "fills": 28,
+      "fees_rs": 2149.95,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SRF",
+      "pnl_rs": -2569.88,
+      "fills": 18,
+      "fees_rs": 1384.32,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SRF",
+      "pnl_rs": -8789.56,
+      "fills": 112,
+      "fees_rs": 8596.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SRF",
+      "pnl_rs": -18805.56,
+      "fills": 136,
+      "fees_rs": 10406.76,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": 6819.44,
+      "fills": 32,
+      "fees_rs": 2475.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": -3861.4,
+      "fills": 18,
+      "fees_rs": 1386.86,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": -10278.67,
+      "fills": 28,
+      "fees_rs": 2146.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": 1639.08,
+      "fills": 36,
+      "fees_rs": 2774.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": -2099.82,
+      "fills": 18,
+      "fees_rs": 1385.64,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": -7564.39,
+      "fills": 112,
+      "fees_rs": 8595.29,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "DEEPAKNTR",
+      "pnl_rs": -11442.52,
+      "fills": 94,
+      "fees_rs": 7202.58,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "NAUKRI",
+      "pnl_rs": -2825.39,
+      "fills": 28,
+      "fees_rs": 2156.93,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "NAUKRI",
+      "pnl_rs": -2748.8,
+      "fills": 42,
+      "fees_rs": 3237.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "NAUKRI",
+      "pnl_rs": -5762.89,
+      "fills": 68,
+      "fees_rs": 5241.61,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "NAUKRI",
+      "pnl_rs": -5402.04,
+      "fills": 58,
+      "fees_rs": 4473.14,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "NAUKRI",
+      "pnl_rs": -4207.51,
+      "fills": 32,
+      "fees_rs": 2461.91,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "NAUKRI",
+      "pnl_rs": -12397.85,
+      "fills": 122,
+      "fees_rs": 9378.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "NAUKRI",
+      "pnl_rs": -14962.27,
+      "fills": 188,
+      "fees_rs": 14427.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -8073.7,
+      "fills": 24,
+      "fees_rs": 1843.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -7175.69,
+      "fills": 18,
+      "fees_rs": 1382.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -12134.97,
+      "fills": 46,
+      "fees_rs": 3533.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -5874.38,
+      "fills": 30,
+      "fees_rs": 2306.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -2544.31,
+      "fills": 22,
+      "fees_rs": 1694.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -16554.9,
+      "fills": 108,
+      "fees_rs": 8284.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "INDHOTEL",
+      "pnl_rs": -26357.23,
+      "fills": 170,
+      "fees_rs": 12989.61,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": 5723.77,
+      "fills": 20,
+      "fees_rs": 1546.25,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": -63.45,
+      "fills": 38,
+      "fees_rs": 2928.26,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": -2461.65,
+      "fills": 50,
+      "fees_rs": 3849.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": -1410.21,
+      "fills": 38,
+      "fees_rs": 2929.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": -3136.91,
+      "fills": 20,
+      "fees_rs": 1540.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": 2115.76,
+      "fills": 90,
+      "fees_rs": 6947.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "JUBLFOOD",
+      "pnl_rs": -13670.11,
+      "fills": 140,
+      "fees_rs": 10728.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "DMART",
+      "pnl_rs": -3056.87,
+      "fills": 18,
+      "fees_rs": 1384.71,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "DMART",
+      "pnl_rs": -2349.52,
+      "fills": 34,
+      "fees_rs": 2610.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "DMART",
+      "pnl_rs": -7203.97,
+      "fills": 60,
+      "fees_rs": 4612.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "DMART",
+      "pnl_rs": -5318.08,
+      "fills": 42,
+      "fees_rs": 3221.46,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "DMART",
+      "pnl_rs": 30.39,
+      "fills": 34,
+      "fees_rs": 2614.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "DMART",
+      "pnl_rs": -2031.6,
+      "fills": 142,
+      "fees_rs": 10919.52,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "DMART",
+      "pnl_rs": -13454.21,
+      "fills": 200,
+      "fees_rs": 15323.79,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": -2411.78,
+      "fills": 26,
+      "fees_rs": 2002.32,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": -2866.4,
+      "fills": 30,
+      "fees_rs": 2310.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": -2508.4,
+      "fills": 54,
+      "fees_rs": 4157.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": -8624.2,
+      "fills": 34,
+      "fees_rs": 2611.24,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": -4303.69,
+      "fills": 24,
+      "fees_rs": 1846.57,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": 245.41,
+      "fills": 104,
+      "fees_rs": 8001.39,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "AUROPHARMA",
+      "pnl_rs": -24748.35,
+      "fills": 178,
+      "fees_rs": 13572.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BIOCON",
+      "pnl_rs": 1321.64,
+      "fills": 16,
+      "fees_rs": 1236.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BIOCON",
+      "pnl_rs": -11943.91,
+      "fills": 26,
+      "fees_rs": 1997.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BIOCON",
+      "pnl_rs": -3174.36,
+      "fills": 34,
+      "fees_rs": 2622.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BIOCON",
+      "pnl_rs": -8914.12,
+      "fills": 40,
+      "fees_rs": 3079.48,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BIOCON",
+      "pnl_rs": -4802.06,
+      "fills": 34,
+      "fees_rs": 2619.14,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BIOCON",
+      "pnl_rs": -2671.83,
+      "fills": 96,
+      "fees_rs": 7403.38,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BIOCON",
+      "pnl_rs": -8068.87,
+      "fills": 144,
+      "fees_rs": 11102.8,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "LUPIN",
+      "pnl_rs": 488.84,
+      "fills": 8,
+      "fees_rs": 617.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "LUPIN",
+      "pnl_rs": 5448.87,
+      "fills": 28,
+      "fees_rs": 2163.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "LUPIN",
+      "pnl_rs": -6849.64,
+      "fills": 50,
+      "fees_rs": 3844.02,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "LUPIN",
+      "pnl_rs": 2704.0,
+      "fills": 30,
+      "fees_rs": 2314.36,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "LUPIN",
+      "pnl_rs": -3630.09,
+      "fills": 32,
+      "fees_rs": 2462.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "LUPIN",
+      "pnl_rs": -8571.83,
+      "fills": 108,
+      "fees_rs": 8293.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "LUPIN",
+      "pnl_rs": -13220.31,
+      "fills": 182,
+      "fees_rs": 13981.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": 1971.31,
+      "fills": 34,
+      "fees_rs": 2607.81,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": -2339.9,
+      "fills": 30,
+      "fees_rs": 2301.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": 752.26,
+      "fills": 46,
+      "fees_rs": 3533.7,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": 74.04,
+      "fills": 40,
+      "fees_rs": 3074.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": -4756.2,
+      "fills": 24,
+      "fees_rs": 1839.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": -9295.45,
+      "fills": 104,
+      "fees_rs": 7970.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "TORNTPHARM",
+      "pnl_rs": -13476.97,
+      "fills": 168,
+      "fees_rs": 12831.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "ALKEM",
+      "pnl_rs": -8061.35,
+      "fills": 24,
+      "fees_rs": 1835.99,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "ALKEM",
+      "pnl_rs": -8572.45,
+      "fills": 22,
+      "fees_rs": 1683.49,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "ALKEM",
+      "pnl_rs": -6059.28,
+      "fills": 46,
+      "fees_rs": 3531.88,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "ALKEM",
+      "pnl_rs": -19120.11,
+      "fills": 42,
+      "fees_rs": 3201.83,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "ALKEM",
+      "pnl_rs": 743.4,
+      "fills": 10,
+      "fees_rs": 768.08,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "ALKEM",
+      "pnl_rs": -11517.14,
+      "fills": 130,
+      "fees_rs": 9958.84,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "ALKEM",
+      "pnl_rs": -14660.41,
+      "fills": 100,
+      "fees_rs": 7636.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "VEDL",
+      "pnl_rs": -11.81,
+      "fills": 4,
+      "fees_rs": 308.53,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "VEDL",
+      "pnl_rs": -1559.22,
+      "fills": 20,
+      "fees_rs": 1543.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "VEDL",
+      "pnl_rs": -1395.89,
+      "fills": 20,
+      "fees_rs": 1542.6,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "VEDL",
+      "pnl_rs": 5460.08,
+      "fills": 32,
+      "fees_rs": 2470.77,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "VEDL",
+      "pnl_rs": -6338.08,
+      "fills": 44,
+      "fees_rs": 3387.27,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "VEDL",
+      "pnl_rs": -8789.71,
+      "fills": 82,
+      "fees_rs": 6311.92,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "VEDL",
+      "pnl_rs": -11389.07,
+      "fills": 120,
+      "fees_rs": 9214.47,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": 3531.77,
+      "fills": 4,
+      "fees_rs": 309.75,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": -3489.21,
+      "fills": 20,
+      "fees_rs": 1540.31,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": -3424.93,
+      "fills": 38,
+      "fees_rs": 2923.61,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": -5910.27,
+      "fills": 38,
+      "fees_rs": 2922.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": -5565.37,
+      "fills": 64,
+      "fees_rs": 4924.89,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": -14817.74,
+      "fills": 136,
+      "fees_rs": 10425.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "JINDALSTEL",
+      "pnl_rs": -19188.04,
+      "fills": 168,
+      "fees_rs": 12864.0,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "SAIL",
+      "pnl_rs": 2805.36,
+      "fills": 8,
+      "fees_rs": 619.73,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "SAIL",
+      "pnl_rs": 5320.21,
+      "fills": 44,
+      "fees_rs": 3394.59,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "SAIL",
+      "pnl_rs": 21.65,
+      "fills": 30,
+      "fees_rs": 2313.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "SAIL",
+      "pnl_rs": -9112.5,
+      "fills": 58,
+      "fees_rs": 4454.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "SAIL",
+      "pnl_rs": -2367.74,
+      "fills": 36,
+      "fees_rs": 2777.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "SAIL",
+      "pnl_rs": -7348.85,
+      "fills": 126,
+      "fees_rs": 9686.18,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "SAIL",
+      "pnl_rs": -938.3,
+      "fills": 160,
+      "fees_rs": 12313.14,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "NATIONALUM",
+      "pnl_rs": 1646.07,
+      "fills": 14,
+      "fees_rs": 1080.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "NATIONALUM",
+      "pnl_rs": -7697.92,
+      "fills": 22,
+      "fees_rs": 1690.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "NATIONALUM",
+      "pnl_rs": -6058.69,
+      "fills": 36,
+      "fees_rs": 2769.17,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "NATIONALUM",
+      "pnl_rs": 5202.66,
+      "fills": 32,
+      "fees_rs": 2471.69,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "NATIONALUM",
+      "pnl_rs": -4233.57,
+      "fills": 74,
+      "fees_rs": 5701.36,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "NATIONALUM",
+      "pnl_rs": -7116.41,
+      "fills": 114,
+      "fees_rs": 8780.74,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "NATIONALUM",
+      "pnl_rs": -13878.9,
+      "fills": 160,
+      "fees_rs": 12272.63,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "PETRONET",
+      "pnl_rs": -13142.99,
+      "fills": 22,
+      "fees_rs": 1687.41,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "PETRONET",
+      "pnl_rs": -5284.39,
+      "fills": 16,
+      "fees_rs": 1229.65,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "PETRONET",
+      "pnl_rs": -1681.78,
+      "fills": 28,
+      "fees_rs": 2158.5,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "PETRONET",
+      "pnl_rs": -4696.32,
+      "fills": 30,
+      "fees_rs": 2311.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "PETRONET",
+      "pnl_rs": -3269.8,
+      "fills": 26,
+      "fees_rs": 2003.96,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "PETRONET",
+      "pnl_rs": -16496.52,
+      "fills": 110,
+      "fees_rs": 8436.54,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "PETRONET",
+      "pnl_rs": -9698.23,
+      "fills": 100,
+      "fees_rs": 7687.01,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "GAIL",
+      "pnl_rs": 754.91,
+      "fills": 20,
+      "fees_rs": 1543.13,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "GAIL",
+      "pnl_rs": -6822.03,
+      "fills": 28,
+      "fees_rs": 2150.34,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "GAIL",
+      "pnl_rs": -8986.82,
+      "fills": 48,
+      "fees_rs": 3691.19,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "GAIL",
+      "pnl_rs": -7299.44,
+      "fills": 32,
+      "fees_rs": 2457.22,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "GAIL",
+      "pnl_rs": -2967.07,
+      "fills": 20,
+      "fees_rs": 1542.04,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "GAIL",
+      "pnl_rs": -15840.3,
+      "fills": 104,
+      "fees_rs": 7968.95,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "GAIL",
+      "pnl_rs": -24844.3,
+      "fills": 164,
+      "fees_rs": 12531.05,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "IGL",
+      "pnl_rs": -6156.77,
+      "fills": 28,
+      "fees_rs": 2157.95,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "IGL",
+      "pnl_rs": -5924.98,
+      "fills": 16,
+      "fees_rs": 1231.29,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "IGL",
+      "pnl_rs": -6820.66,
+      "fills": 44,
+      "fees_rs": 3388.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "IGL",
+      "pnl_rs": -8655.08,
+      "fills": 32,
+      "fees_rs": 2464.49,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "IGL",
+      "pnl_rs": -2671.2,
+      "fills": 16,
+      "fees_rs": 1233.45,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "IGL",
+      "pnl_rs": -4699.74,
+      "fills": 64,
+      "fees_rs": 4931.56,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "IGL",
+      "pnl_rs": -17621.38,
+      "fills": 144,
+      "fees_rs": 11051.06,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "BPCL",
+      "pnl_rs": -3079.98,
+      "fills": 20,
+      "fees_rs": 1539.21,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "BPCL",
+      "pnl_rs": -2708.61,
+      "fills": 12,
+      "fees_rs": 924.43,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "BPCL",
+      "pnl_rs": -6859.72,
+      "fills": 30,
+      "fees_rs": 2308.35,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "BPCL",
+      "pnl_rs": -10897.17,
+      "fills": 32,
+      "fees_rs": 2458.0,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "BPCL",
+      "pnl_rs": -1655.01,
+      "fills": 30,
+      "fees_rs": 2314.2,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "BPCL",
+      "pnl_rs": -17689.97,
+      "fills": 92,
+      "fees_rs": 7055.34,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "BPCL",
+      "pnl_rs": -16596.24,
+      "fills": 116,
+      "fees_rs": 8878.98,
+      "bars": 1875
+    },
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "IOC",
+      "pnl_rs": -5837.49,
+      "fills": 26,
+      "fees_rs": 2003.94,
+      "bars": 1875
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "IOC",
+      "pnl_rs": -5130.68,
+      "fills": 24,
+      "fees_rs": 1849.58,
+      "bars": 1875
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "IOC",
+      "pnl_rs": -561.14,
+      "fills": 38,
+      "fees_rs": 2932.67,
+      "bars": 1875
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "IOC",
+      "pnl_rs": -9557.49,
+      "fills": 20,
+      "fees_rs": 1535.87,
+      "bars": 1875
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "IOC",
+      "pnl_rs": -1981.18,
+      "fills": 16,
+      "fees_rs": 1234.04,
+      "bars": 1875
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "IOC",
+      "pnl_rs": -18273.07,
+      "fills": 118,
+      "fees_rs": 9045.42,
+      "bars": 1875
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "IOC",
+      "pnl_rs": -23260.58,
+      "fills": 160,
+      "fees_rs": 12251.55,
+      "bars": 1875
+    }
+  ],
+  "fails": [
+    {
+      "strategy": "hammer_reversal",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "strategy": "piercing_line_long",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "strategy": "bull_harami_break",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "strategy": "morning_star_long",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "strategy": "three_white_soldiers",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "strategy": "atr_expansion_long",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "strategy": "nr7_breakout",
+      "ticker": "CHOLAFIN",
+      "error": "HTTP Error 500: Internal Server Error"
+    }
+  ]
+}
