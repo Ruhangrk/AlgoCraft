@@ -12,7 +12,7 @@
 #include <string_view>
 #include <thread>
 
-#include <spdlog/spdlog.h>
+#include "algocraft/log/log.hpp"
 
 namespace algocraft {
 namespace {
@@ -521,7 +521,7 @@ void UpstoxLiveFeed::run_loop() {
         continue;
       }
       if (rc != CURLE_OK) {
-        spdlog::warn("upstox ws recv: {}", curl_easy_strerror(rc));
+        AC_LOG_WARN("upstox ws recv: {}", curl_easy_strerror(rc));
         break;
       }
       if (meta == nullptr) {
@@ -550,7 +550,7 @@ void UpstoxLiveFeed::run_loop() {
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
   } catch (const std::exception& e) {
-    spdlog::error("upstox live feed: {}", e.what());
+    AC_LOG_ERROR("upstox live feed: {}", e.what());
   }
   connected_ = false;
 }

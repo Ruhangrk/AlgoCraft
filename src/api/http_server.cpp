@@ -1,11 +1,10 @@
 #include "algocraft/api/http_server.hpp"
 
-#include <spdlog/spdlog.h>
-
 #include "algocraft/api/auth_routes.hpp"
 #include "algocraft/api/http_helpers.hpp"
 #include "algocraft/api/market_routes.hpp"
 #include "algocraft/api/workbook_routes.hpp"
+#include "algocraft/log/log.hpp"
 
 namespace algocraft {
 
@@ -80,7 +79,7 @@ void HttpServer::start() {
                                      });
 
   app.loglevel(crow::LogLevel::Info);
-  spdlog::info("API listening on http://{}:{} (Crow)", config_.host, config_.port);
+  AC_LOG_INFO("API listening on http://{}:{} (Crow)", config_.host, config_.port);
   app.bindaddr(config_.host).port(static_cast<std::uint16_t>(config_.port)).run();
   app_ = nullptr;
   running_ = false;

@@ -3,7 +3,7 @@
 #include <string_view>
 #include <thread>
 
-#include <spdlog/spdlog.h>
+#include "algocraft/log/log.hpp"
 
 namespace algocraft {
 namespace {
@@ -123,7 +123,7 @@ void Phase0Runtime::persistence_loop() {
     if (log_ring_.try_pop(log)) {
       work = true;
       const std::string_view text(log.message.data(), log.length);
-      spdlog::info("[persist] {}", text);
+      AC_LOG_INFO("[persist] {}", text);
       logs_written_.fetch_add(1, std::memory_order_relaxed);
     }
 

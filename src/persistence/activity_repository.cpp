@@ -10,6 +10,7 @@
 #include "algocraft/domain/ids.hpp"
 #include "algocraft/domain/symbol.hpp"
 #include "algocraft/engine/run_manager.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/portfolio/portfolio_ledger.hpp"
 #include "algocraft/workbook/workbook_manager.hpp"
 
@@ -394,6 +395,10 @@ void ActivityRepository::persist_run(const RunConfig& config, const RunResult& r
                                       const SymbolTable& symbols) {
   const auto wb_db_id = uuid_to_i64(result.workbook_id);
   const auto user_db_id = uuid_to_i64(config.user_id);
+  AC_LOG_INFO("persist_run begin wid={} fills={} signals={} rejections={}", wb_db_id, result.fills,
+              result.signals.size(), result.rejections.size());
+  AC_LOG_TRACE("persist_run detail selected={} skipped={} force_stopped={}", result.selected,
+               result.skipped, result.force_stopped);
 
   exec(db_, "BEGIN");
   try {
@@ -429,7 +434,9 @@ void ActivityRepository::persist_run(const RunConfig& config, const RunResult& r
     insert_lifecycle_(run_db_id, wb_db_id, cmap, result);
 
     exec(db_, "COMMIT");
+    AC_LOG_INFO("persist_run done wid={}", wb_db_id);
   } catch (...) {
+    AC_LOG_ERROR("persist_run rollback wid={}", wb_db_id);
     exec(db_, "ROLLBACK");
     throw;
   }

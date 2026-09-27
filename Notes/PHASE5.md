@@ -13,6 +13,26 @@ Do not start a step until the previous step is done and tested. Do not fetch Ups
 
 **Threads:** Thread 0 / 1 never open SQLite or RocksDB. Thread 2 (persistence) is the only writer. API reads via repositories or snapshots.
 
+### SQLite connections + T2 / T4 (locked 2026-09-28)
+
+**Decision:** two connections to the same DB file; both may be opened `READWRITE`. Ownership is by thread, not by open flags.
+
+| Connection | Owner | Allowed ops |
+|---|---|---|
+| `db_write` | **T2 only** | INSERT / UPDATE / DELETE (and migrations at startup) |
+| `db_read` | **T4 only** | SELECT only (even if the handle is RW) |
+
+- Never share one `sqlite3*` across T2 and T4.
+- WAL stays on. Set `busy_timeout` on both. Do not rely on two concurrent writers; T4 must not write.
+- Live / hot views (run status, P&L, containers): T4 may also serve **snapshots** published by the engine; history / auth / lists use `db_read`.
+- Standing up real **T2** means: all writes enqueue → T2 drains → `db_write`. T4 handlers never call mutate repos directly. (Prep step: open both handles and wire GETs to `db_read` before moving writers.)
+
+**Today:** one shared handle; Crow does read+write. Target above replaces that when T2 is wired.
+
+### Logging (locked 2026-09-28)
+
+See **`Notes/LOGGING.md`**. Console/debug logging uses `AC_LOG_*` → `LogHub` async drain → spdlog. CLI: `serve debug` / `info` / `trace` / etc. DB signal tables remain separate.
+
 ---
 
 ## Market-data rules (locked)

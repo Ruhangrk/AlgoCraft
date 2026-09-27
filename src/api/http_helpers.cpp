@@ -1,11 +1,11 @@
 #include "algocraft/api/http_helpers.hpp"
 
-#include <spdlog/spdlog.h>
+#include "algocraft/log/log.hpp"
 
 namespace algocraft::api {
 
 void CorsMiddleware::before_handle(crow::request& req, crow::response& res, context&) {
-  spdlog::info("http {} {}", crow::method_name(req.method), req.raw_url);
+  AC_LOG_INFO("http {} {}", crow::method_name(req.method), req.raw_url);
   if (req.method == "OPTIONS"_method) {
     res.code = 204;
     res.add_header("Access-Control-Allow-Origin", "*");

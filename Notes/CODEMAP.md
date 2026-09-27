@@ -298,6 +298,7 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `persistence/packed_bars.*` | `ACB1` binary OHLCV pack/unpack | Rocks values |
 | `persistence/activity_repository.*` | Persist/read runs, containers, fills, signals, rejections | Sqlite after run |
 | `persistence/async_logger.*` + `log_event.hpp` | SPSC log events (Phase0) | Persistence thread demo |
+| `log/log.hpp` + `log_hub.*` | `AC_LOG_*` facade + async drain → spdlog | CLI level; see `Notes/LOGGING.md` |
 
 ### 5.10 Domain (types only)
 
@@ -465,7 +466,7 @@ flowchart TB
 | SQLite + RocksDB + DataFetchService | Yes |
 | Auth + HTTP API | Yes (minimal server) |
 | Signal/rejection rows | Captured in container; written post-run |
-| PersistenceRing Thread-2 for all writes | Phase0 demo only; activity persist is post-run sync |
+| PersistenceRing Thread-2 for all writes | Phase0 demo only; activity persist is post-run sync. **Target (locked):** `db_write`=T2 only, `db_read`=T4 SELECT only; see PHASE5 “SQLite connections + T2 / T4” |
 | Live Upstox WS paper tape | `UpstoxLiveFeed` + `POST .../runs/stop`; status hub push |
 | Broker gateway | No |
 

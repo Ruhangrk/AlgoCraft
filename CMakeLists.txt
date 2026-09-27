@@ -52,6 +52,8 @@ add_library(algocraft
   src/market_data/virtual_live_feed.cpp
   src/market_data/upstox_provider.cpp
   src/engine/live_run_service.cpp
+  src/log/log.cpp
+  src/log/log_hub.cpp
   src/persistence/activity_repository.cpp
   src/persistence/async_logger.cpp
   src/persistence/backtest_repository.cpp
@@ -108,8 +110,8 @@ target_link_libraries(algocraft
     Boost::lockfree
     algocraft::sqlite3
     PkgConfig::ROCKSDB
-  PRIVATE
     spdlog::spdlog
+  PRIVATE
     OpenSSL::Crypto
     CURL::libcurl
     ZLIB::ZLIB

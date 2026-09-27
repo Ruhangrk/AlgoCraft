@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "algocraft/domain/session_calendar.hpp"
+#include "algocraft/log/log.hpp"
 
 namespace algocraft {
 namespace {
@@ -103,6 +104,10 @@ void DataFetchService::ensure_data_available(std::string_view ticker, Timestamp 
     throw std::invalid_argument("ensure_data_available requires ticker");
   }
 
+  AC_LOG_DEBUG("ensure_data ticker={} from_ns={} to_ns={} res={}", ticker, from.nanos(), to.nanos(),
+               bar_resolution_code(resolution));
+  AC_LOG_TRACE("ensure_data enter vendor_fetches_before={}", vendor_fetches_);
+
   const auto now_ts = now();
   if (to.nanos() == 0 || to > now_ts) {
     to = now_ts;
@@ -111,6 +116,7 @@ void DataFetchService::ensure_data_available(std::string_view ticker, Timestamp 
   // Chart TFs (1d/1w/1M): year blobs, no session-day / live-today logic.
   if (is_chart_resolution(resolution)) {
     ensure_chart_available(ticker, from, to, resolution);
+    AC_LOG_DEBUG("ensure_data chart_done ticker={} vendor_fetches={}", ticker, vendor_fetches_);
     return;
   }
 
@@ -145,6 +151,7 @@ void DataFetchService::ensure_data_available(std::string_view ticker, Timestamp 
   if (want_today) {
     refresh_today(ticker, today, resolution);
   }
+  AC_LOG_DEBUG("ensure_data done ticker={} vendor_fetches={}", ticker, vendor_fetches_);
 }
 
 void DataFetchService::ensure_chart_available(std::string_view ticker, Timestamp from, Timestamp to,

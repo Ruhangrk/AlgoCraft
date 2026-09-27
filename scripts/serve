@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Single-instance AlgoCraft API server. Prefer this over bare ./build/algocraft_engine serve.
 # Usage:
-#   scripts/serve              # start (engine refuses if already running)
-#   scripts/serve --restart    # kill previous serve, then start
+#   scripts/serve                 # start (info logs)
+#   scripts/serve debug           # start with debug logs
+#   scripts/serve --restart trace # kill previous, start with trace
+#   scripts/serve --restart
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

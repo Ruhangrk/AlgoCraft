@@ -10,6 +10,7 @@
 #include "algocraft/domain/instrument.hpp"
 #include "algocraft/engine/spsc_ring.hpp"
 #include "algocraft/execution/simulated_exchange.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
 #include "algocraft/portfolio/capital_manager.hpp"
@@ -47,6 +48,11 @@ void settle(RunResult& out, WorkbookManager& books, WorkbookId wb, BorrowId borr
 RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
                               StrategyRegistry& strategies, WorkbookManager& books,
                               SymbolTable& symbols, ActivityRepository* repo) {
+  AC_LOG_INFO("run_start router={} stocks={} strategies={} capital_paise={}", config.router,
+              config.tickers.size(), config.strategies.size(), config.workbook_capital.paise());
+  AC_LOG_TRACE("run_start detail from_ns={} to_ns={} persist={}", config.from.nanos(),
+               config.to.nanos(), repo != nullptr);
+
   RunResult out{};
   const Instrument inst{};
   std::vector<SymbolId> stock_ids;
@@ -71,6 +77,7 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
   }
   const auto borrow = books.borrow_capital(wb, config.workbook_capital);
   if (!borrow.result.ok) {
+    AC_LOG_WARN("run_borrow_failed err={}", borrow.result.error ? borrow.result.error : "");
     return out;
   }
   out.borrow_id = borrow.id;
@@ -112,6 +119,7 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
   out.real_containers = containers.real_count();
 
   if (containers.empty()) {
+    AC_LOG_INFO("run_no_containers selected={} skipped={}", out.selected, out.skipped);
     settle(out, books, wb, borrow.id, *ledger);
     if (repo != nullptr) {
       repo->persist_run(config, out, books, *ledger, symbols);
@@ -188,8 +196,12 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
 
   if (repo != nullptr) {
     repo->persist_run(config, out, books, *ledger, symbols);
+    AC_LOG_DEBUG("run_persisted fills={} signals={} rejections={}", out.fills, out.signals.size(),
+                 out.rejections.size());
   }
 
+  AC_LOG_INFO("run_done selected={} skipped={} real={} fills={} force_stopped={}", out.selected,
+              out.skipped, out.real_containers, out.fills, out.force_stopped);
   return out;
 }
 

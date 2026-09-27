@@ -8,6 +8,7 @@
 #include "algocraft/domain/bar_resolution.hpp"
 #include "algocraft/domain/enums.hpp"
 #include "algocraft/domain/instrument.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
 
@@ -52,6 +53,10 @@ BacktestService::BacktestService(WorkbookRepository& workbooks, BacktestReposito
       instruments_(instruments) {}
 
 ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request) {
+  AC_LOG_INFO("backtest_service_run wid={} ticker={} strategy={}", request.workbook_id,
+              request.ticker, request.strategy_name);
+  AC_LOG_TRACE("backtest_service_run from_ns={} to_ns={} capital_paise={}", request.from.nanos(),
+               request.to.nanos(), request.capital.paise());
   if (request.ticker.empty() || request.strategy_name.empty()) {
     throw std::invalid_argument("ticker and strategy_name required");
   }
@@ -147,6 +152,8 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
   backtests_->insert_events(request.workbook_id, row.id, events);
 
   out.row = *backtests_->find(request.workbook_id, row.id);
+  AC_LOG_INFO("backtest_service_done wid={} id={} fills={} pnl_paise={}", request.workbook_id,
+              out.row.id, out.row.fills, out.row.pnl_paise);
   return out;
 }
 

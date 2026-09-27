@@ -76,3 +76,6 @@ data/*.db-journal
 
 # RocksDB session blobs (Phase 5)
 data/bars/
+
+# Daily engine logs (spdlog daily_file_sink)
+data/logs/

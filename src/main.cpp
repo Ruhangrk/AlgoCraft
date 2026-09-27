@@ -4,6 +4,8 @@
 #include "algocraft/domain/symbol.hpp"
 #include "algocraft/engine/phase0_runtime.hpp"
 #include "algocraft/engine/run_manager.hpp"
+#include "algocraft/log/log.hpp"
+#include "algocraft/log/log_hub.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/csv_provider.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
@@ -38,8 +40,6 @@
 
 #include <sys/file.h>
 
-#include <spdlog/spdlog.h>
-
 #ifndef ALGOCRAFT_DATA_DIR
 #define ALGOCRAFT_DATA_DIR "data/1min"
 #endif
@@ -57,6 +57,28 @@ namespace {
 
 // Held for process lifetime so a second `serve` fails before RocksDB open.
 int g_serve_lock_fd = -1;
+
+struct PeeledArgs {
+  std::optional<algocraft::LogLevel> level;
+  std::vector<const char*> rest;
+};
+
+// Pulls known level tokens out of argv[start..). Remaining keep order.
+PeeledArgs peel_log_level(int argc, char** argv, int start) {
+  PeeledArgs out;
+  for (int i = start; i < argc; ++i) {
+    if (auto lvl = algocraft::parse_log_level(argv[i])) {
+      out.level = *lvl;
+      continue;
+    }
+    out.rest.push_back(argv[i]);
+  }
+  return out;
+}
+
+const char* arg_or(const PeeledArgs& peeled, std::size_t index, const char* fallback) {
+  return index < peeled.rest.size() ? peeled.rest[index] : fallback;
+}
 
 std::string list_algocraft_engine_procs() {
   std::string out;
@@ -184,7 +206,7 @@ struct EngineCache {
     db.migrate();
     bars.open();
     coverage.emplace(db.handle());
-    spdlog::info("sqlite={} rocksdb={}", db.path().string(), bars.path().string());
+    AC_LOG_INFO("sqlite={} rocksdb={}", db.path().string(), bars.path().string());
   }
 
   algocraft::CoverageRepository& cov() { return *coverage; }
@@ -208,10 +230,10 @@ int run_db_smoke(const char* db_path) {
   db.migrate();
   const auto tables = db.table_names();
   const auto applied = db.applied_migrations();
-  spdlog::info("sqlite path={} wal={} tables={} migrations={}", db.path().string(),
+  AC_LOG_INFO("sqlite path={} wal={} tables={} migrations={}", db.path().string(),
                db.journal_mode(), tables.size(), applied.size());
   for (const auto& name : applied) {
-    spdlog::info("  applied {}", name);
+    AC_LOG_INFO("  applied {}", name);
   }
   db.close();
   return db.is_open() ? 1 : 0;
@@ -228,9 +250,9 @@ int run_instruments_ingest(const char* source, const char* db_path) {
   db.open();
   db.migrate();
   algocraft::InstrumentRepository repo(db.handle());
-  spdlog::info("instruments ingest source={}", source);
+  AC_LOG_INFO("instruments ingest source={}", source);
   const auto stats = algocraft::ingest_upstox_instruments(repo, source);
-  spdlog::info("instruments read={} kept={} skipped={} active={}", stats.rows_read,
+  AC_LOG_INFO("instruments read={} kept={} skipped={} active={}", stats.rows_read,
                stats.rows_kept, stats.rows_skipped, repo.count_active());
   db.close();
   return 0;
@@ -239,7 +261,7 @@ int run_instruments_ingest(const char* source, const char* db_path) {
 int run_phase0_smoke() {
   algocraft::DataSourceRegistry registry;
   registry.register_provider(std::make_unique<algocraft::DummyProvider>());
-  spdlog::info("active data source: {}", registry.active_provider().name());
+  AC_LOG_INFO("active data source: {}", registry.active_provider().name());
 
   algocraft::Phase0Runtime runtime;
   runtime.start();
@@ -261,7 +283,7 @@ int run_phase0_smoke() {
   }
 
   runtime.stop();
-  spdlog::info("bars={} fills={} commands={} persist={} logs={}", runtime.bars_processed(),
+  AC_LOG_INFO("bars={} fills={} commands={} persist={} logs={}", runtime.bars_processed(),
                runtime.fills_processed(), runtime.commands_processed(), runtime.persist_events(),
                runtime.logs_written());
   return runtime.bars_processed() >= kBars ? 0 : 1;
@@ -286,7 +308,7 @@ int run_clip_backtest(const char* data_dir) {
   algocraft::register_all_strategies(strategies);
   algocraft::BacktestRunner runner;
 
-  spdlog::info("consecutive_up_clip capital=2cr/stock clip=20L data={}", data_dir);
+  AC_LOG_INFO("consecutive_up_clip capital=2cr/stock clip=20L data={}", data_dir);
   for (std::size_t i = 0; i < tickers.size(); ++i) {
     algocraft::BacktestRequest req{};
     req.symbol_id = ids[i];
@@ -299,7 +321,7 @@ int run_clip_backtest(const char* data_dir) {
             ? 0.0
             : 100.0 * static_cast<double>(r.ending_equity_paise - r.starting_capital_paise) /
                   static_cast<double>(r.starting_capital_paise);
-    spdlog::info(
+    AC_LOG_INFO(
         "{} bars={} fills={} trips={} pnl_rupees={:.2f} fees_rupees={:.2f} return_pct={:.4f} "
         "sharpe={:.4f} max_dd_rupees={:.2f} win_rate={:.3f}",
         tickers[i], r.bars, r.fills, r.round_trips, r.realized_pnl_paise / 100.0,
@@ -308,7 +330,7 @@ int run_clip_backtest(const char* data_dir) {
     std::size_t fill_i = 0;
     for (const auto& day : r.daily) {
       const auto d = ist_tm(day.timestamp_ns);
-      spdlog::info("  {:04d}-{:02d}-{:02d} pnl_rs={:.2f} fees_rs={:.2f} fills={} trips={} wins={}",
+      AC_LOG_INFO("  {:04d}-{:02d}-{:02d} pnl_rs={:.2f} fees_rs={:.2f} fills={} trips={} wins={}",
                    d.tm_year + 1900, d.tm_mon + 1, d.tm_mday, day.realized_pnl_paise / 100.0,
                    day.fees_paise / 100.0, day.fills, day.round_trips, day.wins);
       const auto day_key = day.timestamp_ns / 86'400'000'000'000LL;
@@ -316,14 +338,14 @@ int run_clip_backtest(const char* data_dir) {
              r.fills_log[fill_i].timestamp_ns / 86'400'000'000'000LL == day_key) {
         const auto& f = r.fills_log[fill_i];
         const auto t = ist_tm(f.timestamp_ns);
-        spdlog::info("    {:02d}:{:02d} {} qty={} px={:.2f} fees={:.2f}", t.tm_hour, t.tm_min,
+        AC_LOG_INFO("    {:02d}:{:02d} {} qty={} px={:.2f} fees={:.2f}", t.tm_hour, t.tm_min,
                      f.side == algocraft::Side::Buy ? "BUY " : "SELL", f.qty, f.price_paise / 100.0,
                      f.fees_paise / 100.0);
         ++fill_i;
       }
     }
   }
-  spdlog::info("vendor_fetches={}", fetch->vendor_fetches());
+  AC_LOG_INFO("vendor_fetches={}", fetch->vendor_fetches());
   return 0;
 }
 
@@ -341,7 +363,7 @@ int run_phase2_backtest(const char* data_dir) {
   auto* fetch = &cached->fetch();
   algocraft::DataSourceRegistry registry;
   registry.register_provider(std::move(cached));
-  spdlog::info("active data source: {} dir={}", registry.active_provider().name(), data_dir);
+  AC_LOG_INFO("active data source: {} dir={}", registry.active_provider().name(), data_dir);
 
   algocraft::StrategyRegistry strategies;
   algocraft::register_all_strategies(strategies);
@@ -363,7 +385,7 @@ int run_phase2_backtest(const char* data_dir) {
               ? 0.0
               : 100.0 * static_cast<double>(r.ending_equity_paise - r.starting_capital_paise) /
                     static_cast<double>(r.starting_capital_paise);
-      spdlog::info(
+      AC_LOG_INFO(
           "{} {} bars={} fills={} trips={} pnl_paise={} fees_paise={} equity_paise={} "
           "return_pct={:.4f} sharpe={:.4f} max_dd_paise={} win_rate={:.3f} avg_hold_s={:.1f}",
           r.strategy_name, tickers[i], r.bars, r.fills, r.round_trips, r.realized_pnl_paise,
@@ -371,7 +393,7 @@ int run_phase2_backtest(const char* data_dir) {
           r.avg_hold_seconds);
     }
   }
-  spdlog::info("vendor_fetches={}", fetch->vendor_fetches());
+  AC_LOG_INFO("vendor_fetches={}", fetch->vendor_fetches());
   return 0;
 }
 
@@ -407,7 +429,7 @@ int run_phase4(const char* data_dir) {
   cfg.trade_from = algocraft::Timestamp::from_nanos(1'789'065'000'000'000'000LL);
   cfg.trade_to = algocraft::Timestamp::from_nanos(1'789'151'340'000'000'000LL);
 
-  spdlog::info(
+  AC_LOG_INFO(
       "phase4 default_router 10 stocks x ema/vwap/clip, eval=14 sessions "
       "2026-08-24..2026-09-10, trade=2026-09-11, capital=10cr data={}",
       data_dir);
@@ -416,34 +438,34 @@ int run_phase4(const char* data_dir) {
   const auto result = mgr.execute(cfg, registry, strategies, books, symbols, &act_repo);
 
   std::int64_t eval_pnl = 0;
-  spdlog::info("--- 14-day eval (₹10L/pair) selected={} skipped={}", result.selected,
+  AC_LOG_INFO("--- 14-day eval (₹10L/pair) selected={} skipped={}", result.selected,
                result.skipped);
   for (const auto& ev : result.evaluations) {
     eval_pnl += ev.pnl_paise;
-    spdlog::info("  {} {} bars={} fills={} pnl_rs={:.2f} {}", ev.ticker, ev.strategy_name, ev.bars,
+    AC_LOG_INFO("  {} {} bars={} fills={} pnl_rs={:.2f} {}", ev.ticker, ev.strategy_name, ev.bars,
                  ev.fills, ev.pnl_paise / 100.0, ev.selected ? "WINNER" : "SKIP");
   }
-  spdlog::info("  eval_total_pnl_rs={:.2f}", eval_pnl / 100.0);
+  AC_LOG_INFO("  eval_total_pnl_rs={:.2f}", eval_pnl / 100.0);
 
   const auto trade_pnl = result.returned.paise() - cfg.workbook_capital.paise();
-  spdlog::info(
+  AC_LOG_INFO(
       "--- 15th day REAL 2026-09-11 containers={} fills={} trade_pnl_rs={:.2f} "
       "returned_rs={:.2f} workbook_after_rs={:.2f} force_stop={}",
       result.real_containers, result.fills, trade_pnl / 100.0, result.returned.paise() / 100.0,
       result.workbook_available_after.paise() / 100.0, result.force_stopped);
   for (const auto& row : result.traded) {
-    spdlog::info("  {} {} alloc_rs={:.2f} realized_rs={:.2f} cash_rs={:.2f} fills={}", row.ticker,
+    AC_LOG_INFO("  {} {} alloc_rs={:.2f} realized_rs={:.2f} cash_rs={:.2f} fills={}", row.ticker,
                  row.strategy_name, row.allocation.paise() / 100.0, row.realized.paise() / 100.0,
                  row.cash.paise() / 100.0, row.fills);
   }
-  spdlog::info("vendor_fetches={}", fetch->vendor_fetches());
+  AC_LOG_INFO("vendor_fetches={}", fetch->vendor_fetches());
   return 0;
 }
 
 int run_api_server(const char* data_dir, int port) {
   // Refuse before RocksDB: only one engine may own data/bars.
   if (other_serve_running()) {
-    spdlog::error(
+    AC_LOG_ERROR(
         "another algocraft_engine is already running — RocksDB lock would fail.\n{}"
         "Fix:  scripts/serve --restart",
         list_algocraft_engine_procs());
@@ -452,7 +474,7 @@ int run_api_server(const char* data_dir, int port) {
 
   const std::filesystem::path serve_lock{"data/serve.lock"};
   if (!acquire_serve_lock(serve_lock)) {
-    spdlog::error(
+    AC_LOG_ERROR(
         "could not acquire {} (another serve starting?).\n{}"
         "Fix:  scripts/serve --restart",
         serve_lock.string(), list_algocraft_engine_procs());
@@ -477,10 +499,10 @@ int run_api_server(const char* data_dir, int port) {
       auto upstox = std::make_unique<algocraft::UpstoxProvider>(std::move(upstox_cfg), &symbols);
       cached = std::make_unique<algocraft::CachedProvider>(std::move(upstox), cache.bars, cache.cov(),
                                                            symbols);
-      spdlog::info("data source: upstox (token loaded from ~/.config/upstox/config.json)");
+      AC_LOG_INFO("data source: upstox (token loaded from ~/.config/upstox/config.json)");
     } else {
       cached = wrap_csv(data_dir, symbols, cache);
-      spdlog::warn("upstox token missing — serving CSV from {}", data_dir);
+      AC_LOG_WARN("upstox token missing — serving CSV from {}", data_dir);
     }
     fetch_ptr = &cached->fetch();
 
@@ -494,11 +516,11 @@ int run_api_server(const char* data_dir, int port) {
     cfg.host = "127.0.0.1";
     cfg.port = port;
     algocraft::HttpServer server(cfg, cache.db, registry, strategies, symbols, fetch_ptr);
-    spdlog::info("API listening on http://{}:{}", cfg.host, cfg.port);
+    AC_LOG_INFO("API listening on http://{}:{}", cfg.host, cfg.port);
     server.start();
     return 0;
   } catch (const std::exception& e) {
-    spdlog::error("serve failed: {}", e.what());
+    AC_LOG_ERROR("serve failed: {}", e.what());
     return 1;
   }
 }
@@ -506,39 +528,60 @@ int run_api_server(const char* data_dir, int port) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc >= 2 && std::strcmp(argv[1], "db") == 0) {
-    const char* db_path = (argc >= 3) ? argv[2] : ALGOCRAFT_DB_PATH;
-    return run_db_smoke(db_path);
-  }
-  if (argc >= 2 && std::strcmp(argv[1], "instruments") == 0) {
-    if (argc >= 3 && std::strcmp(argv[2], "ingest") == 0) {
-      const char* source =
-          (argc >= 4) ? argv[3] : algocraft::kUpstoxInstrumentsUrl.data();
-      const char* db_path = (argc >= 5) ? argv[4] : ALGOCRAFT_DB_PATH;
-      return run_instruments_ingest(source, db_path);
+  const auto peeled = peel_log_level(argc, argv, 1);
+  const algocraft::LogLevel log_level = peeled.level.value_or(algocraft::LogLevel::Info);
+
+  algocraft::LogHub log_hub;
+  algocraft::log::init_sinks("data/logs");
+  algocraft::log::set_level(log_level);
+  log_hub.start();
+  algocraft::log::set_hub(&log_hub);
+  AC_LOG_INFO("algocraft starting log_level={} log_dir={}", algocraft::to_string(log_level),
+              algocraft::log::log_dir());
+
+  int rc = 0;
+  const char* cmd = (argc >= 2) ? argv[1] : "";
+
+  // Re-peel after the command name so `serve debug` works (level was also in first peel).
+  const auto cmd_args = peel_log_level(argc, argv, 2);
+
+  if (argc >= 2 && std::strcmp(cmd, "db") == 0) {
+    const char* db_path = arg_or(cmd_args, 0, ALGOCRAFT_DB_PATH);
+    rc = run_db_smoke(db_path);
+  } else if (argc >= 2 && std::strcmp(cmd, "instruments") == 0) {
+    if (cmd_args.rest.size() >= 1 && std::strcmp(cmd_args.rest[0], "ingest") == 0) {
+      const char* source = arg_or(cmd_args, 1, algocraft::kUpstoxInstrumentsUrl.data());
+      const char* db_path = arg_or(cmd_args, 2, ALGOCRAFT_DB_PATH);
+      rc = run_instruments_ingest(source, db_path);
+    } else {
+      AC_LOG_ERROR("usage: algocraft_engine instruments ingest [source] [db_path] [log_level]");
+      rc = 1;
     }
-    spdlog::error("usage: algocraft_engine instruments ingest [source] [db_path]");
-    return 1;
-  }
-  if (argc >= 2 && std::strcmp(argv[1], "serve") == 0) {
-    const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;
+  } else if (argc >= 2 && std::strcmp(cmd, "serve") == 0) {
+    const char* data_dir = arg_or(cmd_args, 0, ALGOCRAFT_DATA_DIR);
     int port = 8080;
-    if (argc >= 4) {
-      port = std::atoi(argv[3]);
+    if (cmd_args.rest.size() >= 2) {
+      port = std::atoi(cmd_args.rest[1]);
     }
-    return run_api_server(data_dir, port);
-  }
-  if (argc >= 2 && std::strcmp(argv[1], "run") == 0) {
-    const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;
-    return run_phase4(data_dir);
-  }
-  if (argc >= 2 && std::strcmp(argv[1], "backtest") == 0) {
-    if (argc >= 3 && std::strcmp(argv[2], "consecutive_up_clip") == 0) {
-      const char* data_dir = (argc >= 4) ? argv[3] : ALGOCRAFT_DATA_DIR;
-      return run_clip_backtest(data_dir);
+    rc = run_api_server(data_dir, port);
+  } else if (argc >= 2 && std::strcmp(cmd, "run") == 0) {
+    const char* data_dir = arg_or(cmd_args, 0, ALGOCRAFT_DATA_DIR);
+    rc = run_phase4(data_dir);
+  } else if (argc >= 2 && std::strcmp(cmd, "backtest") == 0) {
+    if (cmd_args.rest.size() >= 1 && std::strcmp(cmd_args.rest[0], "consecutive_up_clip") == 0) {
+      const char* data_dir = arg_or(cmd_args, 1, ALGOCRAFT_DATA_DIR);
+      rc = run_clip_backtest(data_dir);
+    } else {
+      const char* data_dir = arg_or(cmd_args, 0, ALGOCRAFT_DATA_DIR);
+      rc = run_phase2_backtest(data_dir);
     }
-    const char* data_dir = (argc >= 3) ? argv[2] : ALGOCRAFT_DATA_DIR;
-    return run_phase2_backtest(data_dir);
+  } else {
+    rc = run_phase0_smoke();
   }
-  return run_phase0_smoke();
+
+  AC_LOG_INFO("algocraft exit rc={} log_dropped={} log_written={}", rc, log_hub.dropped(),
+              log_hub.written());
+  algocraft::log::set_hub(nullptr);
+  log_hub.stop();
+  return rc;
 }

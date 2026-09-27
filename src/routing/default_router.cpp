@@ -9,6 +9,7 @@
 #include "algocraft/domain/enums.hpp"
 #include "algocraft/domain/timestamp.hpp"
 #include "algocraft/indicators/daily_sma_warmup.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
 #include "algocraft/routing/position_sizer.hpp"
 
@@ -28,6 +29,8 @@ RouterDefaults DefaultRouter::defaults() const {
 
 void DefaultRouter::start(DataSourceRegistry& data, StrategyRegistry& strategies,
                           ContainerManager& containers) {
+  AC_LOG_INFO("router_start name=default_router stocks={} strategies={}", config_.stocks.size(),
+              config_.strategies.size());
   evaluate_all(data, strategies);
 
   std::vector<StrategyEvalResult*> winners;
@@ -37,9 +40,11 @@ void DefaultRouter::start(DataSourceRegistry& data, StrategyRegistry& strategies
     }
   }
   if (winners.empty()) {
+    AC_LOG_INFO("router_no_winners");
     return;
   }
 
+  AC_LOG_INFO("router_winners n={}", winners.size());
   const auto n = static_cast<std::int64_t>(winners.size());
   const auto pool = containers.available_capital().paise();
   const auto base = pool / n;
@@ -63,6 +68,8 @@ void DefaultRouter::start(DataSourceRegistry& data, StrategyRegistry& strategies
                                                 winner->symbol_id, as_of);
       }
     }
+    AC_LOG_DEBUG("router_create sid={} strategy={} alloc_paise={} pnl_paise={}", winner->symbol_id,
+                 winner->strategy_name, alloc.paise(), winner->pnl_paise);
     (void)containers.create(req);
   }
 }
@@ -83,6 +90,7 @@ void DefaultRouter::evaluate_all(DataSourceRegistry& data, StrategyRegistry& str
           symbol_id, config_.from, config_.to, BarResolution::OneMin);
       row.bars = bars.size();
       if (bars.empty()) {
+        AC_LOG_TRACE("router_eval skip empty sid={} strategy={}", symbol_id, name);
         evaluations_.push_back(row);
         continue;
       }
@@ -102,6 +110,8 @@ void DefaultRouter::evaluate_all(DataSourceRegistry& data, StrategyRegistry& str
       row.pnl_paise = result.realized_pnl_paise;
       row.fills = result.fills;
       row.selected = result.realized_pnl_paise > 0;
+      AC_LOG_DEBUG("router_eval sid={} strategy={} bars={} pnl_paise={} selected={}", symbol_id,
+                   name, row.bars, row.pnl_paise, row.selected);
       evaluations_.push_back(row);
     }
   }

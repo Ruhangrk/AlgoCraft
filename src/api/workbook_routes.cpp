@@ -15,6 +15,7 @@
 #include "algocraft/domain/timestamp.hpp"
 #include "algocraft/engine/live_run_service.hpp"
 #include "algocraft/engine/run_manager.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/routing/routing_algo_registry.hpp"
 
 namespace algocraft::api {
@@ -429,10 +430,13 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
             try {
               wb_val = workbooks->create(gate.claims->user_id, name, capital, username, role);
             } catch (const std::exception& e) {
+              AC_LOG_ERROR("workbook_create failed user={} err={}", gate.claims->user_id, e.what());
               return json_error(500, e.what());
             }
             books->create(UserId::from_u64(static_cast<std::uint64_t>(gate.claims->user_id)), name,
                           Capital::from_paise(capital));
+            AC_LOG_INFO("workbook_created id={} user={} capital_paise={}", wb_val,
+                        gate.claims->user_id, capital);
 
             crow::json::wvalue root;
             root["id"] = wb_val;
@@ -453,6 +457,7 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
               if (!workbooks->soft_delete(wid)) {
                 return json_error(404, "workbook not found");
               }
+              AC_LOG_INFO("workbook_soft_deleted id={}", wid);
               crow::json::wvalue root;
               root["id"] = wid;
               root["deleted"] = true;
@@ -469,6 +474,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
               if (!updated) {
                 return json_error(404, "workbook not found");
               }
+              AC_LOG_INFO("workbook_add_capital id={} added_paise={} available={}", wid, amount,
+                          updated->available_paise);
               crow::json::wvalue root;
               root["id"] = updated->id;
               root["name"] = updated->name;
@@ -579,6 +586,10 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
 
         // Live path: anchor_date == IST today.
         if (cfg.anchor_date && is_live_anchor(*cfg.anchor_date)) {
+          AC_LOG_INFO("api_run_start mode=live wid={} router={} capital_paise={}", wid, cfg.router,
+                      cfg.workbook_capital.paise());
+          AC_LOG_TRACE("api_run_start live tickers={} strategies={}", cfg.tickers.size(),
+                       cfg.strategies.size());
           if (live_runs == nullptr) {
             return json_error(500, "live run service unavailable");
           }
@@ -593,8 +604,11 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           }
           const auto started = live_runs->start(cfg);
           if (!started.ok) {
+            AC_LOG_WARN("api_live_run_failed wid={} err={}", wid, started.error);
             return json_error(409, started.error);
           }
+          AC_LOG_INFO("api_live_run_ok wid={} selected={} live={}", wid, started.result.selected,
+                      started.live_started);
           crow::json::wvalue root;
           root["workbook_id"] = wid;
           root["selected"] = started.result.selected;
@@ -615,6 +629,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           return json_ok(std::move(root), 201);
         }
 
+        AC_LOG_INFO("api_run_start mode=hist wid={} router={} capital_paise={}", wid, cfg.router,
+                    cfg.workbook_capital.paise());
         WorkbookManager local_books;
         if (!local_books
                  .adopt(wb_id, cfg.user_id, cfg.workbook_name,
@@ -629,6 +645,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (uuid_low(result.workbook_id) != wid) {
           return json_error(500, "run workbook bind failed");
         }
+        AC_LOG_INFO("api_hist_run_ok wid={} selected={} fills={}", wid, result.selected,
+                    result.fills);
         const auto runs = activity->list_runs(wid);
         crow::json::wvalue root;
         root["run_id"] = runs.empty() ? 0 : runs.front().id;
@@ -659,6 +677,7 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         if (!live_runs->stop(wid)) {
           return json_error(404, "no active live run");
         }
+        AC_LOG_INFO("api_live_run_stop wid={}", wid);
         const auto runs = activity->list_runs(wid);
         crow::json::wvalue root;
         root["workbook_id"] = wid;
@@ -889,15 +908,21 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
         bt.strategy.ema_slow = static_cast<int>(json_int_or(body, "ema_slow", 21));
 
         try {
+          AC_LOG_INFO("api_backtest_start wid={} ticker={} strategy={} capital_paise={}", wid,
+                      bt.ticker, bt.strategy_name, bt.capital.paise());
           BacktestService svc(*workbooks, *backtests, *data, *fetch, *strategies, *symbols,
                               instruments);
           const auto outcome = svc.run(bt);
+          AC_LOG_INFO("api_backtest_done wid={} id={} fills={} pnl_paise={}", wid, outcome.row.id,
+                      outcome.row.fills, outcome.row.pnl_paise);
           auto root = backtest_json(outcome.row);
           root["return_pct"] = outcome.row.return_pct_bp / 100.0;
           return json_ok(std::move(root), 201);
         } catch (const std::invalid_argument& e) {
+          AC_LOG_WARN("api_backtest_bad_request wid={} err={}", wid, e.what());
           return json_error(400, e.what());
         } catch (const std::exception& e) {
+          AC_LOG_ERROR("api_backtest_failed wid={} err={}", wid, e.what());
           return json_error(500, e.what());
         }
       });

@@ -1,6 +1,7 @@
 #include "algocraft/container/container_manager.hpp"
 
 #include "algocraft/domain/timestamp.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/routing/position_sizer.hpp"
 
 namespace algocraft {
@@ -14,6 +15,8 @@ ContainerManager::ContainerManager(WorkbookId workbook_id, ExecutionVenue& venue
       strategies_{strategies} {}
 
 std::optional<ContainerId> ContainerManager::create(const CreateRequest& req) {
+  AC_LOG_TRACE("container_create sid={} strategy={} mode={} alloc_paise={}", req.symbol_id,
+               req.strategy_name, static_cast<int>(req.mode), req.allocation.paise());
   TradingContainerConfig cfg{};
   cfg.id = ContainerId::from(next_id_++);
   cfg.workbook_id = workbook_id_;
@@ -32,14 +35,18 @@ std::optional<ContainerId> ContainerManager::create(const CreateRequest& req) {
       std::make_unique<TradingContainer>(std::move(cfg), std::move(strategy), venue_, risk_,
                                          &capital_);
   if (!req.warmup_bars.empty()) {
+    AC_LOG_DEBUG("container_warmup sid={} bars={}", req.symbol_id, req.warmup_bars.size());
     container->warmup(req.warmup_bars);
   }
   const auto started = container->start();
   if (!started.ok) {
+    AC_LOG_WARN("container_start_failed sid={} err={}", req.symbol_id,
+                started.error ? started.error : "");
     return std::nullopt;
   }
   const auto id = container->id();
   containers_.push_back(std::move(container));
+  AC_LOG_DEBUG("container_started sid={} strategy={}", req.symbol_id, req.strategy_name);
   return id;
 }
 
@@ -48,6 +55,7 @@ void ContainerManager::kill(ContainerId id) {
   if (container == nullptr || container->status() == ContainerStatus::Stopped) {
     return;
   }
+  AC_LOG_DEBUG("container_kill sid={}", container->symbol_id());
   if (container->has_bar()) {
     container->force_exit(container->last_price());
   } else {
@@ -64,6 +72,7 @@ OpResult ContainerManager::upgrade(ContainerId id, ContainerMode new_mode) {
 }
 
 void ContainerManager::on_bar(const BarEvent& bar) {
+  AC_LOG_TRACE("containers_on_bar sid={} active_n={}", bar.symbol_id, containers_.size());
   for (auto& container : containers_) {
     if (container != nullptr && container->status() == ContainerStatus::Active) {
       container->on_bar(bar);
@@ -72,6 +81,7 @@ void ContainerManager::on_bar(const BarEvent& bar) {
 }
 
 void ContainerManager::on_system_event(const SystemEvent& event) {
+  AC_LOG_DEBUG("containers_system_event type={}", static_cast<int>(event.type));
   for (auto& container : containers_) {
     if (container != nullptr) {
       container->on_system_event(event);
@@ -80,6 +90,7 @@ void ContainerManager::on_system_event(const SystemEvent& event) {
 }
 
 void ContainerManager::force_exit_remaining() {
+  AC_LOG_INFO("containers_force_exit_remaining n={}", containers_.size());
   for (auto& container : containers_) {
     if (container == nullptr || container->status() == ContainerStatus::Stopped) {
       continue;

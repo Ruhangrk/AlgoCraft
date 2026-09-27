@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "algocraft/log/log.hpp"
+
 namespace algocraft {
 namespace {
 
@@ -253,6 +255,7 @@ AuthService::Result AuthService::register_user(std::string_view username, std::s
   out.user.role = std::string(role);
   out.token = make_token(out.user);
   out.ok = true;
+  AC_LOG_INFO("auth_register ok user_id={} username={}", out.user.id, out.user.username);
   return out;
 }
 
@@ -270,6 +273,7 @@ AuthService::Result AuthService::login(std::string_view username, std::string_vi
   if (sqlite3_step(st) != SQLITE_ROW) {
     sqlite3_finalize(st);
     out.error = "invalid credentials";
+    AC_LOG_WARN("auth_login failed username={}", username);
     return out;
   }
   out.user.id = sqlite3_column_int64(st, 0);
@@ -287,10 +291,12 @@ AuthService::Result AuthService::login(std::string_view username, std::string_vi
 
   if (hash == "unset" || !verify_password(password, hash)) {
     out.error = "invalid credentials";
+    AC_LOG_WARN("auth_login bad_password username={}", username);
     return out;
   }
   out.token = make_token(out.user);
   out.ok = true;
+  AC_LOG_INFO("auth_login ok user_id={} username={}", out.user.id, out.user.username);
   return out;
 }
 

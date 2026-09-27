@@ -11,6 +11,7 @@
 
 #include "algocraft/domain/bar_resolution.hpp"
 #include "algocraft/domain/timestamp.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
 #include "algocraft/routing/routing_algo_registry.hpp"
@@ -281,6 +282,8 @@ void register_market_routes(App& app, MarketRouteDeps deps) {
         }
 
         const auto before = fetch->vendor_fetches();
+        AC_LOG_INFO("api_market_ensure tickers={} from_ns={} to_ns={}", tickers.size(),
+                    from_ts.nanos(), to_ts.nanos());
         crow::json::wvalue root;
         root["results"] = crow::json::wvalue::list();
         for (std::size_t i = 0; i < tickers.size(); ++i) {
@@ -290,6 +293,7 @@ void register_market_routes(App& app, MarketRouteDeps deps) {
             fetch->ensure_data_available(tickers[i], from_ts, to_ts, BarResolution::OneMin);
           } catch (const std::exception& e) {
             fetch_err = e.what();
+            AC_LOG_WARN("api_market_ensure_fail ticker={} err={}", tickers[i], e.what());
           }
           root["results"][i]["ticker"] = tickers[i];
           root["results"][i]["ok"] = fetch_err.empty();
@@ -299,6 +303,8 @@ void register_market_routes(App& app, MarketRouteDeps deps) {
         }
         root["source"] = std::string{data->active_provider().name()};
         root["vendor_fetches"] = static_cast<std::int64_t>(fetch->vendor_fetches() - before);
+        AC_LOG_INFO("api_market_ensure_done vendor_fetches={}",
+                    fetch->vendor_fetches() - before);
         return json_ok(std::move(root));
       });
 }

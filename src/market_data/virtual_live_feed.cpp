@@ -12,7 +12,7 @@
 #include <string_view>
 #include <thread>
 
-#include <spdlog/spdlog.h>
+#include "algocraft/log/log.hpp"
 
 namespace algocraft {
 namespace {
@@ -197,7 +197,7 @@ void VirtualLiveFeed::run_loop() {
         continue;
       }
       if (rc != CURLE_OK) {
-        spdlog::warn("virtual ws recv: {}", curl_easy_strerror(rc));
+        AC_LOG_WARN("virtual ws recv: {}", curl_easy_strerror(rc));
         break;
       }
       if (meta == nullptr || nread == 0) {
@@ -229,7 +229,7 @@ void VirtualLiveFeed::run_loop() {
     }
     curl_easy_cleanup(curl);
   } catch (const std::exception& e) {
-    spdlog::error("virtual live feed: {}", e.what());
+    AC_LOG_ERROR("virtual live feed: {}", e.what());
   }
   connected_ = false;
 }

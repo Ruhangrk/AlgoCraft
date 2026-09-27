@@ -3,6 +3,7 @@
 #include <string>
 
 #include "algocraft/execution/execution_venue.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/strategies/make_intent.hpp"
 
 namespace algocraft {
@@ -53,10 +54,13 @@ OpResult TradingContainer::start() {
     }
   }
   status_ = ContainerStatus::Active;
+  AC_LOG_TRACE("container_active sid={} mode={}", config_.symbol_id, static_cast<int>(config_.mode));
   return OpResult::success();
 }
 
 OpResult TradingContainer::upgrade(ContainerMode new_mode) {
+  AC_LOG_DEBUG("container_upgrade sid={} from={} to={}", config_.symbol_id,
+               static_cast<int>(config_.mode), static_cast<int>(new_mode));
   if (status_ != ContainerStatus::Active && status_ != ContainerStatus::WarmingUp) {
     return OpResult::fail("not running");
   }
@@ -82,6 +86,7 @@ void TradingContainer::exit() {
   if (status_ == ContainerStatus::Stopped) {
     return;
   }
+  AC_LOG_DEBUG("container_exit sid={}", config_.symbol_id);
   status_ = ContainerStatus::Exiting;
   if (have_bar_) {
     flatten(last_bar_.close, true);
@@ -93,6 +98,7 @@ void TradingContainer::force_exit(Price price) {
   if (status_ == ContainerStatus::Stopped) {
     return;
   }
+  AC_LOG_DEBUG("container_force_exit sid={} px_paise={}", config_.symbol_id, price.paise());
   status_ = ContainerStatus::Exiting;
   flatten(price, true);
   stop();
@@ -102,6 +108,7 @@ void TradingContainer::stop() {
   if (status_ == ContainerStatus::Stopped) {
     return;
   }
+  AC_LOG_TRACE("container_stop sid={}", config_.symbol_id);
   if (registered_) {
     risk_.unregister_container(config_.id);
     registered_ = false;
@@ -116,6 +123,8 @@ void TradingContainer::on_bar(const BarEvent& bar) {
   if (bar.symbol_id != config_.symbol_id) {
     return;
   }
+  AC_LOG_TRACE("container_on_bar sid={} status={} close_paise={}", config_.symbol_id,
+               static_cast<int>(status_), bar.close.paise());
   last_bar_ = bar;
   have_bar_ = true;
   lib_.update(bar);
@@ -131,6 +140,7 @@ void TradingContainer::on_bar(const BarEvent& bar) {
   intents_.clear();
   strategy_->on_bar(bar, PortfolioView{position_, cash_}, intents_);
   if (!intents_.empty()) {
+    AC_LOG_DEBUG("container_signal sid={} intents={}", config_.symbol_id, intents_.size());
     SignalRecord sig{};
     sig.timestamp = bar.timestamp;
     sig.intent_count = static_cast<int>(intents_.size());
@@ -146,6 +156,9 @@ void TradingContainer::on_bar(const BarEvent& bar) {
     const auto decision = risk_.check(intent, context(),
                                       capital_ == nullptr ? nullptr : &capital_->ledger());
     if (!decision.ok()) {
+      AC_LOG_DEBUG("container_risk_reject sid={} rule={} reason={}", config_.symbol_id,
+                   decision.rule != nullptr ? decision.rule : "unknown",
+                   decision.reason != nullptr ? decision.reason : "rejected");
       last_rejection_ = decision;
       RejectionRecord rej{};
       rej.timestamp = bar.timestamp;
@@ -156,6 +169,8 @@ void TradingContainer::on_bar(const BarEvent& bar) {
     }
     auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_);
     if (fill) {
+      AC_LOG_DEBUG("container_fill sid={} qty={} px_paise={}", config_.symbol_id,
+                   fill->filled_qty.shares(), fill->fill_price.paise());
       fill->workbook_id = config_.workbook_id;
       fill->container_id = config_.id;
       on_fill(*fill);

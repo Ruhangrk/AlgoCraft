@@ -15,6 +15,7 @@
 #include "algocraft/domain/instrument.hpp"
 #include "algocraft/domain/session_clock.hpp"
 #include "algocraft/execution/simulated_exchange.hpp"
+#include "algocraft/log/log.hpp"
 #include "algocraft/market_data/market_data_feed.hpp"
 #include "algocraft/portfolio/capital_manager.hpp"
 #include "algocraft/risk/risk_engine.hpp"
@@ -185,8 +186,10 @@ void LiveRunService::run_tape(ActiveRun& active) {
 
   try {
     active.feed->connect();
+    AC_LOG_INFO("live_feed_connected wid={} symbols={}", active.workbook_db_id,
+                active.stock_ids.size());
   } catch (const std::exception& e) {
-    spdlog::error("live feed connect: {}", e.what());
+    AC_LOG_ERROR("live_feed_connect wid={} err={}", active.workbook_db_id, e.what());
     active.stop = true;
   }
 
@@ -238,11 +241,13 @@ void LiveRunService::run_tape(ActiveRun& active) {
 }
 
 bool LiveRunService::stop(std::int64_t workbook_db_id) {
+  AC_LOG_INFO("live_run_stop wid={}", workbook_db_id);
   std::shared_ptr<ActiveRun> owned;
   {
     std::lock_guard lock(mu_);
     const auto it = active_.find(workbook_db_id);
     if (it == active_.end()) {
+      AC_LOG_WARN("live_run_stop_missing wid={}", workbook_db_id);
       return false;
     }
     it->second->stop = true;
@@ -252,6 +257,7 @@ bool LiveRunService::stop(std::int64_t workbook_db_id) {
   if (owned && owned->thread.joinable()) {
     owned->thread.join();
   }
+  AC_LOG_INFO("live_run_stopped wid={}", workbook_db_id);
   return true;
 }
 
@@ -373,6 +379,11 @@ LiveRunService::StartResult LiveRunService::start(const RunConfig& config) {
     active_[wid] = active;
   }
   active->thread = std::thread([this, active] { run_tape(*active); });
+
+  AC_LOG_INFO("live_run_started wid={} router={} containers={}", wid, config.router,
+              active->containers->real_count());
+  AC_LOG_TRACE("live_run_started tickers={} strategies={}", config.tickers.size(),
+               config.strategies.size());
 
   out.ok = true;
   out.result = active->result;
