@@ -70,3 +70,43 @@ TEST(WorkbookRepository, AddCapitalUpdatesMainAvailableAndEvent) {
   std::error_code ec;
   std::filesystem::remove_all(dir, ec);
 }
+
+TEST(WorkbookRepository, SoftDeleteSetsDeletedAtKeepsRow) {
+  const auto dir = make_temp_dir();
+  algocraft::PersistenceConfig cfg;
+  cfg.db_path = dir / "algocraft.db";
+  cfg.migrations_dir = ALGOCRAFT_MIGRATIONS_DIR;
+
+  algocraft::SqliteDatabase db(cfg);
+  db.open();
+  db.migrate();
+  algocraft::WorkbookRepository repo(db.handle());
+
+  const auto wid = repo.create(1, "to-hide", 1'00'000'00, "u1", "user");
+  ASSERT_TRUE(repo.find(wid));
+  ASSERT_EQ(repo.list_for_user(1).size(), 1u);
+
+  EXPECT_TRUE(repo.soft_delete(wid));
+  EXPECT_FALSE(repo.find(wid).has_value());
+  EXPECT_TRUE(repo.list_for_user(1).empty());
+  EXPECT_FALSE(repo.soft_delete(wid));
+  EXPECT_FALSE(repo.can_access(wid, 1, false));
+
+  // Row must still exist — soft-delete never removes from SQLite.
+  sqlite3_stmt* st = nullptr;
+  ASSERT_EQ(sqlite3_prepare_v2(db.handle(),
+                               "SELECT deleted_at, status FROM workbooks WHERE id=?", -1, &st,
+                               nullptr),
+            SQLITE_OK);
+  sqlite3_bind_int64(st, 1, wid);
+  ASSERT_EQ(sqlite3_step(st), SQLITE_ROW);
+  ASSERT_NE(sqlite3_column_type(st, 0), SQLITE_NULL);
+  const auto* status = reinterpret_cast<const char*>(sqlite3_column_text(st, 1));
+  ASSERT_NE(status, nullptr);
+  EXPECT_STREQ(status, "archived");
+  sqlite3_finalize(st);
+
+  db.close();
+  std::error_code ec;
+  std::filesystem::remove_all(dir, ec);
+}

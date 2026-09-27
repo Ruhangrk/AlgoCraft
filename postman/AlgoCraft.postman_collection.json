@@ -451,21 +451,21 @@
       ]
     },
     {
-      "name": "WS snapshots (poll)",
+      "name": "SSE live status",
       "item": [
         {
-          "name": "WS portfolio snapshot",
+          "name": "SSE portfolio stream",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/ws/workbooks/{{workbook_id}}/portfolio",
-            "description": "Pollable snapshot (not a live WebSocket upgrade yet)."
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/stream/portfolio?token={{token}}",
+            "description": "text/event-stream; single snapshot + retry. Auth via Bearer or ?token=."
           }
         },
         {
-          "name": "WS containers snapshot",
+          "name": "SSE containers stream",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/ws/workbooks/{{workbook_id}}/containers"
+            "url": "{{baseUrl}}/workbooks/{{workbook_id}}/stream/containers?token={{token}}"
           }
         }
       ]

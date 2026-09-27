@@ -155,8 +155,8 @@ Then: manual backtest/paper start-stop, chart `GET .../containers/{cid}/chart`, 
 
 ### Step 5.8 — UI WebSockets (status)
 
-- `/ws/workbooks/{wid}/portfolio`
-- `/ws/workbooks/{wid}/containers`
+- `/workbooks/{wid}/stream/portfolio`
+- `/workbooks/{wid}/stream/containers`
 
 Push snapshots already published by the engine. Not market data.
 

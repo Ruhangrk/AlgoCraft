@@ -32,6 +32,7 @@ add_executable(algocraft_tests
   unit/test_instruments.cpp
   unit/test_upstox.cpp
   unit/test_live_feed.cpp
+  unit/test_status_sse_hub.cpp
 )
 
 target_link_libraries(algocraft_tests

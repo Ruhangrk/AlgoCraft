@@ -648,8 +648,8 @@ api/
     DELETE /admin/workbooks/{wid}             (hard-delete, admin only)
 
   WebSocket:
-    /ws/workbooks/{wid}/portfolio    → live P&L and capital updates
-    /ws/workbooks/{wid}/containers   → container status updates
+    /workbooks/{wid}/stream/portfolio   → SSE live P&L / capital snapshots
+    /workbooks/{wid}/stream/containers  → SSE container status snapshots
 ```
 
 **Definition of done:**

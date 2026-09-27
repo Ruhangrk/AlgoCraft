@@ -27,7 +27,7 @@ struct WorkbookRouteDeps {
   BacktestRepository* backtests{nullptr};
   InstrumentRepository* instruments{nullptr};
   LiveRunService* live_runs{nullptr};
-  StatusWsHub* status_hub{nullptr};
+  StatusSseHub* status_hub{nullptr};
 };
 
 void register_workbook_routes(App& app, WorkbookRouteDeps deps);

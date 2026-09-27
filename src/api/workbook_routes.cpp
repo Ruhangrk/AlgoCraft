@@ -20,19 +20,6 @@
 namespace algocraft::api {
 namespace {
 
-struct WsAuth {
-  AuthTokenClaims claims;
-  std::int64_t workbook_id{};
-};
-
-void release_ws_auth(crow::websocket::connection& conn) {
-  auto* ctx = static_cast<WsAuth*>(conn.userdata());
-  // Crow may invoke onclose more than once (check_destroy without setting its
-  // close-handler guard). Null before delete so a second call is a no-op.
-  conn.userdata(nullptr);
-  delete ctx;
-}
-
 std::int64_t uuid_low(const Uuid& id) {
   std::uint64_t val = 0;
   for (int i = 0; i < 8; ++i) {
@@ -389,32 +376,17 @@ crow::json::wvalue backtest_events_json(BacktestRepository& backtests, std::int6
   return root;
 }
 
-std::optional<std::int64_t> parse_ws_workbook_id(std::string_view url, const char* suffix) {
-  constexpr std::string_view kPrefix = "/ws/workbooks/";
-  if (url.rfind(kPrefix, 0) != 0) {
-    return std::nullopt;
-  }
-  const auto rest = url.substr(kPrefix.size());
-  const auto slash = rest.find('/');
-  if (slash == std::string_view::npos) {
-    return std::nullopt;
-  }
-  const auto id_part = rest.substr(0, slash);
-  auto path_rest = rest.substr(slash + 1);
-  const auto q = path_rest.find('?');
-  if (q != std::string_view::npos) {
-    path_rest = path_rest.substr(0, q);
-  }
-  if (path_rest != suffix) {
-    return std::nullopt;
-  }
-  const std::string id_str{id_part};
-  char* end = nullptr;
-  const auto wid = std::strtoll(id_str.c_str(), &end, 10);
-  if (end == nullptr || *end != '\0') {
-    return std::nullopt;
-  }
-  return wid;
+crow::response sse_event(std::uint64_t generation, std::string_view json) {
+  crow::response res;
+  res.code = 200;
+  res.set_header("Content-Type", "text/event-stream");
+  res.set_header("Cache-Control", "no-cache");
+  res.set_header("Connection", "keep-alive");
+  // Single event then close: Crow cannot flush chunked SSE mid-stream on our
+  // single-threaded server. EventSource reconnects using retry.
+  res.body = "retry: 2000\nid: " + std::to_string(generation) + "\ndata: " + std::string{json} +
+             "\n\n";
+  return res;
 }
 
 }  // namespace
@@ -470,35 +442,46 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           });
 
   CROW_ROUTE(app, "/workbooks/<int>")
-      .methods(crow::HTTPMethod::PATCH)([auth, workbooks](const crow::request& req,
-                                                          std::int64_t wid) {
-        auto gate = require_workbook(*auth, *workbooks, req, wid);
-        if (!gate) {
-          return std::move(gate.error);
-        }
-        const auto body = body_or_empty(req);
-        const auto amount = json_int_or(body, "add_capital_paise", 0);
-        if (amount <= 0) {
-          return json_error(400, "add_capital_paise must be positive");
-        }
-        try {
-          const auto updated = workbooks->add_capital(wid, amount);
-          if (!updated) {
-            return json_error(404, "workbook not found");
-          }
-          crow::json::wvalue root;
-          root["id"] = updated->id;
-          root["name"] = updated->name;
-          root["main_capital_paise"] = updated->main_capital_paise;
-          root["available_paise"] = updated->available_paise;
-          root["added_paise"] = amount;
-          return json_ok(std::move(root));
-        } catch (const std::invalid_argument& e) {
-          return json_error(400, e.what());
-        } catch (const std::exception& e) {
-          return json_error(500, e.what());
-        }
-      });
+      .methods(crow::HTTPMethod::PATCH, crow::HTTPMethod::Delete)(
+          [auth, workbooks](const crow::request& req, std::int64_t wid) {
+            auto gate = require_workbook(*auth, *workbooks, req, wid);
+            if (!gate) {
+              return std::move(gate.error);
+            }
+
+            if (req.method == crow::HTTPMethod::Delete) {
+              if (!workbooks->soft_delete(wid)) {
+                return json_error(404, "workbook not found");
+              }
+              crow::json::wvalue root;
+              root["id"] = wid;
+              root["deleted"] = true;
+              return json_ok(std::move(root));
+            }
+
+            const auto body = body_or_empty(req);
+            const auto amount = json_int_or(body, "add_capital_paise", 0);
+            if (amount <= 0) {
+              return json_error(400, "add_capital_paise must be positive");
+            }
+            try {
+              const auto updated = workbooks->add_capital(wid, amount);
+              if (!updated) {
+                return json_error(404, "workbook not found");
+              }
+              crow::json::wvalue root;
+              root["id"] = updated->id;
+              root["name"] = updated->name;
+              root["main_capital_paise"] = updated->main_capital_paise;
+              root["available_paise"] = updated->available_paise;
+              root["added_paise"] = amount;
+              return json_ok(std::move(root));
+            } catch (const std::invalid_argument& e) {
+              return json_error(400, e.what());
+            } catch (const std::exception& e) {
+              return json_error(500, e.what());
+            }
+          });
 
   CROW_ROUTE(app, "/workbooks/<int>/runs/start")
       .methods(crow::HTTPMethod::POST)([auth, workbooks, activity, data, strategies, symbols, books,
@@ -981,64 +964,39 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
             return json_ok(std::move(root));
           });
 
-  auto ws_accept = [auth, workbooks](const crow::request& req, void** userdata, const char* suffix) {
-    auto gate = require_user(*auth, req);
-    if (!gate) {
-      return false;
-    }
-    const auto wid = parse_ws_workbook_id(req.url, suffix);
-    if (!wid ||
-        !workbooks->can_access(*wid, gate.claims->user_id, gate.claims->role == "admin")) {
-      return false;
-    }
-    *userdata = new WsAuth{std::move(*gate.claims), *wid};
-    return true;
-  };
-
-  // Use <int>, not <path>: Crow's <path> greedily consumes the rest of the URL, so
-  // "/ws/workbooks/<path>/portfolio" never matches "/ws/workbooks/13/portfolio".
-  CROW_WEBSOCKET_ROUTE(app, "/ws/workbooks/<int>/portfolio")
-      .onaccept([ws_accept](const crow::request& req, void** userdata) {
-        return ws_accept(req, userdata, "portfolio");
-      })
-      .onopen([workbooks, status_hub](crow::websocket::connection& conn) {
-        auto* ctx = static_cast<WsAuth*>(conn.userdata());
-        if (ctx == nullptr) {
-          return;
+  // One-way live status (SSE). Auth via Bearer or ?token= (EventSource-friendly).
+  CROW_ROUTE(app, "/workbooks/<int>/stream/portfolio")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, status_hub](const crow::request& req,
+                                                                    std::int64_t wid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
         }
         if (status_hub != nullptr) {
-          status_hub->register_conn(ctx->workbook_id, StatusWsHub::Channel::Portfolio, &conn);
+          if (const auto snap = status_hub->latest(wid, StatusSseHub::Channel::Portfolio)) {
+            return sse_event(snap->generation, snap->json);
+          }
         }
-        if (const auto row = workbooks->find(ctx->workbook_id)) {
-          conn.send_text(portfolio_json(ctx->workbook_id, *row).dump());
+        const auto row = workbooks->find(wid);
+        if (!row) {
+          return json_error(404, "workbook not found");
         }
-      })
-      .onclose([status_hub](crow::websocket::connection& conn, const std::string&, std::uint16_t) {
-        if (status_hub != nullptr) {
-          status_hub->unregister_conn(&conn);
-        }
-        release_ws_auth(conn);
+        return sse_event(0, portfolio_json(wid, *row).dump());
       });
 
-  CROW_WEBSOCKET_ROUTE(app, "/ws/workbooks/<int>/containers")
-      .onaccept([ws_accept](const crow::request& req, void** userdata) {
-        return ws_accept(req, userdata, "containers");
-      })
-      .onopen([activity, status_hub](crow::websocket::connection& conn) {
-        auto* ctx = static_cast<WsAuth*>(conn.userdata());
-        if (ctx == nullptr) {
-          return;
+  CROW_ROUTE(app, "/workbooks/<int>/stream/containers")
+      .methods(crow::HTTPMethod::GET)([auth, workbooks, activity, status_hub](const crow::request& req,
+                                                                              std::int64_t wid) {
+        auto gate = require_workbook(*auth, *workbooks, req, wid);
+        if (!gate) {
+          return std::move(gate.error);
         }
         if (status_hub != nullptr) {
-          status_hub->register_conn(ctx->workbook_id, StatusWsHub::Channel::Containers, &conn);
+          if (const auto snap = status_hub->latest(wid, StatusSseHub::Channel::Containers)) {
+            return sse_event(snap->generation, snap->json);
+          }
         }
-        conn.send_text(containers_json(*activity, ctx->workbook_id).dump());
-      })
-      .onclose([status_hub](crow::websocket::connection& conn, const std::string&, std::uint16_t) {
-        if (status_hub != nullptr) {
-          status_hub->unregister_conn(&conn);
-        }
-        release_ws_auth(conn);
+        return sse_event(0, containers_json(*activity, wid).dump());
       });
 }
 

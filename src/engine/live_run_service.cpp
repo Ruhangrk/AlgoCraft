@@ -1,7 +1,5 @@
 #include "algocraft/engine/live_run_service.hpp"
 
-#include <crow.h>
-
 #include <algorithm>
 #include <chrono>
 #include <optional>
@@ -119,9 +117,9 @@ void LiveRunService::push_status(std::int64_t wid, const PortfolioLedger& ledger
   if (deps_.hub == nullptr) {
     return;
   }
-  deps_.hub->push(wid, StatusWsHub::Channel::Portfolio,
+  deps_.hub->push(wid, StatusSseHub::Channel::Portfolio,
                   portfolio_live_json(wid, main_paise, ledger.available().paise()));
-  deps_.hub->push(wid, StatusWsHub::Channel::Containers, snapshots_json(wid, snaps));
+  deps_.hub->push(wid, StatusSseHub::Channel::Containers, snapshots_json(wid, snaps));
 }
 
 void LiveRunService::settle_and_persist(ActiveRun& active, PortfolioLedger& ledger,
@@ -158,7 +156,7 @@ void LiveRunService::settle_and_persist(ActiveRun& active, PortfolioLedger& ledg
   push_status(active.workbook_db_id, ledger, active.result.traded, active.main_paise);
   if (deps_.hub != nullptr) {
     if (const auto row = deps_.workbooks.find(active.workbook_db_id)) {
-      deps_.hub->push(active.workbook_db_id, StatusWsHub::Channel::Portfolio,
+      deps_.hub->push(active.workbook_db_id, StatusSseHub::Channel::Portfolio,
                       portfolio_live_json(active.workbook_db_id, row->main_capital_paise,
                                           row->available_paise));
     }
@@ -382,42 +380,21 @@ LiveRunService::StartResult LiveRunService::start(const RunConfig& config) {
   return out;
 }
 
-void StatusWsHub::register_conn(std::int64_t workbook_id, Channel channel,
-                                crow::websocket::connection* conn) {
-  if (conn == nullptr) {
-    return;
-  }
+void StatusSseHub::push(std::int64_t workbook_id, Channel channel, std::string_view json) {
   std::lock_guard lock(mu_);
-  conns_.push_back(Entry{workbook_id, channel, conn});
+  auto& slot = latest_[Key{workbook_id, channel}];
+  ++slot.generation;
+  slot.json.assign(json);
 }
 
-void StatusWsHub::unregister_conn(crow::websocket::connection* conn) {
-  if (conn == nullptr) {
-    return;
-  }
+std::optional<StatusSseHub::Snapshot> StatusSseHub::latest(std::int64_t workbook_id,
+                                                           Channel channel) const {
   std::lock_guard lock(mu_);
-  conns_.erase(std::remove_if(conns_.begin(), conns_.end(),
-                              [conn](const Entry& e) { return e.conn == conn; }),
-               conns_.end());
-}
-
-void StatusWsHub::push(std::int64_t workbook_id, Channel channel, std::string_view json) {
-  std::vector<crow::websocket::connection*> targets;
-  {
-    std::lock_guard lock(mu_);
-    for (const auto& e : conns_) {
-      if (e.workbook_id == workbook_id && e.channel == channel && e.conn != nullptr) {
-        targets.push_back(e.conn);
-      }
-    }
+  const auto it = latest_.find(Key{workbook_id, channel});
+  if (it == latest_.end()) {
+    return std::nullopt;
   }
-  const std::string payload{json};
-  for (auto* conn : targets) {
-    try {
-      conn->send_text(payload);
-    } catch (...) {
-    }
-  }
+  return it->second;
 }
 
 }  // namespace algocraft

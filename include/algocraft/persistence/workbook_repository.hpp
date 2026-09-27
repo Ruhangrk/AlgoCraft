@@ -49,6 +49,10 @@ public:
   // Returns updated row; nullopt if workbook missing. Throws on amount <= 0.
   [[nodiscard]] std::optional<Row> add_capital(std::int64_t workbook_id, std::int64_t amount_paise);
 
+  // Soft-delete only: SET deleted_at (+ status archived). Never removes the row.
+  // Returns false if missing or already deleted.
+  [[nodiscard]] bool soft_delete(std::int64_t workbook_id);
+
 private:
   sqlite3* db_{nullptr};
 };

@@ -215,4 +215,16 @@ std::optional<WorkbookRepository::Row> WorkbookRepository::add_capital(std::int6
   return find(workbook_id);
 }
 
+bool WorkbookRepository::soft_delete(std::int64_t workbook_id) {
+  // Soft-delete only — never DELETE FROM workbooks.
+  Stmt st(db_,
+          "UPDATE workbooks SET deleted_at=strftime('%Y-%m-%dT%H:%M:%SZ','now'), "
+          "status='archived' WHERE id=? AND deleted_at IS NULL");
+  sqlite3_bind_int64(st.s, 1, workbook_id);
+  if (sqlite3_step(st.s) != SQLITE_DONE) {
+    throw std::runtime_error(std::string("workbook soft_delete: ") + sqlite3_errmsg(db_));
+  }
+  return sqlite3_changes(db_) > 0;
+}
+
 }  // namespace algocraft

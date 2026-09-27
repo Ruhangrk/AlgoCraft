@@ -277,7 +277,7 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `market_data/market_data_feed.hpp` | Live feed interface + `MinuteBarBuilder` | Live tape aggregation |
 | `market_data/null_live_feed.hpp` | No-op live feed | History-only providers |
 | `market_data/upstox_live_feed.hpp` | Upstox v3 market WS (LTPC) | Live tape |
-| `engine/live_run_service.hpp` | Today-anchor live run + `StatusWsHub` | Async eval + tape + STOP + WS push |
+| `engine/live_run_service.hpp` | Today-anchor live run + `StatusSseHub` | Async eval + tape + STOP + SSE snapshot push |
 | `market_data/data_source_registry.*` | Active provider by name | Engine / HTTP |
 | `market_data/csv_provider.*` | CSV historical loader | Files under `data/1min/` |
 | `market_data/upstox_provider.*` | Upstox v3 REST candles (1m + 1d/1w/1M); ISIN map; rate limit; chunk windows | HTTPS + token file |
@@ -378,26 +378,26 @@ flowchart LR
 
 All of the above are registered from **`src/api/http_server.cpp`** into Crow route modules (`auth_routes`, `market_routes`, `workbook_routes`). Auth logic in **`auth_service.cpp`**. JWT gate in **`http_helpers.cpp`**.
 
-### WebSocket auth
+### SSE live status auth
 
-Portfolio / containers sockets:
+Portfolio / containers streams:
 
-- `/ws/workbooks/{wid}/portfolio`
-- `/ws/workbooks/{wid}/containers`
+- `/workbooks/{wid}/stream/portfolio`
+- `/workbooks/{wid}/stream/containers`
 
 Same JWT as REST. Pass either:
 
 1. `Authorization: Bearer <token>`, or  
-2. Query `?token=<jwt>` (handy when browser `WebSocket` cannot set headers)
+2. Query `?token=<jwt>` (needed for browser `EventSource`, which cannot set headers)
 
-`onaccept` calls `require_user` then `WorkbookRepository::can_access`. Ownership failure → handshake rejected (no upgrade).
+`require_workbook` gates access. Response is one SSE event (`retry` + `data`) then close; clients reconnect.
 
 ### Known gaps (joint roadmap)
 
 | Gap | Notes |
 |---|---|
 | Instruments / OHLCV / backtest HTTP | S1–S3 |
-| Soft-delete DELETE routes | Columns exist; no DELETE API yet → S4 |
+| Soft-delete DELETE routes | Workbook + runs/backtests soft-delete (`SET deleted_at`); row kept |
 | Events timeline API | Signals/rejections persist; no list API → S5 |
 | Phase 5.9 live paper tape | `UpstoxLiveFeed` + `LiveRunService` (anchor=today); `ScriptedLiveFeed` in tests |
 ---

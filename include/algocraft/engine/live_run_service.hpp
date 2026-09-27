@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <thread>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "algocraft/container/container_manager.hpp"
@@ -21,34 +23,47 @@
 #include "algocraft/strategies/strategy_registry.hpp"
 #include "algocraft/workbook/workbook_manager.hpp"
 
-namespace crow::websocket {
-class connection;
-}
-
 namespace algocraft {
 
 [[nodiscard]] inline bool is_live_anchor(SessionDate anchor, Timestamp now = Timestamp::now()) {
   return anchor.ok() && anchor == SessionDate::from_ist(now);
 }
 
-// Crow status WebSocket fan-out (portfolio / containers). Not market data.
-class StatusWsHub {
+// One-way live status fan-out for UI (portfolio / containers). Not market data.
+// Crow cannot stream chunked SSE safely on our single-threaded SQLite server, so
+// the HTTP layer returns the latest snapshot as a single SSE event (EventSource
+// reconnects via `retry:`). LiveRunService still pushes into this hub.
+class StatusSseHub {
 public:
   enum class Channel { Portfolio, Containers };
 
-  void register_conn(std::int64_t workbook_id, Channel channel, crow::websocket::connection* conn);
-  void unregister_conn(crow::websocket::connection* conn);
-  void push(std::int64_t workbook_id, Channel channel, std::string_view json);
-
-private:
-  struct Entry {
-    std::int64_t workbook_id{0};
-    Channel channel{Channel::Portfolio};
-    crow::websocket::connection* conn{nullptr};
+  struct Snapshot {
+    std::uint64_t generation{0};
+    std::string json;
   };
 
-  std::mutex mu_{};
-  std::vector<Entry> conns_{};
+  void push(std::int64_t workbook_id, Channel channel, std::string_view json);
+  [[nodiscard]] std::optional<Snapshot> latest(std::int64_t workbook_id, Channel channel) const;
+
+private:
+  struct Key {
+    std::int64_t workbook_id{0};
+    Channel channel{Channel::Portfolio};
+
+    bool operator==(const Key& o) const {
+      return workbook_id == o.workbook_id && channel == o.channel;
+    }
+  };
+
+  struct KeyHash {
+    std::size_t operator()(const Key& k) const {
+      return std::hash<std::int64_t>{}(k.workbook_id) ^
+             (static_cast<std::size_t>(k.channel) << 1);
+    }
+  };
+
+  mutable std::mutex mu_{};
+  std::unordered_map<Key, Snapshot, KeyHash> latest_{};
 };
 
 // Async live routing: hist eval then LTPC → 1m bars → containers.
@@ -61,7 +76,7 @@ public:
     ActivityRepository& activity;
     WorkbookRepository& workbooks;
     WorkbookManager& books;
-    StatusWsHub* hub{nullptr};
+    StatusSseHub* hub{nullptr};
   };
 
   explicit LiveRunService(Deps deps);

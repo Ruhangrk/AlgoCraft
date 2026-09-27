@@ -21,7 +21,7 @@
 
 namespace algocraft {
 
-// Thread-4 HTTP + WebSocket API (Crow). Never called from hot path.
+// Thread-4 HTTP + SSE status streams (Crow). Never called from hot path.
 class HttpServer {
 public:
   struct Config {
@@ -57,7 +57,7 @@ private:
   InstrumentRepository instruments_;
   BacktestRepository backtests_;
   WorkbookManager books_{};
-  StatusWsHub status_hub_{};
+  StatusSseHub status_hub_{};
   std::unique_ptr<LiveRunService> live_runs_{};
   std::atomic<bool> running_{false};
   std::unique_ptr<std::thread> thread_{};

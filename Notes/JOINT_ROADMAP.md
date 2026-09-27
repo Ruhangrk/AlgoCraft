@@ -20,7 +20,7 @@ HTTP is **Crow**, split across route modules:
 | `api/auth_routes.*` | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
 | `api/market_routes.*` | `GET /strategies`, `GET /routing-algos`, `POST /market-data/ensure` |
 | `api/workbook_routes.*` | `GET/POST /workbooks`, `POST /workbooks/{wid}/runs/start`, `GET .../runs\|fills\|portfolio\|containers` |
-| | **Real** WS: `/ws/workbooks/{wid}/portfolio`, `/ws/workbooks/{wid}/containers` |
+| | **SSE** status: `GET /workbooks/{wid}/stream/portfolio`, `.../stream/containers` |
 | `api/http_helpers.*` | CORS (`*`), JWT gate, JSON helpers |
 
 Still in engine but **not HTTP-exposed:** (none for signals/rejections — S5a). Manual backtests: `POST/GET .../backtests*` (S3c).
@@ -29,7 +29,7 @@ Still in engine but **not HTTP-exposed:** (none for signals/rejections — S5a).
 
 | Issue | Notes |
 |---|---|
-| Soft-delete APIs | Workbook soft-delete still missing HTTP; runs/backtests DELETE done (S4a). |
+| Soft-delete APIs | Workbook + runs/backtests DELETE soft-delete (`SET deleted_at`); no hard-delete. |
 | Phase 5.9 live paper tape | Done — Upstox WS when `anchor_date` is today; hist replay for past. |
 
 **Dual market-data paths (locked):**
