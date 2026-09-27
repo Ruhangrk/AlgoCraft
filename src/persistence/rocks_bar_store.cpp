@@ -1,8 +1,12 @@
 #include "algocraft/persistence/rocks_bar_store.hpp"
 
+#include <dirent.h>
+#include <unistd.h>
+
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "algocraft/persistence/packed_bars.hpp"
@@ -38,7 +42,36 @@ void RocksBarStore::open() {
   const auto st = rocksdb::DB::Open(options, dir_.string(), &raw);
   if (!st.ok()) {
     delete raw;
-    throw std::runtime_error("rocksdb open failed: " + st.ToString());
+    std::string hint;
+    // Common cause: a second `serve` while another still holds data/bars/LOCK.
+    DIR* dir = opendir("/proc");
+    if (dir != nullptr) {
+      while (dirent* ent = readdir(dir)) {
+        if (ent->d_name[0] < '1' || ent->d_name[0] > '9') {
+          continue;
+        }
+        const std::string base = std::string("/proc/") + ent->d_name;
+        char exe[512];
+        const auto n = ::readlink((base + "/exe").c_str(), exe, sizeof(exe) - 1);
+        if (n <= 0) {
+          continue;
+        }
+        exe[n] = '\0';
+        if (std::string_view{exe}.find("algocraft_engine") == std::string_view::npos) {
+          continue;
+        }
+        hint += "\n  holding candidate pid=";
+        hint += ent->d_name;
+        hint += " ";
+        hint += exe;
+      }
+      closedir(dir);
+    }
+    throw std::runtime_error(
+        "rocksdb open failed: " + st.ToString() +
+        "\nRocksDB allows only one process. Usually another `algocraft_engine serve` is "
+        "still running." +
+        hint + "\nFix: scripts/serve --restart   (or kill the pid above)");
   }
   impl_ = std::make_unique<Impl>();
   impl_->db.reset(raw);

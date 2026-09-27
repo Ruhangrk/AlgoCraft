@@ -1,6 +1,7 @@
 #include "algocraft/market_data/upstox_provider.hpp"
 
 #include "algocraft/market_data/upstox_live_feed.hpp"
+#include "algocraft/market_data/virtual_live_feed.hpp"
 
 #include <curl/curl.h>
 
@@ -14,6 +15,7 @@
 #include <optional>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -383,7 +385,14 @@ UpstoxProvider::~UpstoxProvider() = default;
 
 MarketDataFeed* UpstoxProvider::live_feed() {
   if (!live_) {
-    live_ = std::make_unique<UpstoxLiveFeed>(config_, symbols_, loader_.instrument_keys());
+    const char* mode = std::getenv("ALGOCRAFT_LIVE_FEED");
+    if (mode != nullptr && std::string_view{mode} == "virtual") {
+      const char* url_env = std::getenv("ALGOCRAFT_VIRTUAL_WS_URL");
+      const std::string url = (url_env && *url_env) ? url_env : "ws://127.0.0.1:8765";
+      live_ = std::make_unique<VirtualLiveFeed>(url, symbols_, loader_.instrument_keys());
+    } else {
+      live_ = std::make_unique<UpstoxLiveFeed>(config_, symbols_, loader_.instrument_keys());
+    }
   }
   return live_.get();
 }
@@ -399,13 +408,20 @@ DataProviderCapabilities UpstoxProvider::capabilities() const {
 }
 
 void UpstoxProvider::register_default_nse_eq(UpstoxHistoricalLoader& loader) {
-  // DefaultRouter universe — trading_symbol → NSE_EQ|ISIN
+  // Router universes — trading_symbol → NSE_EQ|ISIN
   const std::pair<const char*, const char*> rows[] = {
       {"RELIANCE", "NSE_EQ|INE002A01018"},   {"INFY", "NSE_EQ|INE009A01021"},
       {"TCS", "NSE_EQ|INE467B01029"},        {"HDFCBANK", "NSE_EQ|INE040A01034"},
       {"ICICIBANK", "NSE_EQ|INE090A01021"},  {"SBIN", "NSE_EQ|INE062A01020"},
       {"BHARTIARTL", "NSE_EQ|INE397D01024"}, {"ITC", "NSE_EQ|INE154A01025"},
       {"LT", "NSE_EQ|INE018A01030"},         {"HINDUNILVR", "NSE_EQ|INE030A01027"},
+      {"ONGC", "NSE_EQ|INE213A01029"},       {"COALINDIA", "NSE_EQ|INE522F01014"},
+      {"DIVISLAB", "NSE_EQ|INE361B01024"},   {"PAGEIND", "NSE_EQ|INE926A01021"},
+      {"BOSCHLTD", "NSE_EQ|INE323A01026"},   {"JUBLFOOD", "NSE_EQ|INE797F01020"},
+      {"VEDL", "NSE_EQ|INE205A01025"},       {"MPHASIS", "NSE_EQ|INE356A01018"},
+      {"TECHM", "NSE_EQ|INE669C01036"},      {"WIPRO", "NSE_EQ|INE075A01022"},
+      {"CANBK", "NSE_EQ|INE476A01022"},      {"UNIONBANK", "NSE_EQ|INE692A01016"},
+      {"ICICIGI", "NSE_EQ|INE765G01017"},    {"SAIL", "NSE_EQ|INE114A01011"},
   };
   for (const auto& [ticker, key] : rows) {
     loader.set_instrument_key(ticker, key);

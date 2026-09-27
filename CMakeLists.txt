@@ -49,6 +49,7 @@ add_library(algocraft
   src/market_data/dummy_provider.cpp
   src/market_data/instrument_ingest.cpp
   src/market_data/upstox_live_feed.cpp
+  src/market_data/virtual_live_feed.cpp
   src/market_data/upstox_provider.cpp
   src/engine/live_run_service.cpp
   src/persistence/activity_repository.cpp
@@ -65,6 +66,7 @@ add_library(algocraft
   src/portfolio/portfolio_ledger.cpp
   src/risk/risk_engine.cpp
   src/routing/default_router.cpp
+  src/routing/top15_week_router.cpp
   src/routing/routing_algo_registry.cpp
   src/strategies/atr_expansion_long.cpp
   src/strategies/bajaj_custom_strategy.cpp

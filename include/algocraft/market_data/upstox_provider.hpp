@@ -87,7 +87,7 @@ private:
   UpstoxConfig config_{};
   const SymbolTable* symbols_{nullptr};
   UpstoxHistoricalLoader loader_;
-  std::unique_ptr<UpstoxLiveFeed> live_;
+  std::unique_ptr<MarketDataFeed> live_;
 };
 
 }  // namespace algocraft

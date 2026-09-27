@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Single-instance AlgoCraft API server. Prefer this over bare ./build/algocraft_engine serve.
+# Usage:
+#   scripts/serve              # start (engine refuses if already running)
+#   scripts/serve --restart    # kill previous serve, then start
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+BIN="$ROOT/build/algocraft_engine"
+mkdir -p "$ROOT/data"
+
+kill_existing() {
+  local killed=0
+  for d in /proc/[0-9]*; do
+    [[ -r "$d/exe" ]] || continue
+    exe="$(readlink "$d/exe" 2>/dev/null || true)"
+    case "$exe" in
+      *algocraft_engine*)
+        cmd="$(tr '\0' ' ' <"$d/cmdline" 2>/dev/null || true)"
+        case "$cmd" in
+          *serve*)
+            echo "stopping pid=${d#/proc/} ($cmd)"
+            kill -TERM "${d#/proc/}" 2>/dev/null || true
+            sleep 0.5
+            kill -KILL "${d#/proc/}" 2>/dev/null || true
+            killed=1
+            ;;
+        esac
+        ;;
+    esac
+  done
+  if [[ "$killed" -eq 1 ]]; then
+    sleep 1
+    fuser -k 8080/tcp 2>/dev/null || true
+    # drop stale flock file owner (unlocked when process dies)
+    rm -f "$ROOT/data/serve.lock"
+    sleep 0.3
+  fi
+}
+
+if [[ "${1:-}" == "--restart" ]]; then
+  shift
+  kill_existing
+fi
+
+if [[ ! -x "$BIN" ]]; then
+  echo "missing $BIN — build first: cmake --build build -j2 --target algocraft_engine" >&2
+  exit 1
+fi
+
+exec "$BIN" serve "$@"

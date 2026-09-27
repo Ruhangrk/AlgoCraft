@@ -13,6 +13,7 @@
 #include "algocraft/domain/timestamp.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
+#include "algocraft/routing/routing_algo_registry.hpp"
 
 namespace algocraft::api {
 namespace {
@@ -131,7 +132,16 @@ void register_market_routes(App& app, MarketRouteDeps deps) {
       });
 
   CROW_ROUTE(app, "/routing-algos")
-      .methods(crow::HTTPMethod::GET)([] { return json_response(200, R"(["default_router"])"); });
+      .methods(crow::HTTPMethod::GET)([] {
+        RoutingAlgoRegistry routers;
+        register_all_routers(routers);
+        crow::json::wvalue root = crow::json::wvalue::list();
+        const auto names = routers.names();
+        for (std::size_t i = 0; i < names.size(); ++i) {
+          root[i] = names[i];
+        }
+        return json_ok(std::move(root));
+      });
 
   CROW_ROUTE(app, "/instruments")
       .methods(crow::HTTPMethod::GET)([auth, instruments](const crow::request& req) {

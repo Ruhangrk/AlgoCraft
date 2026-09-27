@@ -1,0 +1,889 @@
+{
+  "run": {
+    "trade_to_ns": 1790360940000000000,
+    "eval_from_ns": 1789669800000000000,
+    "eval_sessions": 5,
+    "selected": 15,
+    "skipped": 45,
+    "anchor_date": "2026-09-25",
+    "fills": 72,
+    "mode": "hist_replay",
+    "returned_paise": 99783556,
+    "signals": 63,
+    "trade_from_ns": 1790274600000000000,
+    "rejections": 0,
+    "workbook_id": 27,
+    "router": "top15_week_router",
+    "eval_to_ns": 1790274540000000000,
+    "run_id": 11,
+    "tickers": [
+      "RELIANCE",
+      "INFY",
+      "TCS",
+      "HDFCBANK",
+      "ONGC",
+      "COALINDIA",
+      "DIVISLAB",
+      "PAGEIND",
+      "BOSCHLTD",
+      "JUBLFOOD",
+      "VEDL",
+      "MPHASIS",
+      "TECHM",
+      "WIPRO",
+      "CANBK",
+      "UNIONBANK",
+      "ICICIGI",
+      "SAIL",
+      "ITC",
+      "SBIN"
+    ],
+    "strategies": [
+      "hammer_reversal",
+      "piercing_line_long",
+      "morning_star_long"
+    ]
+  },
+  "routing": [
+    {
+      "data": {
+        "id": 190,
+        "score_paise": -395335,
+        "ticker": "RELIANCE",
+        "strategy": "hammer_reversal",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 190,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 191,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "INFY",
+        "score_paise": 172735,
+        "id": 191
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 192,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "TCS",
+        "score_paise": 9909,
+        "id": 192
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 193,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "HDFCBANK",
+        "score_paise": 219599,
+        "id": 193
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 194,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "hammer_reversal",
+        "ticker": "ONGC",
+        "score_paise": 1499271,
+        "id": 194
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 195,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "COALINDIA",
+        "score_paise": 187162,
+        "id": 195
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 196,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "hammer_reversal",
+        "ticker": "DIVISLAB",
+        "score_paise": 742146,
+        "id": 196
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 197,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "hammer_reversal",
+        "ticker": "PAGEIND",
+        "score_paise": 774849,
+        "id": 197
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 198,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "BOSCHLTD",
+        "score_paise": -61633,
+        "id": 198
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 199,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "JUBLFOOD",
+        "score_paise": 220622,
+        "id": 199
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 200,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "VEDL",
+        "score_paise": -1181,
+        "id": 200
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 201,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "MPHASIS",
+        "score_paise": 352593,
+        "id": 201
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 202,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "TECHM",
+        "score_paise": 170172,
+        "id": 202
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 203,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "WIPRO",
+        "score_paise": -333056,
+        "id": 203
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 204,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "hammer_reversal",
+        "ticker": "CANBK",
+        "score_paise": 592632,
+        "id": 204
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 205,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "UNIONBANK",
+        "score_paise": 13237,
+        "id": 205
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 206,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "hammer_reversal",
+        "ticker": "ICICIGI",
+        "score_paise": -531575,
+        "id": 206
+      }
+    },
+    {
+      "data": {
+        "id": 207,
+        "score_paise": 432603,
+        "ticker": "SAIL",
+        "strategy": "hammer_reversal",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 207,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 208,
+        "score_paise": -203451,
+        "ticker": "ITC",
+        "strategy": "hammer_reversal",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 208,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 209,
+        "score_paise": -169110,
+        "ticker": "SBIN",
+        "strategy": "hammer_reversal",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 209,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 210,
+        "score_paise": -1315358,
+        "ticker": "RELIANCE",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 210,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 211,
+        "score_paise": -313111,
+        "ticker": "INFY",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 211,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 212,
+        "score_paise": -8104,
+        "ticker": "TCS",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 212,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 213,
+        "score_paise": -59720,
+        "ticker": "HDFCBANK",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 213,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 214,
+        "score_paise": 1372064,
+        "ticker": "ONGC",
+        "strategy": "piercing_line_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 214,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 215,
+        "score_paise": 177124,
+        "ticker": "COALINDIA",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 215,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 216,
+        "score_paise": 93725,
+        "ticker": "DIVISLAB",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 216,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 217,
+        "score_paise": -90440,
+        "ticker": "PAGEIND",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 217,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 218,
+        "score_paise": -337705,
+        "ticker": "BOSCHLTD",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 218,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 219,
+        "score_paise": 269660,
+        "ticker": "JUBLFOOD",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 219,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 220,
+        "score_paise": 931506,
+        "ticker": "VEDL",
+        "strategy": "piercing_line_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 220,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 221,
+        "score_paise": 696130,
+        "ticker": "MPHASIS",
+        "strategy": "piercing_line_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 221,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 222,
+        "score_paise": 46186,
+        "ticker": "TECHM",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 222,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 223,
+        "score_paise": -58887,
+        "ticker": "WIPRO",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 223,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 224,
+        "score_paise": 664154,
+        "ticker": "CANBK",
+        "strategy": "piercing_line_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 224,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 225,
+        "score_paise": 486298,
+        "ticker": "UNIONBANK",
+        "strategy": "piercing_line_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 225,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 226,
+        "score_paise": 751714,
+        "ticker": "ICICIGI",
+        "strategy": "piercing_line_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 226,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 227,
+        "score_paise": 350289,
+        "ticker": "SAIL",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 227,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 228,
+        "score_paise": -503518,
+        "ticker": "ITC",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 228,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 229,
+        "score_paise": 235417,
+        "ticker": "SBIN",
+        "strategy": "piercing_line_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 229,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 230,
+        "score_paise": -1275759,
+        "ticker": "RELIANCE",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 230,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 231,
+        "score_paise": -585984,
+        "ticker": "INFY",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 231,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 232,
+        "score_paise": -402156,
+        "ticker": "TCS",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 232,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 233,
+        "score_paise": 165120,
+        "ticker": "HDFCBANK",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 233,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 234,
+        "score_paise": 1314565,
+        "ticker": "ONGC",
+        "strategy": "morning_star_long",
+        "decision": "CREATE",
+        "reason": "positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 234,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 235,
+        "score_paise": 59429,
+        "ticker": "COALINDIA",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 235,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 236,
+        "score_paise": 350214,
+        "ticker": "DIVISLAB",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 236,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 237,
+        "score_paise": 434234,
+        "ticker": "PAGEIND",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 237,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "data": {
+        "id": 238,
+        "score_paise": -576658,
+        "ticker": "BOSCHLTD",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      },
+      "id": 238,
+      "timestamp_ns": 0,
+      "type": "routing"
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 239,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "morning_star_long",
+        "ticker": "JUBLFOOD",
+        "score_paise": -86264,
+        "id": 239
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 240,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "morning_star_long",
+        "ticker": "VEDL",
+        "score_paise": 1437781,
+        "id": 240
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 241,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "morning_star_long",
+        "ticker": "MPHASIS",
+        "score_paise": 407280,
+        "id": 241
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 242,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "morning_star_long",
+        "ticker": "TECHM",
+        "score_paise": 592060,
+        "id": 242
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 243,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "non_positive_pnl",
+        "decision": "SKIP",
+        "strategy": "morning_star_long",
+        "ticker": "WIPRO",
+        "score_paise": -344862,
+        "id": 243
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 244,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "morning_star_long",
+        "ticker": "CANBK",
+        "score_paise": 759606,
+        "id": 244
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 245,
+      "data": {
+        "timestamp_ns": 0,
+        "reason": "positive_pnl",
+        "decision": "CREATE",
+        "strategy": "morning_star_long",
+        "ticker": "UNIONBANK",
+        "score_paise": 1115838,
+        "id": 245
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 246,
+      "data": {
+        "id": 246,
+        "score_paise": 386933,
+        "ticker": "ICICIGI",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 247,
+      "data": {
+        "id": 247,
+        "score_paise": -633861,
+        "ticker": "SAIL",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 248,
+      "data": {
+        "id": 248,
+        "score_paise": -517912,
+        "ticker": "ITC",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      }
+    },
+    {
+      "type": "routing",
+      "timestamp_ns": 0,
+      "id": 249,
+      "data": {
+        "id": 249,
+        "score_paise": -292015,
+        "ticker": "SBIN",
+        "strategy": "morning_star_long",
+        "decision": "SKIP",
+        "reason": "non_positive_pnl",
+        "timestamp_ns": 0
+      }
+    }
+  ]
+}

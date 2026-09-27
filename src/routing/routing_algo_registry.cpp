@@ -1,6 +1,7 @@
 #include "algocraft/routing/routing_algo_registry.hpp"
 
 #include "algocraft/routing/default_router.hpp"
+#include "algocraft/routing/top15_week_router.hpp"
 
 #include <stdexcept>
 
@@ -29,6 +30,7 @@ std::vector<std::string> RoutingAlgoRegistry::names() const {
 
 void register_all_routers(RoutingAlgoRegistry& registry) {
   registry.add("default_router", [] { return std::make_unique<DefaultRouter>(); });
+  registry.add("top15_week_router", [] { return std::make_unique<Top15WeekRouter>(); });
 }
 
 }  // namespace algocraft

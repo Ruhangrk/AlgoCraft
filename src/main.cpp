@@ -24,10 +24,19 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <dirent.h>
+#include <fcntl.h>
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <unistd.h>
+#include <vector>
+
+#include <sys/file.h>
 
 #include <spdlog/spdlog.h>
 
@@ -45,6 +54,110 @@
 #endif
 
 namespace {
+
+// Held for process lifetime so a second `serve` fails before RocksDB open.
+int g_serve_lock_fd = -1;
+
+std::string list_algocraft_engine_procs() {
+  std::string out;
+  DIR* dir = opendir("/proc");
+  if (dir == nullptr) {
+    return out;
+  }
+  const auto self = ::getpid();
+  while (dirent* ent = readdir(dir)) {
+    if (ent->d_name[0] < '1' || ent->d_name[0] > '9') {
+      continue;
+    }
+    const auto pid = static_cast<::pid_t>(std::strtol(ent->d_name, nullptr, 10));
+    if (pid == self) {
+      continue;
+    }
+    const std::string base = std::string("/proc/") + ent->d_name;
+    char exe[512];
+    const auto n = readlink((base + "/exe").c_str(), exe, sizeof(exe) - 1);
+    if (n <= 0) {
+      continue;
+    }
+    exe[n] = '\0';
+    if (std::string_view{exe}.find("algocraft_engine") == std::string_view::npos) {
+      continue;
+    }
+    std::ifstream cmdf(base + "/cmdline");
+    std::string cmd((std::istreambuf_iterator<char>(cmdf)), std::istreambuf_iterator<char>());
+    for (char& c : cmd) {
+      if (c == '\0') {
+        c = ' ';
+      }
+    }
+    out += "  pid=";
+    out += ent->d_name;
+    out += " ";
+    out += cmd;
+    out += '\n';
+  }
+  closedir(dir);
+  return out;
+}
+
+bool other_serve_running() {
+  DIR* dir = opendir("/proc");
+  if (dir == nullptr) {
+    return false;
+  }
+  const auto self = ::getpid();
+  bool found = false;
+  while (dirent* ent = readdir(dir)) {
+    if (ent->d_name[0] < '1' || ent->d_name[0] > '9') {
+      continue;
+    }
+    const auto pid = static_cast<::pid_t>(std::strtol(ent->d_name, nullptr, 10));
+    if (pid == self) {
+      continue;
+    }
+    const std::string base = std::string("/proc/") + ent->d_name;
+    char exe[512];
+    const auto n = readlink((base + "/exe").c_str(), exe, sizeof(exe) - 1);
+    if (n <= 0) {
+      continue;
+    }
+    exe[n] = '\0';
+    if (std::string_view{exe}.find("algocraft_engine") == std::string_view::npos) {
+      continue;
+    }
+    std::ifstream cmdf(base + "/cmdline");
+    std::string cmd((std::istreambuf_iterator<char>(cmdf)), std::istreambuf_iterator<char>());
+    for (char& c : cmd) {
+      if (c == '\0') {
+        c = ' ';
+      }
+    }
+    if (cmd.find("serve") != std::string::npos) {
+      found = true;
+      break;
+    }
+  }
+  closedir(dir);
+  return found;
+}
+
+bool acquire_serve_lock(const std::filesystem::path& lock_path) {
+  std::filesystem::create_directories(lock_path.parent_path());
+  g_serve_lock_fd = ::open(lock_path.c_str(), O_RDWR | O_CREAT, 0644);
+  if (g_serve_lock_fd < 0) {
+    return false;
+  }
+  if (::flock(g_serve_lock_fd, LOCK_EX | LOCK_NB) != 0) {
+    ::close(g_serve_lock_fd);
+    g_serve_lock_fd = -1;
+    return false;
+  }
+  const auto pid = std::to_string(::getpid()) + "\n";
+  (void)::ftruncate(g_serve_lock_fd, 0);
+  (void)::lseek(g_serve_lock_fd, 0, SEEK_SET);
+  (void)::write(g_serve_lock_fd, pid.data(), pid.size());
+  return true;
+}
 
 std::tm ist_tm(std::int64_t timestamp_ns) {
   const auto ist_sec = static_cast<std::time_t>(timestamp_ns / 1'000'000'000LL + 19800);
@@ -328,43 +441,66 @@ int run_phase4(const char* data_dir) {
 }
 
 int run_api_server(const char* data_dir, int port) {
-  EngineCache cache;
-  algocraft::SymbolTable symbols;
-  const algocraft::Instrument inst{};
-  // DefaultRouter universe (10). Ensure/API may use any of these.
-  for (const char* t : {"RELIANCE", "INFY", "TCS", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL",
-                        "ITC", "LT", "HINDUNILVR"}) {
-    symbols.intern({.ticker = t}, inst);
+  // Refuse before RocksDB: only one engine may own data/bars.
+  if (other_serve_running()) {
+    spdlog::error(
+        "another algocraft_engine is already running — RocksDB lock would fail.\n{}"
+        "Fix:  scripts/serve --restart",
+        list_algocraft_engine_procs());
+    return 1;
   }
 
-  algocraft::DataFetchService* fetch_ptr = nullptr;
-  std::unique_ptr<algocraft::CachedProvider> cached;
-
-  auto upstox_cfg = algocraft::UpstoxConfig::from_default_file();
-  if (upstox_cfg.ok()) {
-    auto upstox = std::make_unique<algocraft::UpstoxProvider>(std::move(upstox_cfg), &symbols);
-    cached = std::make_unique<algocraft::CachedProvider>(std::move(upstox), cache.bars, cache.cov(),
-                                                         symbols);
-    spdlog::info("data source: upstox (token loaded from ~/.config/upstox/config.json)");
-  } else {
-    cached = wrap_csv(data_dir, symbols, cache);
-    spdlog::warn("upstox token missing — serving CSV from {}", data_dir);
+  const std::filesystem::path serve_lock{"data/serve.lock"};
+  if (!acquire_serve_lock(serve_lock)) {
+    spdlog::error(
+        "could not acquire {} (another serve starting?).\n{}"
+        "Fix:  scripts/serve --restart",
+        serve_lock.string(), list_algocraft_engine_procs());
+    return 1;
   }
-  fetch_ptr = &cached->fetch();
 
-  algocraft::DataSourceRegistry registry;
-  registry.register_provider(std::move(cached));
+  try {
+    EngineCache cache;
+    algocraft::SymbolTable symbols;
+    const algocraft::Instrument inst{};
+    // DefaultRouter universe (10). Ensure/API may use any of these.
+    for (const char* t : {"RELIANCE", "INFY", "TCS", "HDFCBANK", "ICICIBANK", "SBIN", "BHARTIARTL",
+                          "ITC", "LT", "HINDUNILVR"}) {
+      symbols.intern({.ticker = t}, inst);
+    }
 
-  algocraft::StrategyRegistry strategies;
-  algocraft::register_all_strategies(strategies);
+    algocraft::DataFetchService* fetch_ptr = nullptr;
+    std::unique_ptr<algocraft::CachedProvider> cached;
 
-  algocraft::HttpServer::Config cfg;
-  cfg.host = "127.0.0.1";
-  cfg.port = port;
-  algocraft::HttpServer server(cfg, cache.db, registry, strategies, symbols, fetch_ptr);
-  spdlog::info("API listening on http://{}:{}", cfg.host, cfg.port);
-  server.start();
-  return 0;
+    auto upstox_cfg = algocraft::UpstoxConfig::from_default_file();
+    if (upstox_cfg.ok()) {
+      auto upstox = std::make_unique<algocraft::UpstoxProvider>(std::move(upstox_cfg), &symbols);
+      cached = std::make_unique<algocraft::CachedProvider>(std::move(upstox), cache.bars, cache.cov(),
+                                                           symbols);
+      spdlog::info("data source: upstox (token loaded from ~/.config/upstox/config.json)");
+    } else {
+      cached = wrap_csv(data_dir, symbols, cache);
+      spdlog::warn("upstox token missing — serving CSV from {}", data_dir);
+    }
+    fetch_ptr = &cached->fetch();
+
+    algocraft::DataSourceRegistry registry;
+    registry.register_provider(std::move(cached));
+
+    algocraft::StrategyRegistry strategies;
+    algocraft::register_all_strategies(strategies);
+
+    algocraft::HttpServer::Config cfg;
+    cfg.host = "127.0.0.1";
+    cfg.port = port;
+    algocraft::HttpServer server(cfg, cache.db, registry, strategies, symbols, fetch_ptr);
+    spdlog::info("API listening on http://{}:{}", cfg.host, cfg.port);
+    server.start();
+    return 0;
+  } catch (const std::exception& e) {
+    spdlog::error("serve failed: {}", e.what());
+    return 1;
+  }
 }
 
 }  // namespace
