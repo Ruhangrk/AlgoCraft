@@ -8,6 +8,7 @@ add_executable(algocraft_tests
   unit/test_data_source_registry.cpp
   unit/test_log_hub.cpp
   unit/test_persistence_service.cpp
+  unit/test_strategy_catalog.cpp
   unit/test_sqlite.cpp
   unit/test_bar_store.cpp
   unit/test_data_fetch.cpp
@@ -48,6 +49,7 @@ target_compile_definitions(algocraft_tests
     ALGOCRAFT_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data"
     ALGOCRAFT_DATA_DIR="${CMAKE_SOURCE_DIR}/data/1min"
     ALGOCRAFT_MIGRATIONS_DIR="${CMAKE_SOURCE_DIR}/migrations"
+    ALGOCRAFT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
 algocraft_set_warnings(algocraft_tests)

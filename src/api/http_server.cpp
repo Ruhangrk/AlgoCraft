@@ -1,6 +1,7 @@
 #include "algocraft/api/http_server.hpp"
 
 #include "algocraft/api/auth_routes.hpp"
+#include "algocraft/api/agent_routes.hpp"
 #include "algocraft/api/http_helpers.hpp"
 #include "algocraft/api/market_routes.hpp"
 #include "algocraft/api/workbook_routes.hpp"
@@ -59,6 +60,12 @@ void HttpServer::start() {
   running_ = true;
 
   api::register_auth_routes(app, auth_);
+  api::register_agent_routes(app, api::AgentRouteDeps{
+                                      .auth = auth_,
+                                      .persist = &persist_,
+                                      .source_root = config_.source_root,
+                                      .sandbox_root = config_.agent_sandbox_root,
+                                  });
   api::register_market_routes(app, api::MarketRouteDeps{
                                        .auth = auth_,
                                        .strategies = strategies_,

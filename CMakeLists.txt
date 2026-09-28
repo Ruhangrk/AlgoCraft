@@ -24,6 +24,7 @@ include(cmake/CompilerWarnings.cmake)
 add_library(algocraft
   src/auth/auth_service.cpp
   src/api/auth_routes.cpp
+  src/api/agent_routes.cpp
   src/api/http_helpers.cpp
   src/api/http_server.cpp
   src/api/market_routes.cpp
@@ -61,6 +62,7 @@ add_library(algocraft
   src/persistence/persistence_service.cpp
   src/persistence/rocks_bar_store.cpp
   src/persistence/sqlite_database.cpp
+  src/persistence/strategy_catalog_repository.cpp
   src/persistence/workbook_repository.cpp
   src/portfolio/capital_manager.cpp
   src/portfolio/portfolio_ledger.cpp
@@ -87,6 +89,7 @@ add_library(algocraft
   src/strategies/opening_range_breakout.cpp
   src/strategies/piercing_line_long.cpp
   src/strategies/reliance_prev5_avg_break.cpp
+  src/strategies/strategy_compiler.cpp
   src/strategies/strategy_registrations.cpp
   src/strategies/three_red_bounce.cpp
   src/strategies/three_white_soldiers.cpp
@@ -132,6 +135,7 @@ target_compile_definitions(algocraft_engine PRIVATE
   ALGOCRAFT_DB_PATH="${CMAKE_SOURCE_DIR}/data/algocraft.db"
   ALGOCRAFT_BARS_DIR="${CMAKE_SOURCE_DIR}/data/bars"
   ALGOCRAFT_MIGRATIONS_DIR="${CMAKE_SOURCE_DIR}/migrations"
+  ALGOCRAFT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 algocraft_set_warnings(algocraft_engine)
 if(ALGOCRAFT_ENABLE_SANITIZERS)

@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <thread>
@@ -29,6 +30,8 @@ public:
     std::string host{"127.0.0.1"};
     int port{8080};
     std::string jwt_secret{"algocraft-dev-secret-change-me"};
+    std::filesystem::path source_root{};       // repo root for agent promote/compile
+    std::filesystem::path agent_sandbox_root{};  // default: <source_root>/data/agent_sandbox
   };
 
   HttpServer(Config config, SqliteDatabase& db_read, PersistenceService& persist,

@@ -516,6 +516,12 @@ int run_api_server(const char* data_dir, int port) {
     algocraft::HttpServer::Config cfg;
     cfg.host = "127.0.0.1";
     cfg.port = port;
+#ifdef ALGOCRAFT_SOURCE_DIR
+    cfg.source_root = ALGOCRAFT_SOURCE_DIR;
+#else
+    cfg.source_root = std::filesystem::current_path();
+#endif
+    cfg.agent_sandbox_root = cfg.source_root / "data" / "agent_sandbox";
     algocraft::HttpServer server(cfg, cache.db_read, *cache.persist, registry, strategies, symbols,
                                  fetch_ptr);
     AC_LOG_INFO("API listening on http://{}:{}", cfg.host, cfg.port);

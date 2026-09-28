@@ -1,362 +1,533 @@
-# AlgoCraft-Agent — Architecture
+# AlgoCraft-Agent — Build Spec (for implementers / Cursor)
 
-**Repo (to create):** `AlgoCraft-Agent` — Python FastAPI + LangGraph  
-**Sibling repos:** `AlgoCraft` (C++ engine), `AlgoCraft-UI` (React), `Virtual_Websockets` (live tape mock)  
-**Status:** design only — no code yet. This file becomes `ARCHITECTURE.md` in the new repo.
+**Repo to create:** `AlgoCraft-Agent` (sibling of `AlgoCraft`)  
+**Stack:** Python 3.11+ · FastAPI · LangGraph · httpx · Pydantic v2 · SSE  
+**Copy this file to** `AlgoCraft-Agent/ARCHITECTURE.md` **when the repo is created.**
+
+**Status (2026-09-28):**
+- C++ engine APIs for Phase A **and** B/C compile/promote/activate are **implemented** in AlgoCraft.
+- Python agent code: **not started**. This doc is the full build plan.
+
+**Non-goals (v1):** auto live trading without human approval; LLM shell/git access; embedding bars/risk in Python.
+
+---
+
+## 0. How to use this doc (Cursor cascade)
+
+Build **in order**. Do not skip Phase A for B/C.
+
+1. Create repo + skeleton (§7, §13 step 1–2)  
+2. `AlgocraftClient` against live `:8080` (§6)  
+3. LangGraph Phase A with mocks, then real tools (§4, §13)  
+4. FastAPI chat + SSE (§5)  
+5. Phase B compile loop (§4.5, §6.2)  
+6. Phase C promote/activate with **human confirmation tool** (§4.6, §6.2)  
+
+**Prereq:** AlgoCraft `scripts/serve` running; user registered; JWT works.
 
 ---
 
 ## 1. Purpose
 
-Give the user a **chat surface** that can:
+Chat orchestrator that:
 
-1. Understand a trading idea in plain language  
-2. Research tickers / existing strategies via the **live C++ HTTP API**  
-3. Propose or refine a strategy idea  
-4. Run **real** backtests / hist routing through AlgoCraft (same APIs the UI uses)  
-5. Iterate until metrics look acceptable  
-6. Hand results to the human for approval  
+1. Parses a trading idea  
+2. Researches via C++ HTTP (`/instruments`, `/strategies`, `/routing-algos`)  
+3. Proposes an existing strategy/router **or** (Phase B) generates C++ sources  
+4. Runs **real** backtests / hist runs on AlgoCraft  
+5. Evaluates metrics (soft thresholds)  
+6. Asks human before promote/activate  
 
-**Non-goals (v1):** auto-activate live trading, write unchecked C++ into production, bypass human review.
-
-The C++ engine stays the source of truth for capital, bars, fills, risk. The Python service is an **orchestrator + LLM brain**, not a second trading engine.
+Python = brain + HTTP tools. C++ = capital, bars, fills, risk, compile sandbox.
 
 ---
 
-## 2. Placement in the platform
+## 2. Placement
 
 ```
-AlgoCraft-UI (React)
-        │
-        ├── JWT HTTP ──► AlgoCraft (:8080)     backtests, runs, portfolio, strategies
-        │
-        └── JWT/session ─► AlgoCraft-Agent (:8100)   chat + LangGraph
-                                    │
-                                    └── tool calls ──► AlgoCraft (:8080)
-                                              (service user or forwarded user JWT)
+AlgoCraft-UI (:5173)
+    ├── JWT ──► AlgoCraft C++ (:8080)
+    └── JWT ──► AlgoCraft-Agent (:8100)
+                    └── httpx + Bearer ──► AlgoCraft C++ (:8080)
 ```
 
-| Rule | Detail |
-|------|--------|
-| Two backends, one UI | UI talks to C++ and Python independently |
-| No hot-path in Python | No bars, rings, risk, or order routing in Python |
-| Same APIs as frontend | Agent tools wrap existing Crow routes only |
-| Auth | Agent authenticates to C++ as a dedicated user (`agent_bot`) or proxies the user’s Bearer token |
+| Rule | Locked decision |
+|------|-----------------|
+| Auth to C++ | **Forward the end-user JWT** from UI→Agent→C++ (`Authorization: Bearer …`). Fallback: login as `ALGOCRAFT_USER` / `ALGOCRAFT_PASS` only for CLI smoke. |
+| Workbook | Session may include `workbook_id`; else `POST /workbooks` once and store id. |
+| Default run mode | **Hist** with past `anchor_date` (not live today) unless user explicitly asks live. |
+| Tool timeout | **600s** for `runs/start` / heavy backtests; **120s** for light GETs; compile **180s**. |
+| Eval | Soft verdict (pass/fail/weak) — do **not** hard-stop only because `pnl <= 0`. |
+| Concurrency | 1 uvicorn worker; max 2 concurrent graphs. |
 
 ---
 
-## 3. Delivery phases (Python repo)
+## 3. Phases
 
-Build the agent **in slices**. Do not wait for compile/dlopen.
+### Phase A — Chat + existing strategies (ship first)
+- No codegen. Pick from `GET /strategies` / `GET /routing-algos`.
+- Tools: auth, list, instruments, ensure, workbook, backtest, hist run, events.
 
-### Phase A — Chat + tools (ship first)
+### Phase B — Codegen + compile loop
+- LLM emits `name` (snake_case), `hpp`, `cpp` matching AlgoCraft `Strategy` API.
+- Tool: `POST /agent/strategies/compile` until `ok=true` (max compile attempts = 5).
+- **Do not** promote without human OK.
 
-- FastAPI: `POST /v1/chat`, `GET /v1/sessions/{id}`, SSE stream  
-- LangGraph: Research → Propose → Backtest → Evaluate → Respond  
-- Tools against **existing** C++ APIs only:
-  - `POST /auth/login`
-  - `GET /strategies`, `GET /routing-algos`
-  - `GET /instruments?q=`
-  - `POST /workbooks`, `POST .../backtests/start`, `GET .../backtests/{id}`
-  - `POST .../runs/start` (`top15_week_router` / `default_router` + `anchor_date`)
-  - `GET .../runs/{id}/events?include=routing,fill`
-- Strategy “design” = structured JSON plan + pick among **registered** strategies (no codegen yet)
-- Human sees proposal + metrics in chat; approval is “looks good / reject” only
-
-### Phase B — Codegen to staging (later)
-
-- Strategy Designer emits `.hpp` / `.cpp` matching AlgoCraft `Strategy` interface  
-- Needs new C++: `POST /strategies/compile` (sandbox) — **not built yet**  
-- Compile errors loop back into LangGraph until green  
-- Still no live activation
-
-### Phase C — Promote + load (later)
-
-- Finalizer stages registration line / CMake or `.so` plugin  
-- Human `PATCH .../activate`  
-- Option A: rebuild + `scripts/serve --restart`  
-- Option B (future): `dlopen` plugin loader  
+### Phase C — Promote + activate
+- Human OK → `POST /agent/strategies/promote` (`enabled=0` in catalog).
+- Second human OK → `POST /agent/strategies/activate` (`enabled=1`).
+- Tell user: **rebuild + `scripts/serve --restart`** required for new C++ to load into the in-process registry (no dlopen yet).
 
 ---
 
-## 4. LangGraph design
+## 4. LangGraph
 
-### 4.1 Graph (Phase A)
+### 4.1 Phase A graph
 
 ```
-                 ┌─────────────┐
-                 │  orchestrator│  (entry: user message + session state)
-                 └──────┬──────┘
-                        ▼
-                 ┌─────────────┐
-                 │  research   │  instruments, OHLC ensure, list strategies
-                 └──────┬──────┘
-                        ▼
-                 ┌─────────────┐
-                 │  propose    │  pick strategy(+ticker) or structured plan
-                 └──────┬──────┘
-                        ▼
-                 ┌─────────────┐
-                 │  execute    │  backtest and/or hist run (router)
-                 └──────┬──────┘
-                        ▼
-                 ┌─────────────┐
-            ┌───►│  evaluate   │─── fail / iterate ──► propose (max N)
-            │    └──────┬──────┘
-            │           │ pass
-            │           ▼
-            │    ┌─────────────┐
-            └───│  respond    │  stream summary + metrics to UI
-                 └─────────────┘
+START → classify_intent → research → propose → execute → evaluate
+                              ↑                      │
+                              └──── iterate < max ────┘ (verdict=fail/weak)
+                                                    │
+                                                    ▼
+                                                 respond → END
 ```
 
-Optional later nodes: `compile`, `finalize` (Phases B/C).
+Use `langgraph.graph.StateGraph`. Conditional edges from `evaluate`:
+- `pass` | `need_human` → `respond`
+- `fail` / `weak` and `iteration < max_iterations` → `propose` (increment `iteration`, set `feedback`)
+- else → `respond`
 
-### 4.2 Shared state (TypedDict / Pydantic)
+### 4.2 Phase B/C extension (same graph, extra intent)
+
+If intent = `codegen_strategy`:
+
+```
+research → design_code → compile_loop → (human_gate_promote) → promote
+        → (human_gate_activate) → activate → respond
+```
+
+`compile_loop`: call compile; if not ok, LLM fixes from `log`; repeat ≤ 5.
+
+### 4.3 AgentState (Pydantic preferred)
 
 ```python
+from typing import Annotated, Any, Literal
+from typing_extensions import TypedDict
+from langgraph.graph.message import add_messages
+
 class AgentState(TypedDict, total=False):
+    messages: Annotated[list, add_messages]
     session_id: str
-    user_id: str
+    user_jwt: str                    # forwarded to C++
     workbook_id: int | None
-    messages: list[dict]          # chat history
-    intent: str                   # research | backtest | route | explain
+
+    intent: Literal[
+        "research", "backtest", "route", "codegen_strategy", "explain", "unknown"
+    ]
     tickers: list[str]
     strategy_candidates: list[str]
-    chosen: dict                  # {strategy, ticker, window, capital_paise}
-    cpp_results: dict             # raw API payloads
-    metrics: dict                 # pnl, fills, sharpe-proxy, etc.
-    eval_verdict: str             # pass | fail | need_human
-    feedback: str                 # for next propose iteration
+    router_candidates: list[str]
+    research_notes: str
+
+    chosen: dict[str, Any]
+    # backtest: {strategy, ticker, from_ns, to_ns, capital_paise}
+    # route:    {router, anchor_date, capital_paise}  # hist preferred
+    # codegen:  {name, class_name, hpp, cpp}
+
+    cpp_results: dict[str, Any]
+    metrics: dict[str, Any]
+    eval_verdict: Literal["pass", "weak", "fail", "need_human", "error"]
+    feedback: str
     iteration: int
-    max_iterations: int           # hard cap (e.g. 3)
+    max_iterations: int              # default 3
+    compile_attempts: int            # default 0, max 5
+    pending_human: Literal["none", "promote", "activate"]
     error: str | None
 ```
 
-### 4.3 Node contracts
+### 4.4 Node contracts (implement these files)
 
-| Node | Input | Tools / LLM | Output |
-|------|--------|-------------|--------|
-| **research** | user text | instruments search, strategies list, optional ensure OHLCV | `tickers`, short research notes |
-| **propose** | research + feedback | LLM constrained to registered strategy names + params | `chosen` |
-| **execute** | `chosen` | `backtests/start` and/or `runs/start` | `cpp_results` |
-| **evaluate** | `cpp_results` | thresholds (configurable) | `eval_verdict`, `feedback`, `metrics` |
-| **respond** | state | LLM formats answer | assistant message (+ optional structured card JSON) |
+| Node | File | Must do |
+|------|------|---------|
+| `classify_intent` | `nodes/classify.py` | LLM or rules → `intent` |
+| `research` | `nodes/research.py` | `list_strategies`, `list_routers`, optional `search_instruments`, `ensure_market_data` |
+| `propose` | `nodes/propose.py` | LLM constrained to **exact** names from C++; fill `chosen` |
+| `execute` | `nodes/execute.py` | `start_backtest` **or** `start_run` (hist); store raw JSON in `cpp_results` |
+| `evaluate` | `nodes/evaluate.py` | Pure Python thresholds → `eval_verdict`, `metrics`, `feedback` |
+| `respond` | `nodes/respond.py` | LLM summary + structured `card` JSON for UI |
+| `design_code` | `nodes/design_code.py` | Phase B: emit Strategy sources |
+| `compile_loop` | `nodes/compile_loop.py` | Phase B: compile + fix |
+| `human_gate` | `nodes/human_gate.py` | Interrupt / wait for UI `confirm=true` before promote/activate |
 
-### 4.4 Evaluate thresholds (defaults, env-overridable)
+### 4.5 Evaluate thresholds (env)
 
+```text
+AGENT_MAX_ITERATIONS=3
+AGENT_MIN_FILLS=2
+AGENT_MAX_FILLS=5000
+AGENT_SOFT_MIN_PNL_PAISE=1      # pnl >= this → "pass"; else if fills ok → "weak"; else "fail"
 ```
-min_pnl_paise:     > 0          # Phase A: keep simple
-max_fills:         200          # fee sanity
-min_fills:         2
-max_iterations:    3
+
+Logic sketch:
+```python
+fills = metrics.get("fills", 0)
+pnl = metrics.get("pnl_paise", 0)
+if fills < min_fills:
+    verdict = "fail"
+elif pnl >= soft_min_pnl:
+    verdict = "pass"
+else:
+    verdict = "weak"   # still show results; allow iterate
 ```
 
-Later (when C++ returns richer stats): Sharpe, max DD, win rate.
+### 4.6 Human gates (Phase C)
+
+Do **not** auto-promote. Patterns:
+- LangGraph `interrupt()` / wait for next chat message `APPROVE_PROMOTE` / `APPROVE_ACTIVATE`, **or**
+- FastAPI `POST /v1/sessions/{id}/confirm` with `{action: "promote"|"activate"}`.
+
+Agent message must show: strategy name, compile log summary, paths, risk note (restart required).
 
 ---
 
-## 5. FastAPI surface
+## 5. FastAPI surface (Python)
 
-| Method | Path | Role |
-|--------|------|------|
-| `POST` | `/v1/auth/login` | optional; or accept UI-forwarded C++ JWT |
-| `POST` | `/v1/sessions` | create agent session `{ workbook_id? }` |
-| `POST` | `/v1/chat` | `{ session_id, message }` → start/continue graph |
-| `GET`  | `/v1/chat/{session_id}/stream` | SSE: tokens + tool events + final card |
-| `GET`  | `/v1/sessions/{id}` | history + last metrics |
-| `GET`  | `/healthz` | liveness |
+| Method | Path | Body / notes |
+|--------|------|----------------|
+| `GET` | `/healthz` | `{status, cpp_reachable}` |
+| `POST` | `/v1/sessions` | `{workbook_id?}` + header `Authorization` (user JWT) → `{session_id}` |
+| `GET` | `/v1/sessions/{id}` | history + last metrics/card |
+| `POST` | `/v1/chat` | `{session_id, message}` → runs graph (sync JSON) **or** kicks async job |
+| `GET` | `/v1/chat/{session_id}/stream` | **SSE**: `event: token\|tool\|card\|error\|done` |
+| `POST` | `/v1/sessions/{id}/confirm` | `{action: "promote"\|"activate"}` |
 
-**Streaming:** SSE preferred for UI simplicity (`event: token | tool | result | error`).
-
----
-
-## 6. Tools → AlgoCraft C++ (Phase A, real routes)
-
-All tools are thin HTTP clients (`httpx`). Base URL: `ALGOCRAFT_API_URL` (default `http://127.0.0.1:8080`).
-
-| Tool name | C++ call | Notes |
-|-----------|----------|-------|
-| `login` | `POST /auth/login` | service account or user creds |
-| `list_strategies` | `GET /strategies` | constrain propose node |
-| `list_routers` | `GET /routing-algos` | e.g. `top15_week_router` |
-| `search_instruments` | `GET /instruments?q=` | ticker resolve |
-| `ensure_market_data` | `POST /market-data/ensure` | before long windows |
-| `create_workbook` | `POST /workbooks` | if session has none |
-| `start_backtest` | `POST /workbooks/{id}/backtests/start` | strategy × ticker × range |
-| `get_backtest` | `GET /workbooks/{id}/backtests/{bt}` | result payload |
-| `start_run` | `POST /workbooks/{id}/runs/start` | `{ router, anchor_date, capital_paise }` |
-| `run_events` | `GET .../runs/{id}/events?include=routing,fill` | top-15 CREATE list |
-
-**Do not invent** `/strategies/compile` in Phase A tools.
+Sessions: **in-memory dict** v1 (`SessionStore`); optional SQLite later.  
+CORS: allow `http://127.0.0.1:5173`.
 
 ---
 
-## 7. Proposed Python repo layout
+## 6. C++ HTTP contracts (exact)
+
+Base: `ALGOCRAFT_API_URL` default `http://127.0.0.1:8080`.  
+All mutating/agent routes need `Authorization: Bearer <jwt>` except `/auth/login` and `/auth/register`.
+
+### 6.1 Phase A tools
+
+| Tool | Request | Response highlights |
+|------|---------|---------------------|
+| `login` | `POST /auth/login` `{"username","password"}` | `{token}` or equivalent — store JWT |
+| `list_strategies` | `GET /strategies` | list/array of names |
+| `list_routers` | `GET /routing-algos` | includes `default_router`, `top15_week_router`, `live_run_testing_router` |
+| `search_instruments` | `GET /instruments?q=ONGC&limit=20` | rows with ticker |
+| `ensure_market_data` | `POST /market-data/ensure` body per UI (tickers + range) | results |
+| `create_workbook` | `POST /workbooks` `{"name","capital_paise"}` | `{id}` |
+| `start_backtest` | `POST /workbooks/{wid}/backtests/start` | **required:** `ticker`, `strategy`, `from_ns`, `to_ns`, `capital_paise`; optional `order_qty`, ema_* | `201` + row (`id`, `fills`, `pnl_paise`, …) **sync** |
+| `get_backtest` | `GET /workbooks/{wid}/backtests/{id}` | same row |
+| `start_run` | `POST /workbooks/{wid}/runs/start` | `{router, capital_paise, anchor_date:"YYYY-MM-DD"}` for hist/live; **prefer past day for agent** | `201` + `run_id`, `selected`, `fills`, … |
+| `run_events` | `GET /workbooks/{wid}/runs/{rid}/events?include=routing,fill` | event list |
+
+**Time helper (must implement in Python):**
+
+```python
+# IST session day → nanos (match AlgoCraft session_calendar: IST = UTC+5:30)
+# from_ns = IST midnight start of day as UTC epoch nanos
+# to_ns   = IST 23:59 end (or next day 00:00 - 1m) as used by UI
+```
+
+Prefer computing from `zoneinfo.ZoneInfo("Asia/Kolkata")`.  
+“Last week” → last 5 NSE session days ending at last **closed** session (not today if still open).
+
+**Hist run tip:** send `anchor_date` for a **past** trading day so path is hist replay, not live.
+
+### 6.2 Phase B/C agent tools (implemented in C++)
+
+All under `/agent/strategies/*`, JWT required.
+
+#### `POST /agent/strategies/compile`
+```json
+{
+  "name": "my_mean_revert",
+  "class_name": "MyMeanRevert",
+  "kind": "strategy",
+  "hpp": "#pragma once\n...",
+  "cpp": "#include \"algocraft/strategies/my_mean_revert.hpp\"\n..."
+}
+```
+- `name`: `^[a-z][a-z0-9_]{0,63}$`
+- Response `200` if ok, `422` if compile failed: `{ok, name, class_name, sandbox_dir, log}`
+- Sandbox on disk: `data/agent_sandbox/<name>/` (C++ side). No catalog enable.
+
+#### `POST /agent/strategies/promote`
+```json
+{ "name": "my_mean_revert" }
+```
+- Requires prior successful compile artifacts in sandbox.
+- Writes `include/algocraft/strategies/<name>.hpp`, `src/strategies/<name>.cpp`
+- Patches `CMakeLists.txt` + `strategy_registrations.cpp`
+- Upserts `strategy_catalog` with **`enabled=0`**
+- `201`: `{ok, id, name, class_name, enabled:false, hpp_path, cpp_path, log, note}`
+
+#### `POST /agent/strategies/activate`
+```json
+{ "name": "my_mean_revert", "enabled": true }
+```
+- `enabled: false` deactivates.
+- `200`: catalog row + note to rebuild/restart.
+
+#### `GET /agent/strategies/catalog`
+- Array of catalog rows (`id`, `kind`, `name`, `class_name`, `enabled`, paths, `compile_ok`, …).
+
+### 6.3 Generated strategy shape (Phase B LLM must follow)
+
+Mirror existing strategies (e.g. `live_run_testing`, `hammer_reversal`):
+
+- Class `final : public Strategy` in namespace `algocraft`
+- Methods: `configure`, `on_bar`, `on_fill`, `on_order_update`, `should_exit`, `metadata`
+- `metadata().name` == snake `name`
+- `TradingMode::Mis`, `BarResolution::OneMin` unless user asks otherwise
+- Include `make_intent.hpp`, `session_clock.hpp`, `position_sizer.hpp` as needed
+- Header path: `#include "algocraft/strategies/<name>.hpp"`
+
+Do **not** invent new build systems; C++ compile API only syntax-checks with project `-Iinclude`.
+
+---
+
+## 7. Repo layout (create exactly)
 
 ```
 AlgoCraft-Agent/
-  ARCHITECTURE.md          ← this document
+  ARCHITECTURE.md          ← copy of this file
   README.md
-  pyproject.toml           # fastapi, uvicorn, langgraph, langchain-*, httpx, pydantic
+  pyproject.toml
   .env.example
+  docs/
+    cpp/
+      INDEX.md             ← always in LLM context (path + one-line about)
+      *.md                 ← core contracts; fetch ≤2–3 (see §7.1)
+      strategies/          ← one md per registered strategy + INDEX.md
+      indicators/          ← library + each indicator + INDEX.md
+      routing/             ← interface + each router + INDEX.md
   app/
-    main.py                # FastAPI app
-    config.py              # settings from env
+    __init__.py
+    main.py                # FastAPI app + CORS + routers
+    config.py              # pydantic-settings from env
     api/
-      chat.py
-      sessions.py
+      __init__.py
       health.py
+      sessions.py
+      chat.py
+      confirm.py
     graph/
+      __init__.py
       state.py
-      graph.py             # StateGraph wire-up
+      graph.py             # build_graph() → compiled LangGraph
       nodes/
+        classify.py
         research.py
         propose.py
         execute.py
         evaluate.py
         respond.py
+        design_code.py
+        compile_loop.py
+        human_gate.py
     tools/
-      algocraft_client.py  # httpx wrapper + JWT
+      __init__.py
+      algocraft_client.py  # httpx.AsyncClient, Bearer, timeouts
       market.py
       backtest.py
       routing.py
+      agent_lifecycle.py   # compile/promote/activate/catalog
+      timeutil.py          # IST ↔ nanos
     llm/
+      provider.py          # chat model from LLM_PROVIDER
       prompts.py
-      provider.py          # OpenAI / Anthropic / local via env
-    models/                # pydantic request/response
+    store/
+      sessions.py          # in-memory SessionStore
+    models/
+      api.py               # request/response schemas
   tests/
-    test_graph_unit.py     # mocked C++ client
-    test_api_smoke.py
+    conftest.py
+    test_timeutil.py
+    test_evaluate.py
+    test_client_mock.py
+    test_graph_phase_a.py
 ```
 
-Keep it thin — no duplicate domain models of bars/fills beyond API DTOs.
+### 7.1 C++ knowledge docs (`docs/cpp/`)
+
+Curated agent-facing slices of the AlgoCraft C++ surface (not a dump of `AlgoCraft/Notes/`).
+
+| Rule | Detail |
+|------|--------|
+| Index always | Load `docs/cpp/INDEX.md` into relevant nodes (design_code, compile_loop, research). |
+| Selective fetch | From the index table, load **at most 2–3** other doc paths per turn. |
+| Catalog folders | `strategies/`, `indicators/`, `routing/` each have their own `INDEX.md` (path + one-line); drill into one body file after picking from that folder index. |
+| Codegen default | Prefer `codegen_shape.md` + `strategy_interface.md`; add sizing/clock/indicators as needed. |
+| Loader | Implement `docs/loader.py` (or in `llm/prompts.py`): parse index → resolve paths → read files. Optional LLM tool `fetch_doc(path)`. |
+| Source of truth | Human architecture stays in AlgoCraft `Notes/`; keep `docs/cpp/` concise and sync when Strategy/API/registry lists change. |
+
+### `pyproject.toml` deps (minimum)
+
+```toml
+[project]
+name = "algocraft-agent"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "httpx>=0.27",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.5",
+  "langgraph>=0.2",
+  "langchain-core>=0.3",
+  "langchain-openai>=0.2",
+  "langchain-anthropic>=0.2",
+  "sse-starlette>=2.1",
+  "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
+```
 
 ---
 
-## 8. Config (`.env`)
+## 8. Config (`.env.example`)
 
 ```bash
-# AlgoCraft-Agent
 AGENT_HOST=127.0.0.1
 AGENT_PORT=8100
 
-# C++ engine
 ALGOCRAFT_API_URL=http://127.0.0.1:8080
 ALGOCRAFT_USER=agent_bot
-ALGOCRAFT_PASS=...
+ALGOCRAFT_PASS=changeme
 
-# LLM
-LLM_PROVIDER=openai          # openai | anthropic | ollama
+LLM_PROVIDER=openai
 LLM_MODEL=gpt-4.1-mini
 OPENAI_API_KEY=
 # ANTHROPIC_API_KEY=
 # OLLAMA_BASE_URL=http://127.0.0.1:11434
 
-# Graph limits
 AGENT_MAX_ITERATIONS=3
-AGENT_MIN_PNL_PAISE=1
-AGENT_MAX_FILLS=200
+AGENT_MAX_COMPILE_ATTEMPTS=5
+AGENT_MIN_FILLS=2
+AGENT_MAX_FILLS=5000
+AGENT_SOFT_MIN_PNL_PAISE=1
+AGENT_HTTP_TIMEOUT_SEC=120
+AGENT_HTTP_LONG_TIMEOUT_SEC=600
+AGENT_COMPILE_TIMEOUT_SEC=180
 ```
 
-Resource caps (laptop-safe): single uvicorn worker, max concurrent graphs = 1–2, tool timeouts ≤ 120s for hist runs.
-
 ---
 
-## 9. UX (UI later)
+## 9. `AlgocraftClient` requirements
 
+```python
+class AlgocraftClient:
+    def __init__(self, base_url: str, jwt: str | None = None, ...): ...
+    def with_jwt(self, jwt: str) -> Self: ...
+
+    async def login(self, user: str, password: str) -> str: ...
+    async def list_strategies(self) -> list[str]: ...
+    async def list_routers(self) -> list[str]: ...
+    async def search_instruments(self, q: str, limit: int = 20) -> list[dict]: ...
+    async def ensure_market_data(self, body: dict) -> dict: ...
+    async def create_workbook(self, name: str, capital_paise: int) -> int: ...
+    async def start_backtest(self, wid: int, *, ticker, strategy, from_ns, to_ns, capital_paise, **kw) -> dict: ...
+    async def start_run(self, wid: int, *, router, capital_paise, anchor_date: str, **kw) -> dict: ...
+    async def run_events(self, wid: int, rid: int, include: str = "routing,fill") -> list: ...
+
+    async def agent_compile(self, name: str, hpp: str, cpp: str, class_name: str = "") -> dict: ...
+    async def agent_promote(self, name: str) -> dict: ...
+    async def agent_activate(self, name: str, enabled: bool = True) -> dict: ...
+    async def agent_catalog(self) -> list[dict]: ...
 ```
-User: "Test top15 week router on 2026-09-25 with 10L"
 
-Agent:
-  research → list routers, confirm top15_week_router
-  propose  → { router: top15_week_router, anchor_date: 2026-09-25, capital: 10L }
-  execute  → POST /runs/start
-  evaluate → selected=15, fills=…, returned_paise=…
-  respond  → table of CREATE containers + verdict
+Raise `AlgocraftApiError(status, body)` on non-2xx. Never log JWT.
+
+---
+
+## 10. Security checklist
+
+1. Allow-listed tools only — no arbitrary URL/path from LLM  
+2. Strategy `name` validated client-side same regex as C++  
+3. Human confirm before promote/activate  
+4. Rate-limit chat (e.g. 20 req/min/session)  
+5. Secrets in env only  
+6. Phase A must not call promote/activate  
+
+---
+
+## 11. Acceptance tests
+
+### Unit
+- `timeutil`: known IST day → nanos round-trip sanity  
+- `evaluate`: fills/pnl → pass/weak/fail  
+- Graph with **mocked** client: backtest intent ends in `respond` with metrics  
+
+### Integration (optional, needs serve)
+1. Login / forward JWT  
+2. `list_strategies` non-empty  
+3. Backtest `hammer_reversal` on one ticker short window  
+4. Hist `runs/start` with `live_run_testing_router` or `top15_week_router` + past `anchor_date`  
+5. Compile a tiny valid strategy (can copy stripped `live_run_testing` renamed) → `ok=true`  
+6. Promote → catalog `enabled=false` → activate → `enabled=true`  
+
+### Manual UX
+```
+User: Backtest hammer_reversal on ONGC for last 5 sessions with 1L
+→ card with fills, pnl_paise, verdict
 ```
 
-```
-User: "Backtest hammer_reversal on ONGC for last week"
+---
 
-Agent → start_backtest → metrics card → pass/fail vs thresholds
-```
+## 12. Implementation order (checklist)
 
-Chatbot is **global** (not locked to one workbook); workbook is created or selected per session.
+- [ ] 1. Repo + `pyproject.toml` + `.env.example` + README  
+- [ ] 2. `config.py` + `/healthz` (ping C++ `/strategies` or `/auth/me`)  
+- [ ] 3. `AlgocraftClient` + `timeutil` + unit tests  
+- [ ] 4. `SessionStore` + `POST /v1/sessions`  
+- [ ] 5. LangGraph Phase A nodes + mock tests  
+- [ ] 6. Wire real backtest + evaluate  
+- [ ] 7. Wire hist `start_run` + events  
+- [ ] 8. `POST /v1/chat` + SSE stream  
+- [ ] 9. Phase B `design_code` + `compile_loop`  
+- [ ] 10. Phase C confirm + promote + activate  
+- [ ] 11. (Separate) AlgoCraft-UI chat panel  
 
 ---
 
-## 10. C++ prerequisites
-
-### Already enough for Phase A
-
-| Need | Status |
-|------|--------|
-| Auth + JWT | Done |
-| Strategies / routers list | Done |
-| Backtests start + get | Done |
-| Runs start (hist / live anchor) | Done |
-| Routing events | Done |
-| Instruments + ensure | Done |
-
-### Required before Phase B/C
-
-| Need | Status |
-|------|--------|
-| `POST /strategies/compile` (sandbox) | Not built |
-| Agent strategy provenance columns | Not built |
-| Activate / load plugin endpoints | Not built |
-| Docker compile sandbox | Not built |
-
-Phase A must not block on these.
-
----
-
-## 11. Security
-
-1. **No shell from LLM** — tools are allow-listed functions only  
-2. **No direct FS / git write** in Phase A  
-3. **Iteration + rate limits** on graph and on C++ calls  
-4. **Human gate** before any future promote-to-live  
-5. **Secrets** only in env; never log JWT or API keys  
-6. Phase B compile only in isolated sandbox (when built)
-
----
-
-## 12. Relation to routing / Virtual_Websockets
-
-| Piece | Role for agent |
-|-------|----------------|
-| `top15_week_router` | Primary “portfolio day” tool via `runs/start` |
-| Hist `anchor_date` | Default agent testing path (any past NSE day) |
-| Live + `ALGOCRAFT_LIVE_FEED=virtual` | Optional later tool; Sunday/holiday blocked by NSE calendar |
-| Virtual_Websockets | Independent process; agent does not embed it |
-
----
-
-## 13. Implementation order (when we create the repo)
-
-1. Skeleton: FastAPI + `/healthz` + config  
-2. `AlgocraftClient` + one smoke tool (`list_strategies`)  
-3. LangGraph Phase A graph with mocked tools in unit tests  
-4. Wire real backtest tool + evaluate thresholds  
-5. Wire `runs/start` + routing events  
-6. SSE chat endpoint  
-7. UI panel (AlgoCraft-UI) — separate step  
-
----
-
-## 14. Decision summary
+## 13. Decision summary (locked)
 
 | Topic | Decision |
 |-------|----------|
-| Framework | **FastAPI** + **LangGraph** StateGraph |
-| Port | **8100** (C++ stays 8080) |
-| v1 strategy work | Select/run **existing** strategies & routers — no C++ codegen yet |
-| Iteration | Max 3 propose↔execute loops |
-| Approval | Human in the loop for any permanent promote (Phase C) |
-| C++ changes for Phase A | **None** |
+| Framework | FastAPI + LangGraph StateGraph |
+| Agent port | **8100** |
+| C++ port | **8080** |
+| Auth | Forward user JWT to C++ |
+| Phase A | Existing strategies/routers only |
+| Phase B/C C++ | `/agent/strategies/compile\|promote\|activate` + `GET .../catalog` (**done in AlgoCraft**) |
+| Promote | Catalog `enabled=0` |
+| Activate | Catalog `enabled=1`; rebuild+restart to load code |
+| Eval | Soft pass/weak/fail |
+| Hist default | Past `anchor_date` |
+| Long timeout | 600s runs/backtests |
+| UI | Later |
 
 ---
 
-*Next step when you say go: create `AlgoCraft-Agent` repo and copy this file to `ARCHITECTURE.md`, then implement Phase A skeleton.*
+## 14. Sibling references
+
+| Path | Why |
+|------|-----|
+| `AlgoCraft/src/api/agent_routes.cpp` | Exact agent HTTP handlers |
+| `AlgoCraft/src/strategies/strategy_compiler.cpp` | Sandbox + promote file rules |
+| `AlgoCraft/migrations/schema_009.sql` | `strategy_catalog` |
+| `AlgoCraft/src/strategies/live_run_testing.*` | Minimal strategy template |
+| `AlgoCraft/src/api/workbook_routes.cpp` | backtest/run body fields |
+
+---
+
+*When starting: create `AlgoCraft-Agent`, copy this file to `ARCHITECTURE.md`, implement checklist §12 in order.*
