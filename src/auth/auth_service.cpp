@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "algocraft/log/log.hpp"
+#include "algocraft/persistence/persistence_service.hpp"
 
 namespace algocraft {
 namespace {
@@ -211,6 +212,18 @@ std::string AuthService::make_token(const AuthUser& user) const {
 
 AuthService::Result AuthService::register_user(std::string_view username, std::string_view password,
                                                std::string_view role) {
+  if (persist_ != nullptr) {
+    Result out{};
+    const std::string user{username};
+    const std::string pass{password};
+    const std::string role_s{role};
+    persist_->run_sync([&](sqlite3* wdb) {
+      AuthService writer(wdb, jwt_secret_, token_ttl_seconds_);
+      out = writer.register_user(user, pass, role_s);
+    });
+    return out;
+  }
+
   Result out{};
   if (username.empty() || password.size() < 6) {
     out.error = "invalid username or password";

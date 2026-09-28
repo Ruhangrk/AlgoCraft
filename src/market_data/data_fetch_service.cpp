@@ -9,6 +9,7 @@
 
 #include "algocraft/domain/session_calendar.hpp"
 #include "algocraft/log/log.hpp"
+#include "algocraft/persistence/persistence_service.hpp"
 
 namespace algocraft {
 namespace {
@@ -56,11 +57,12 @@ std::vector<std::vector<SessionDate>> chunk_days(const std::vector<SessionDate>&
 
 DataFetchService::DataFetchService(BarStore& store, CoverageRepository& coverage,
                                    HistoricalDataLoader& vendor, const SymbolTable& symbols,
-                                   std::string source)
+                                   std::string source, PersistenceService* persist)
     : store_(&store),
       coverage_(&coverage),
       vendor_(&vendor),
       symbols_(&symbols),
+      persist_(persist),
       source_(std::move(source)) {}
 
 Timestamp DataFetchService::now() const {
@@ -95,7 +97,11 @@ void DataFetchService::persist_coverage(std::string_view ticker, BarResolution r
   row.source = source_;
   const auto listed = store_->list_sessions(row.ticker, resolution, {}, {});
   row.sessions = static_cast<std::int32_t>(listed.size());
-  coverage_->upsert(row);
+  if (persist_ != nullptr) {
+    persist_->run_sync([&](sqlite3* db) { CoverageRepository(db).upsert(row); });
+  } else {
+    coverage_->upsert(row);
+  }
 }
 
 void DataFetchService::ensure_data_available(std::string_view ticker, Timestamp from, Timestamp to,

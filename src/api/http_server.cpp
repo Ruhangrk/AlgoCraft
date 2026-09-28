@@ -8,19 +8,22 @@
 
 namespace algocraft {
 
-HttpServer::HttpServer(Config config, SqliteDatabase& db, DataSourceRegistry& data,
-                       StrategyRegistry& strategies, SymbolTable& symbols, DataFetchService* fetch)
+HttpServer::HttpServer(Config config, SqliteDatabase& db_read, PersistenceService& persist,
+                       DataSourceRegistry& data, StrategyRegistry& strategies, SymbolTable& symbols,
+                       DataFetchService* fetch)
     : config_{std::move(config)},
-      db_{db},
+      db_read_{db_read},
+      persist_{persist},
       data_{data},
       strategies_{strategies},
       symbols_{symbols},
       fetch_{fetch},
-      auth_{db.handle(), config_.jwt_secret},
-      activity_{db.handle()},
-      workbooks_{db.handle()},
-      instruments_{db.handle()},
-      backtests_{db.handle()} {
+      auth_{db_read.handle(), config_.jwt_secret},
+      activity_{db_read.handle()},
+      workbooks_{db_read.handle()},
+      instruments_{db_read.handle()},
+      backtests_{db_read.handle()} {
+  auth_.set_persist(&persist_);
   live_runs_ = std::make_unique<LiveRunService>(LiveRunService::Deps{
       .data = data_,
       .strategies = strategies_,
@@ -29,6 +32,7 @@ HttpServer::HttpServer(Config config, SqliteDatabase& db, DataSourceRegistry& da
       .workbooks = workbooks_,
       .books = books_,
       .hub = &status_hub_,
+      .persist = &persist_,
   });
 }
 
@@ -76,6 +80,7 @@ void HttpServer::start() {
                                          .instruments = &instruments_,
                                          .live_runs = live_runs_.get(),
                                          .status_hub = &status_hub_,
+                                         .persist = &persist_,
                                      });
 
   app.loglevel(crow::LogLevel::Info);

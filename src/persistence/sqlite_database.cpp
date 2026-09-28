@@ -75,6 +75,28 @@ void SqliteDatabase::open() {
   }
 }
 
+void SqliteDatabase::open_readonly() {
+  if (db_ != nullptr) {
+    return;
+  }
+
+  sqlite3* raw = nullptr;
+  const int flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX;
+  const int rc = sqlite3_open_v2(config_.db_path.c_str(), &raw, flags, nullptr);
+  std::unique_ptr<sqlite3, Closer> opened{raw};
+  if (rc != SQLITE_OK) {
+    raise_sqlite(raw, "sqlite open_readonly failed", rc);
+  }
+  db_ = std::move(opened);
+
+  try {
+    apply_pragmas();
+  } catch (...) {
+    close();
+    throw;
+  }
+}
+
 void SqliteDatabase::close() {
   db_.reset();
   journal_mode_.clear();

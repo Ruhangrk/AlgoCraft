@@ -9,12 +9,15 @@ add_executable(algocraft_tests
   unit/test_data_source_registry.cpp
   unit/test_async_logger.cpp
   unit/test_log_hub.cpp
+  unit/test_persistence_service.cpp
   unit/test_sqlite.cpp
   unit/test_bar_store.cpp
   unit/test_data_fetch.cpp
   unit/test_phase0_runtime.cpp
   unit/test_indicators.cpp
   unit/test_execution.cpp
+  unit/test_ring_execution.cpp
+  unit/test_live_control.cpp
   unit/test_backtest.cpp
   unit/test_backtest_service.cpp
   unit/test_consecutive_up_clip.cpp

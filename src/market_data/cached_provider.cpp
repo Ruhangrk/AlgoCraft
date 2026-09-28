@@ -5,8 +5,10 @@
 namespace algocraft {
 
 CachedProvider::CachedProvider(std::unique_ptr<DataProvider> inner, BarStore& store,
-                               CoverageRepository& coverage, const SymbolTable& symbols)
+                               CoverageRepository& coverage, const SymbolTable& symbols,
+                               PersistenceService* persist)
     : inner_(std::move(inner)),
-      fetch_(store, coverage, inner_->historical_loader(), symbols, std::string{inner_->name()}) {}
+      fetch_(store, coverage, inner_->historical_loader(), symbols, std::string{inner_->name()},
+             persist) {}
 
 }  // namespace algocraft

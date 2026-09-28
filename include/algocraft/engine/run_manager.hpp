@@ -18,7 +18,10 @@
 #include "algocraft/strategies/strategy_registry.hpp"
 #include "algocraft/workbook/workbook_manager.hpp"
 
-namespace algocraft { class ActivityRepository; }
+namespace algocraft {
+class ActivityRepository;
+class PersistenceService;
+}  // namespace algocraft
 
 namespace algocraft {
 
@@ -123,10 +126,10 @@ struct RunResult {
 
 class RunManager {
 public:
-  // repo is optional; when non-null, persists workbook/run/containers/fills after the run.
+  // Optional persist: when set, persist_run runs on T2. Else optional repo (tests / CLI).
   RunResult execute(const RunConfig& config, DataSourceRegistry& data, StrategyRegistry& strategies,
                     WorkbookManager& books, SymbolTable& symbols,
-                    ActivityRepository* repo = nullptr);
+                    ActivityRepository* repo = nullptr, PersistenceService* persist = nullptr);
 };
 
 }  // namespace algocraft

@@ -13,6 +13,10 @@
 #include "algocraft/strategies/strategy_registry.hpp"
 #include "algocraft/workbook/workbook_manager.hpp"
 
+namespace algocraft {
+class PersistenceService;
+}  // namespace algocraft
+
 namespace algocraft::api {
 
 struct WorkbookRouteDeps {
@@ -28,6 +32,7 @@ struct WorkbookRouteDeps {
   InstrumentRepository* instruments{nullptr};
   LiveRunService* live_runs{nullptr};
   StatusSseHub* status_hub{nullptr};
+  PersistenceService* persist{nullptr};
 };
 
 void register_workbook_routes(App& app, WorkbookRouteDeps deps);

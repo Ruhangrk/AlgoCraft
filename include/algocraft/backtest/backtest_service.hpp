@@ -18,6 +18,8 @@
 
 namespace algocraft {
 
+class PersistenceService;
+
 struct ManualBacktestRequest {
   std::int64_t workbook_id{};
   std::string ticker;
@@ -40,7 +42,8 @@ class BacktestService {
 public:
   BacktestService(WorkbookRepository& workbooks, BacktestRepository& backtests,
                   DataSourceRegistry& data, DataFetchService& fetch, StrategyRegistry& strategies,
-                  SymbolTable& symbols, InstrumentRepository* instruments = nullptr);
+                  SymbolTable& symbols, InstrumentRepository* instruments = nullptr,
+                  PersistenceService* persist = nullptr);
 
   [[nodiscard]] ManualBacktestOutcome run(const ManualBacktestRequest& request);
 
@@ -52,6 +55,7 @@ private:
   StrategyRegistry* strategies_{nullptr};
   SymbolTable* symbols_{nullptr};
   InstrumentRepository* instruments_{nullptr};
+  PersistenceService* persist_{nullptr};
 };
 
 }  // namespace algocraft

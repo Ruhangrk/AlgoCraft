@@ -2,6 +2,7 @@
 
 #include "algocraft/execution/cost_calculator.hpp"
 #include "algocraft/execution/execution_venue.hpp"
+#include "algocraft/domain/ids.hpp"
 
 namespace algocraft {
 
@@ -11,7 +12,9 @@ public:
                              Price slippage = Price::from_paise(1), int mis_leverage = 5);
 
   std::optional<FillEvent> submit(const OrderIntent& intent, const BarEvent& bar, TradingMode mode,
-                                  Capital cash, Quantity position, Price avg_entry = {}) override;
+                                  Capital cash, Quantity position, Price avg_entry = {},
+                                  ContainerId container_id = {},
+                                  WorkbookId workbook_id = {}) override;
 
 private:
   CostCalculator costs_{};

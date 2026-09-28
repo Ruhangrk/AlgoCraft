@@ -13,6 +13,8 @@
 
 namespace algocraft {
 
+class PersistenceService;
+
 // Fills RocksDB from the vendor loader on miss, then serves only from BarStore.
 class DataFetchService final : public HistoricalDataLoader {
 public:
@@ -20,8 +22,10 @@ public:
   static constexpr int kMaxChunkCalendarDays = 28;
 
   DataFetchService(BarStore& store, CoverageRepository& coverage, HistoricalDataLoader& vendor,
-                   const SymbolTable& symbols, std::string source = "csv");
+                   const SymbolTable& symbols, std::string source = "csv",
+                   PersistenceService* persist = nullptr);
 
+  void set_persist(PersistenceService* persist) { persist_ = persist; }
   void set_now(Timestamp ts) { now_override_ = ts; }
 
   void ensure_data_available(std::string_view ticker, Timestamp from, Timestamp to,
@@ -52,6 +56,7 @@ private:
   CoverageRepository* coverage_{nullptr};
   HistoricalDataLoader* vendor_{nullptr};
   const SymbolTable* symbols_{nullptr};
+  PersistenceService* persist_{nullptr};
   std::string source_{"csv"};
   std::uint64_t vendor_fetches_{0};
   std::optional<Timestamp> now_override_{};

@@ -14,6 +14,7 @@
 #include "algocraft/persistence/activity_repository.hpp"
 #include "algocraft/persistence/backtest_repository.hpp"
 #include "algocraft/persistence/instrument_repository.hpp"
+#include "algocraft/persistence/persistence_service.hpp"
 #include "algocraft/persistence/sqlite_database.hpp"
 #include "algocraft/persistence/workbook_repository.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
@@ -21,7 +22,7 @@
 
 namespace algocraft {
 
-// Thread-4 HTTP + SSE status streams (Crow). Never called from hot path.
+// Thread-4 HTTP + SSE status streams (Crow). SELECTs on db_read; mutates via T2.
 class HttpServer {
 public:
   struct Config {
@@ -30,8 +31,8 @@ public:
     std::string jwt_secret{"algocraft-dev-secret-change-me"};
   };
 
-  HttpServer(Config config, SqliteDatabase& db, DataSourceRegistry& data,
-             StrategyRegistry& strategies, SymbolTable& symbols,
+  HttpServer(Config config, SqliteDatabase& db_read, PersistenceService& persist,
+             DataSourceRegistry& data, StrategyRegistry& strategies, SymbolTable& symbols,
              DataFetchService* fetch = nullptr);
   ~HttpServer();
 
@@ -46,7 +47,8 @@ public:
 
 private:
   Config config_{};
-  SqliteDatabase& db_;
+  SqliteDatabase& db_read_;
+  PersistenceService& persist_;
   DataSourceRegistry& data_;
   StrategyRegistry& strategies_;
   SymbolTable& symbols_;

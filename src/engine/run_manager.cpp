@@ -13,6 +13,7 @@
 #include "algocraft/log/log.hpp"
 #include "algocraft/market_data/historical_loader.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
+#include "algocraft/persistence/persistence_service.hpp"
 #include "algocraft/portfolio/capital_manager.hpp"
 #include "algocraft/risk/risk_engine.hpp"
 #include "algocraft/routing/routing_algo_registry.hpp"
@@ -45,9 +46,28 @@ void settle(RunResult& out, WorkbookManager& books, WorkbookId wb, BorrowId borr
 
 }  // namespace
 
+namespace {
+
+void persist_outcome(ActivityRepository* repo, PersistenceService* persist, const RunConfig& config,
+                     const RunResult& out, WorkbookManager& books, PortfolioLedger& ledger,
+                     SymbolTable& symbols) {
+  if (persist != nullptr) {
+    persist->run_sync([&](sqlite3* db) {
+      ActivityRepository(db).persist_run(config, out, books, ledger, symbols);
+    });
+    return;
+  }
+  if (repo != nullptr) {
+    repo->persist_run(config, out, books, ledger, symbols);
+  }
+}
+
+}  // namespace
+
 RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
                               StrategyRegistry& strategies, WorkbookManager& books,
-                              SymbolTable& symbols, ActivityRepository* repo) {
+                              SymbolTable& symbols, ActivityRepository* repo,
+                              PersistenceService* persist) {
   AC_LOG_INFO("run_start router={} stocks={} strategies={} capital_paise={}", config.router,
               config.tickers.size(), config.strategies.size(), config.workbook_capital.paise());
   AC_LOG_TRACE("run_start detail from_ns={} to_ns={} persist={}", config.from.nanos(),
@@ -121,9 +141,7 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
   if (containers.empty()) {
     AC_LOG_INFO("run_no_containers selected={} skipped={}", out.selected, out.skipped);
     settle(out, books, wb, borrow.id, *ledger);
-    if (repo != nullptr) {
-      repo->persist_run(config, out, books, *ledger, symbols);
-    }
+    persist_outcome(repo, persist, config, out, books, *ledger, symbols);
     return out;
   }
 
@@ -194,8 +212,8 @@ RunResult RunManager::execute(const RunConfig& config, DataSourceRegistry& data,
   out.fills = static_cast<int>(ledger->fills().size());
   settle(out, books, wb, borrow.id, *ledger);
 
-  if (repo != nullptr) {
-    repo->persist_run(config, out, books, *ledger, symbols);
+  persist_outcome(repo, persist, config, out, books, *ledger, symbols);
+  if (repo != nullptr || persist != nullptr) {
     AC_LOG_DEBUG("run_persisted fills={} signals={} rejections={}", out.fills, out.signals.size(),
                  out.rejections.size());
   }

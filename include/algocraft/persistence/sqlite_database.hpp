@@ -24,6 +24,8 @@ public:
   SqliteDatabase& operator=(SqliteDatabase&&) = delete;
 
   void open();
+  // Same DB file, SELECT-only. Call after a ReadWrite connection has migrated.
+  void open_readonly();
   void close();
   void migrate();
 

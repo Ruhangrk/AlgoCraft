@@ -13,8 +13,10 @@
 #include <vector>
 
 #include "algocraft/container/container_manager.hpp"
+#include "algocraft/domain/bar_event.hpp"
 #include "algocraft/domain/session_date.hpp"
 #include "algocraft/domain/timestamp.hpp"
+#include "algocraft/engine/live_control.hpp"
 #include "algocraft/engine/run_manager.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
 #include "algocraft/market_data/market_data_feed.hpp"
@@ -24,6 +26,8 @@
 #include "algocraft/workbook/workbook_manager.hpp"
 
 namespace algocraft {
+
+class PersistenceService;
 
 [[nodiscard]] inline bool is_live_anchor(SessionDate anchor, Timestamp now = Timestamp::now()) {
   return anchor.ok() && anchor == SessionDate::from_ist(now);
@@ -66,9 +70,16 @@ private:
   std::unordered_map<Key, Snapshot, KeyHash> latest_{};
 };
 
-// Async live routing: hist eval then LTPC → 1m bars → containers.
+// Async live:
+//   Feed → MarketDataRing → T0 (strategy/risk)
+//   T0 → OrderOut → T3 → FillIn → T0
+//   T0 → RoutingRing → T1 (router.on_bar)
+//   Control/API → CommandRing → T0 (kill-switch / stop / kill container)
 class LiveRunService {
 public:
+  static constexpr std::size_t kMarketDataCapacity = 4096;
+  static constexpr std::size_t kOrderFillCapacity = 4096;
+  static constexpr std::size_t kControlCapacity = 1024;
   struct Deps {
     DataSourceRegistry& data;
     StrategyRegistry& strategies;
@@ -77,6 +88,7 @@ public:
     WorkbookRepository& workbooks;
     WorkbookManager& books;
     StatusSseHub* hub{nullptr};
+    PersistenceService* persist{nullptr};
   };
 
   explicit LiveRunService(Deps deps);
@@ -100,13 +112,34 @@ public:
   void set_session_end_minute(int minute) { session_end_minute_ = minute; }
   void set_ignore_session_end(bool ignore) { ignore_session_end_ = ignore; }
 
+  // Hot-path ring metrics for the active workbook (0 if not running).
+  [[nodiscard]] std::uint64_t bars_processed(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t bars_dropped(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t fills_processed(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t orders_dropped(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t fills_dropped(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t commands_processed(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t routing_signals(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t commands_dropped(std::int64_t workbook_db_id) const;
+  [[nodiscard]] std::uint64_t routing_dropped(std::int64_t workbook_db_id) const;
+
 private:
   struct ActiveRun;
 
   void run_tape(ActiveRun& active);
-  void settle_and_persist(ActiveRun& active, PortfolioLedger& ledger, bool force_stopped);
-  void push_status(std::int64_t wid, const PortfolioLedger& ledger,
-                   const std::vector<ContainerManager::Snapshot>& snaps, std::int64_t main_paise);
+  void run_execution(ActiveRun& active);
+  void run_routing(ActiveRun& active);
+  void drain_bar(ActiveRun& active, const BarEvent& bar);
+  void drain_fills(ActiveRun& active);
+  void drain_commands(ActiveRun& active);
+  void flush_execution(ActiveRun& active);
+  void flush_routing(ActiveRun& active);
+  void apply_pending_orders_inline(ActiveRun& active);
+  void settle_and_persist(ActiveRun& active, PortfolioLedger& ledger, bool force_stopped,
+                          bool flatten = true);
+  void push_status(ActiveRun& active, const PortfolioLedger& ledger,
+                   const std::vector<ContainerManager::Snapshot>& snaps);
+  [[nodiscard]] bool enqueue_command(ActiveRun& active, const LiveCommand& cmd);
 
   Deps deps_;
   mutable std::mutex mu_;

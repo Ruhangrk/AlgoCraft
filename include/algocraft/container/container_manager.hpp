@@ -43,6 +43,7 @@ public:
   OpResult upgrade(ContainerId id, ContainerMode new_mode);
 
   void on_bar(const BarEvent& bar);
+  void on_fill(const FillEvent& fill);
   void on_system_event(const SystemEvent& event);
   void force_exit_remaining();
 

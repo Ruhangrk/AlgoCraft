@@ -1,7 +1,10 @@
 #include "algocraft/api/workbook_routes.hpp"
 
+#include "algocraft/persistence/persistence_service.hpp"
+
 #include <algorithm>
 #include <cstdlib>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -405,10 +408,11 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
   auto* instruments = deps.instruments;
   auto* live_runs = deps.live_runs;
   auto* status_hub = deps.status_hub;
+  auto* persist = deps.persist;
 
   CROW_ROUTE(app, "/workbooks")
       .methods(crow::HTTPMethod::GET, crow::HTTPMethod::POST)(
-          [auth, workbooks, books](const crow::request& req) {
+          [auth, workbooks, books, persist](const crow::request& req) {
             auto gate = require_user(*auth, req);
             if (!gate) {
               return std::move(gate.error);
@@ -428,7 +432,14 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
 
             std::int64_t wb_val = 0;
             try {
-              wb_val = workbooks->create(gate.claims->user_id, name, capital, username, role);
+              if (persist != nullptr) {
+                persist->run_sync([&](sqlite3* db) {
+                  wb_val = WorkbookRepository(db).create(gate.claims->user_id, name, capital,
+                                                        username, role);
+                });
+              } else {
+                wb_val = workbooks->create(gate.claims->user_id, name, capital, username, role);
+              }
             } catch (const std::exception& e) {
               AC_LOG_ERROR("workbook_create failed user={} err={}", gate.claims->user_id, e.what());
               return json_error(500, e.what());
@@ -447,14 +458,21 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
 
   CROW_ROUTE(app, "/workbooks/<int>")
       .methods(crow::HTTPMethod::PATCH, crow::HTTPMethod::Delete)(
-          [auth, workbooks](const crow::request& req, std::int64_t wid) {
+          [auth, workbooks, persist](const crow::request& req, std::int64_t wid) {
             auto gate = require_workbook(*auth, *workbooks, req, wid);
             if (!gate) {
               return std::move(gate.error);
             }
 
             if (req.method == crow::HTTPMethod::Delete) {
-              if (!workbooks->soft_delete(wid)) {
+              bool deleted = false;
+              if (persist != nullptr) {
+                persist->run_sync(
+                    [&](sqlite3* db) { deleted = WorkbookRepository(db).soft_delete(wid); });
+              } else {
+                deleted = workbooks->soft_delete(wid);
+              }
+              if (!deleted) {
                 return json_error(404, "workbook not found");
               }
               AC_LOG_INFO("workbook_soft_deleted id={}", wid);
@@ -470,7 +488,14 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
               return json_error(400, "add_capital_paise must be positive");
             }
             try {
-              const auto updated = workbooks->add_capital(wid, amount);
+              std::optional<WorkbookRepository::Row> updated;
+              if (persist != nullptr) {
+                persist->run_sync([&](sqlite3* db) {
+                  updated = WorkbookRepository(db).add_capital(wid, amount);
+                });
+              } else {
+                updated = workbooks->add_capital(wid, amount);
+              }
               if (!updated) {
                 return json_error(404, "workbook not found");
               }
@@ -697,14 +722,21 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
       });
 
   CROW_ROUTE(app, "/workbooks/<int>/runs/<int>")
-      .methods(crow::HTTPMethod::Delete)([auth, workbooks, activity](const crow::request& req,
-                                                                     std::int64_t wid,
-                                                                     std::int64_t rid) {
+      .methods(crow::HTTPMethod::Delete)([auth, workbooks, activity, persist](const crow::request& req,
+                                                                             std::int64_t wid,
+                                                                             std::int64_t rid) {
         auto gate = require_workbook(*auth, *workbooks, req, wid);
         if (!gate) {
           return std::move(gate.error);
         }
-        if (!activity->soft_delete_run(wid, rid)) {
+        bool deleted = false;
+        if (persist != nullptr) {
+          persist->run_sync(
+              [&](sqlite3* db) { deleted = ActivityRepository(db).soft_delete_run(wid, rid); });
+        } else {
+          deleted = activity->soft_delete_run(wid, rid);
+        }
+        if (!deleted) {
           return json_error(404, "run not found");
         }
         crow::json::wvalue root;
@@ -876,8 +908,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
 
   CROW_ROUTE(app, "/workbooks/<int>/backtests/start")
       .methods(crow::HTTPMethod::POST)([auth, workbooks, data, strategies, symbols, fetch,
-                                        backtests, instruments](const crow::request& req,
-                                                                std::int64_t wid) {
+                                        backtests, instruments, persist](const crow::request& req,
+                                                                         std::int64_t wid) {
         auto gate = require_workbook(*auth, *workbooks, req, wid);
         if (!gate) {
           return std::move(gate.error);
@@ -911,7 +943,7 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           AC_LOG_INFO("api_backtest_start wid={} ticker={} strategy={} capital_paise={}", wid,
                       bt.ticker, bt.strategy_name, bt.capital.paise());
           BacktestService svc(*workbooks, *backtests, *data, *fetch, *strategies, *symbols,
-                              instruments);
+                              instruments, persist);
           const auto outcome = svc.run(bt);
           AC_LOG_INFO("api_backtest_done wid={} id={} fills={} pnl_paise={}", wid, outcome.row.id,
                       outcome.row.fills, outcome.row.pnl_paise);
@@ -962,8 +994,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
 
   CROW_ROUTE(app, "/workbooks/<int>/backtests/<int>")
       .methods(crow::HTTPMethod::GET, crow::HTTPMethod::Delete)(
-          [auth, workbooks, backtests](const crow::request& req, std::int64_t wid,
-                                       std::int64_t bid) {
+          [auth, workbooks, backtests, persist](const crow::request& req, std::int64_t wid,
+                                                std::int64_t bid) {
             auto gate = require_workbook(*auth, *workbooks, req, wid);
             if (!gate) {
               return std::move(gate.error);
@@ -972,7 +1004,15 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
               return json_error(503, "backtests not configured");
             }
             if (req.method == crow::HTTPMethod::Delete) {
-              if (!backtests->soft_delete(wid, bid)) {
+              bool deleted = false;
+              if (persist != nullptr) {
+                persist->run_sync([&](sqlite3* db) {
+                  deleted = BacktestRepository(db).soft_delete(wid, bid);
+                });
+              } else {
+                deleted = backtests->soft_delete(wid, bid);
+              }
+              if (!deleted) {
                 return json_error(404, "backtest not found");
               }
               crow::json::wvalue root;

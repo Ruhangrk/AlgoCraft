@@ -61,6 +61,7 @@ add_library(algocraft
   src/persistence/instrument_repository.cpp
   src/persistence/migration_runner.cpp
   src/persistence/packed_bars.cpp
+  src/persistence/persistence_service.cpp
   src/persistence/rocks_bar_store.cpp
   src/persistence/sqlite_database.cpp
   src/persistence/workbook_repository.cpp

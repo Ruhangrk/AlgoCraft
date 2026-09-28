@@ -80,6 +80,14 @@ void ContainerManager::on_bar(const BarEvent& bar) {
   }
 }
 
+void ContainerManager::on_fill(const FillEvent& fill) {
+  auto* container = find(fill.container_id);
+  if (container == nullptr || container->status() == ContainerStatus::Stopped) {
+    return;
+  }
+  container->on_fill(fill);
+}
+
 void ContainerManager::on_system_event(const SystemEvent& event) {
   AC_LOG_DEBUG("containers_system_event type={}", static_cast<int>(event.type));
   for (auto& container : containers_) {

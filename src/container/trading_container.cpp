@@ -167,15 +167,15 @@ void TradingContainer::on_bar(const BarEvent& bar) {
       rejections_.push_back(std::move(rej));
       continue;
     }
-    auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_);
+    auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_,
+                              config_.id, config_.workbook_id);
     if (fill) {
       AC_LOG_DEBUG("container_fill sid={} qty={} px_paise={}", config_.symbol_id,
                    fill->filled_qty.shares(), fill->fill_price.paise());
       fill->workbook_id = config_.workbook_id;
       fill->container_id = config_.id;
       on_fill(*fill);
-      if (strategy_->should_exit()) {
-        exit();
+      if (status_ == ContainerStatus::Stopped) {
         return;
       }
     }
@@ -192,6 +192,9 @@ void TradingContainer::on_fill(const FillEvent& fill) {
   }
   if (capital_ != nullptr) {
     capital_->ledger().apply_fill(fill);
+  }
+  if (strategy_ != nullptr && strategy_->should_exit() && status_ == ContainerStatus::Active) {
+    exit();
   }
 }
 
@@ -261,7 +264,8 @@ void TradingContainer::flatten(Price price, bool bypass_risk) {
       return;
     }
   }
-  auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_);
+  auto fill = venue_.submit(intent, bar, config_.trading_mode, cash_, position_, avg_entry_,
+                            config_.id, config_.workbook_id);
   if (fill) {
     fill->workbook_id = config_.workbook_id;
     fill->container_id = config_.id;

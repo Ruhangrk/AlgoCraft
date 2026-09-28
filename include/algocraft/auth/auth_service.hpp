@@ -9,6 +9,8 @@ struct sqlite3;
 
 namespace algocraft {
 
+class PersistenceService;
+
 struct AuthUser {
   std::int64_t id{0};
   std::string username;
@@ -37,6 +39,9 @@ public:
                        std::string_view role = "user");
   Result login(std::string_view username, std::string_view password);
 
+  // When set, register_user runs the INSERT on T2 (write connection).
+  void set_persist(PersistenceService* persist) { persist_ = persist; }
+
   [[nodiscard]] std::optional<AuthTokenClaims> validate_token(std::string_view token) const;
   [[nodiscard]] std::optional<AuthUser> find_user(std::int64_t id) const;
   [[nodiscard]] std::optional<AuthUser> find_by_username(std::string_view username) const;
@@ -45,6 +50,7 @@ private:
   sqlite3* db_{nullptr};
   std::string jwt_secret_;
   std::int64_t token_ttl_seconds_{86400};
+  PersistenceService* persist_{nullptr};
 
   [[nodiscard]] std::string hash_password(std::string_view password, std::string_view salt) const;
   [[nodiscard]] bool verify_password(std::string_view password, std::string_view stored) const;

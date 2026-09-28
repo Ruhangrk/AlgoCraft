@@ -27,7 +27,7 @@ Do not start a step until the previous step is done and tested. Do not fetch Ups
 - Live / hot views (run status, P&L, containers): T4 may also serve **snapshots** published by the engine; history / auth / lists use `db_read`.
 - Standing up real **T2** means: all writes enqueue → T2 drains → `db_write`. T4 handlers never call mutate repos directly. (Prep step: open both handles and wire GETs to `db_read` before moving writers.)
 
-**Today:** one shared handle; Crow does read+write. Target above replaces that when T2 is wired.
+**Today:** Step 1 landed — dual handles (`db_write` / `db_read`) + `PersistenceService` (T2) drains logs and write queue. API SELECTs use `db_read`; mutates go through `persist.run_sync`. See `Notes/SPSC.md`.
 
 ### Logging (locked 2026-09-28)
 

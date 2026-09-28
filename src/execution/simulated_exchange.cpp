@@ -12,7 +12,9 @@ SimulatedExchange::SimulatedExchange(CostCalculator costs, Price slippage, int m
 
 std::optional<FillEvent> SimulatedExchange::submit(const OrderIntent& intent, const BarEvent& bar,
                                                    TradingMode mode, Capital cash,
-                                                   Quantity position, Price avg_entry) {
+                                                   Quantity position, Price avg_entry,
+                                                   ContainerId /*container_id*/,
+                                                   WorkbookId /*workbook_id*/) {
   if (intent.quantity.shares() <= 0) {
     return std::nullopt;
   }

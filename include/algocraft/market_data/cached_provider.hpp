@@ -10,11 +10,13 @@
 
 namespace algocraft {
 
+class PersistenceService;
+
 // Wraps a vendor DataProvider. historical_loader() is DataFetchService (RocksDB after ingest).
 class CachedProvider final : public DataProvider {
 public:
   CachedProvider(std::unique_ptr<DataProvider> inner, BarStore& store, CoverageRepository& coverage,
-                 const SymbolTable& symbols);
+                 const SymbolTable& symbols, PersistenceService* persist = nullptr);
 
   std::string_view name() const override { return inner_->name(); }
   HistoricalDataLoader& historical_loader() override { return fetch_; }

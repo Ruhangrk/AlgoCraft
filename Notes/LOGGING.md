@@ -3,7 +3,7 @@
 ## Model
 
 - **Facade:** `AC_LOG_TRACE|DEBUG|INFO|WARN|ERROR` → `algocraft::log::write` (`include/algocraft/log/log.hpp`)
-- **Async drain:** `LogHub` queue → `log_drain` thread → **spdlog** (stands in for T2 log duty until persistence thread owns it)
+- **Async drain:** `LogHub` queue → **PersistenceService (T2)** via `drain_once()` on serve/run/backtest; other CLI cmds still use a dedicated `log_drain` thread
 - **Hot-path SPSC:** `AsyncLogger` + `LogEvent` remains for Phase0 / future single-producer T0 ring (polled by T2)
 - **DB signal loggers** (`strategy_signals`, etc.) are separate — not console logging
 

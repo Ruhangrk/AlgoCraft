@@ -11,9 +11,9 @@
 
 namespace algocraft {
 
-// Multi-producer → one drain thread → spdlog.
-// Stands in for T2's log duty until persistence thread owns the drain loop.
-// Hot-path SPSC (AsyncLogger) remains available for single-producer Phase0 / future T0.
+// Multi-producer → PersistenceService (T2) or optional log_drain → spdlog.
+// Prefer external drain via drain_once() from T2; start() only for tests / CLI
+// without a PersistenceService.
 class LogHub {
 public:
   static constexpr std::size_t kCapacity = 8192;
@@ -26,6 +26,10 @@ public:
 
   void start();
   void stop();
+
+  // Drain queued events into spdlog. Called by PersistenceService (T2) when no
+  // dedicated log_drain thread is running. Safe to call when empty.
+  void drain_once();
 
   // Never blocks. false = queue full (event dropped).
   [[nodiscard]] bool try_enqueue(const LogEvent& event);

@@ -15,6 +15,7 @@
 #include "algocraft/persistence/instrument_repository.hpp"
 #include "algocraft/persistence/activity_repository.hpp"
 #include "algocraft/persistence/coverage_repository.hpp"
+#include "algocraft/persistence/persistence_service.hpp"
 #include "algocraft/persistence/rocks_bar_store.hpp"
 #include "algocraft/persistence/sqlite_database.hpp"
 #include "algocraft/strategies/strategy_registry.hpp"
@@ -197,19 +198,42 @@ algocraft::PersistenceConfig engine_persistence_cfg() {
 }
 
 struct EngineCache {
-  algocraft::SqliteDatabase db;
+  algocraft::SqliteDatabase db_write;
+  algocraft::SqliteDatabase db_read;
   algocraft::RocksBarStore bars;
   std::optional<algocraft::CoverageRepository> coverage;
+  std::optional<algocraft::PersistenceService> persist;
+  // CLI helpers (instruments ingest, etc.) still write on the RW handle.
+  algocraft::SqliteDatabase& db;
 
-  EngineCache() : db(engine_persistence_cfg()), bars(ALGOCRAFT_BARS_DIR) {
-    db.open();
-    db.migrate();
+  EngineCache()
+      : db_write(engine_persistence_cfg()),
+        db_read(engine_persistence_cfg()),
+        bars(ALGOCRAFT_BARS_DIR),
+        db(db_write) {
+    db_write.open();
+    db_write.migrate();
+    db_read.open_readonly();
     bars.open();
-    coverage.emplace(db.handle());
-    AC_LOG_INFO("sqlite={} rocksdb={}", db.path().string(), bars.path().string());
+    coverage.emplace(db_read.handle());
+    if (algocraft::LogHub* hub = algocraft::log::hub()) {
+      persist.emplace(db_write, *hub);
+      persist->start();
+    }
+    AC_LOG_INFO("sqlite_write={} sqlite_read={} rocksdb={}", db_write.path().string(),
+                db_read.path().string(), bars.path().string());
+  }
+
+  ~EngineCache() {
+    if (persist) {
+      persist->stop();
+    }
   }
 
   algocraft::CoverageRepository& cov() { return *coverage; }
+  [[nodiscard]] algocraft::PersistenceService* persist_ptr() {
+    return persist ? &*persist : nullptr;
+  }
 };
 
 std::unique_ptr<algocraft::CachedProvider> wrap_csv(const char* data_dir,
@@ -217,7 +241,7 @@ std::unique_ptr<algocraft::CachedProvider> wrap_csv(const char* data_dir,
                                                     EngineCache& cache) {
   return std::make_unique<algocraft::CachedProvider>(
       std::make_unique<algocraft::CsvProvider>(data_dir, &symbols), cache.bars, cache.cov(),
-      symbols);
+      symbols, cache.persist_ptr());
 }
 
 int run_db_smoke(const char* db_path) {
@@ -433,9 +457,9 @@ int run_phase4(const char* data_dir) {
       "phase4 default_router 10 stocks x ema/vwap/clip, eval=14 sessions "
       "2026-08-24..2026-09-10, trade=2026-09-11, capital=10cr data={}",
       data_dir);
-  algocraft::ActivityRepository act_repo(cache.db.handle());
   algocraft::RunManager mgr;
-  const auto result = mgr.execute(cfg, registry, strategies, books, symbols, &act_repo);
+  const auto result =
+      mgr.execute(cfg, registry, strategies, books, symbols, nullptr, cache.persist_ptr());
 
   std::int64_t eval_pnl = 0;
   AC_LOG_INFO("--- 14-day eval (₹10L/pair) selected={} skipped={}", result.selected,
@@ -498,7 +522,7 @@ int run_api_server(const char* data_dir, int port) {
     if (upstox_cfg.ok()) {
       auto upstox = std::make_unique<algocraft::UpstoxProvider>(std::move(upstox_cfg), &symbols);
       cached = std::make_unique<algocraft::CachedProvider>(std::move(upstox), cache.bars, cache.cov(),
-                                                           symbols);
+                                                           symbols, cache.persist_ptr());
       AC_LOG_INFO("data source: upstox (token loaded from ~/.config/upstox/config.json)");
     } else {
       cached = wrap_csv(data_dir, symbols, cache);
@@ -515,7 +539,8 @@ int run_api_server(const char* data_dir, int port) {
     algocraft::HttpServer::Config cfg;
     cfg.host = "127.0.0.1";
     cfg.port = port;
-    algocraft::HttpServer server(cfg, cache.db, registry, strategies, symbols, fetch_ptr);
+    algocraft::HttpServer server(cfg, cache.db_read, *cache.persist, registry, strategies, symbols,
+                                 fetch_ptr);
     AC_LOG_INFO("API listening on http://{}:{}", cfg.host, cfg.port);
     server.start();
     return 0;
@@ -534,13 +559,21 @@ int main(int argc, char** argv) {
   algocraft::LogHub log_hub;
   algocraft::log::init_sinks("data/logs");
   algocraft::log::set_level(log_level);
-  log_hub.start();
   algocraft::log::set_hub(&log_hub);
-  AC_LOG_INFO("algocraft starting log_level={} log_dir={}", algocraft::to_string(log_level),
-              algocraft::log::log_dir());
 
   int rc = 0;
   const char* cmd = (argc >= 2) ? argv[1] : "";
+
+  // EngineCache (serve/run/backtest) owns log drain via PersistenceService (T2).
+  // Other commands keep a dedicated log_drain thread.
+  const bool persist_owns_logs = std::strcmp(cmd, "serve") == 0 || std::strcmp(cmd, "run") == 0 ||
+                                 std::strcmp(cmd, "backtest") == 0;
+  if (!persist_owns_logs) {
+    log_hub.start();
+  }
+
+  AC_LOG_INFO("algocraft starting log_level={} log_dir={}", algocraft::to_string(log_level),
+              algocraft::log::log_dir());
 
   // Re-peel after the command name so `serve debug` works (level was also in first peel).
   const auto cmd_args = peel_log_level(argc, argv, 2);

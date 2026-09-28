@@ -11,6 +11,7 @@
 #include "algocraft/log/log.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
+#include "algocraft/persistence/persistence_service.hpp"
 
 namespace algocraft {
 namespace {
@@ -43,14 +44,15 @@ std::int64_t return_pct_bp(std::int64_t capital_paise, std::int64_t pnl_paise) {
 BacktestService::BacktestService(WorkbookRepository& workbooks, BacktestRepository& backtests,
                                  DataSourceRegistry& data, DataFetchService& fetch,
                                  StrategyRegistry& strategies, SymbolTable& symbols,
-                                 InstrumentRepository* instruments)
+                                 InstrumentRepository* instruments, PersistenceService* persist)
     : workbooks_(&workbooks),
       backtests_(&backtests),
       data_(&data),
       fetch_(&fetch),
       strategies_(&strategies),
       symbols_(&symbols),
-      instruments_(instruments) {}
+      instruments_(instruments),
+      persist_(persist) {}
 
 ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request) {
   AC_LOG_INFO("backtest_service_run wid={} ticker={} strategy={}", request.workbook_id,
@@ -116,7 +118,6 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
   row.fills = out.result.fills;
   row.bars = static_cast<int>(out.result.bars);
   row.status = "completed";
-  row.id = backtests_->insert(row);
 
   BacktestEventBatch events{};
   events.signals.reserve(out.result.signals.size());
@@ -149,7 +150,17 @@ ManualBacktestOutcome BacktestService::run(const ManualBacktestRequest& request)
         .timestamp_ns = f.timestamp_ns,
     });
   }
-  backtests_->insert_events(request.workbook_id, row.id, events);
+
+  if (persist_ != nullptr) {
+    persist_->run_sync([&](sqlite3* db) {
+      BacktestRepository repo(db);
+      row.id = repo.insert(row);
+      repo.insert_events(request.workbook_id, row.id, events);
+    });
+  } else {
+    row.id = backtests_->insert(row);
+    backtests_->insert_events(request.workbook_id, row.id, events);
+  }
 
   out.row = *backtests_->find(request.workbook_id, row.id);
   AC_LOG_INFO("backtest_service_done wid={} id={} fills={} pnl_paise={}", request.workbook_id,

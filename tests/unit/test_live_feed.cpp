@@ -68,21 +68,60 @@ using algocraft::WorkbookManager;
 // In-process ticks for unit tests (no Upstox).
 class ScriptedLiveFeed final : public MarketDataFeed {
 public:
-  void connect() override { connected_ = true; }
+  void set_handler(TickHandler handler) override {
+    MarketDataFeed::set_handler(std::move(handler));
+    flush_pending();
+  }
+
+  void connect() override {
+    connected_ = true;
+    flush_pending();
+  }
   void disconnect() override { connected_ = false; }
-  void subscribe(SymbolId symbol_id) override { subscribed_.insert(symbol_id); }
+  void subscribe(SymbolId symbol_id) override {
+    subscribed_.insert(symbol_id);
+    flush_pending();
+  }
   void unsubscribe(SymbolId symbol_id) override { subscribed_.erase(symbol_id); }
 
   void push_tick(SymbolId symbol_id, Price ltp, Timestamp ts) {
-    if (!connected_ || !subscribed_.contains(symbol_id)) {
+    if (!ready(symbol_id)) {
+      pending_.push_back(Pending{symbol_id, ltp, ts});
       return;
     }
     emit_tick(symbol_id, ltp, ts);
   }
 
 private:
+  struct Pending {
+    SymbolId symbol_id{};
+    Price ltp{};
+    Timestamp ts{};
+  };
+
+  [[nodiscard]] bool ready(SymbolId symbol_id) const {
+    return connected_ && handler_ && subscribed_.contains(symbol_id);
+  }
+
+  void flush_pending() {
+    if (pending_.empty()) {
+      return;
+    }
+    std::vector<Pending> left;
+    left.reserve(pending_.size());
+    for (const auto& p : pending_) {
+      if (ready(p.symbol_id)) {
+        emit_tick(p.symbol_id, p.ltp, p.ts);
+      } else {
+        left.push_back(p);
+      }
+    }
+    pending_ = std::move(left);
+  }
+
   bool connected_{false};
   std::unordered_set<SymbolId> subscribed_{};
+  std::vector<Pending> pending_{};
 };
 
 Timestamp ist_clock(int y, unsigned m, unsigned d, int minute) {
@@ -254,6 +293,15 @@ TEST(ScriptedLiveFeed, MinuteBarsDriveLiveRunSettle) {
                  Timestamp::from_nanos(base.nanos() + algocraft::kNanosPerMinute));
   feed.push_tick(*id, Price::from_paise(152'00),
                  Timestamp::from_nanos(base.nanos() + 2 * algocraft::kNanosPerMinute));
+
+  // Feed thread (here: test) only enqueues; ActiveRun drains MarketDataRing.
+  for (int i = 0; i < 100 && live.bars_processed(wid) < 2; ++i) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  }
+  EXPECT_GE(live.bars_processed(wid), 2u);
+  EXPECT_EQ(live.bars_dropped(wid), 0u);
+  EXPECT_EQ(live.orders_dropped(wid), 0u);
+  EXPECT_EQ(live.fills_dropped(wid), 0u);
 
   ASSERT_TRUE(live.stop(wid));
   EXPECT_FALSE(live.is_running(wid));

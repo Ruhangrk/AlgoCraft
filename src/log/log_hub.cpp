@@ -73,6 +73,18 @@ bool LogHub::try_enqueue(const LogEvent& event) {
   return true;
 }
 
+void LogHub::drain_once() {
+  const auto before = written_.load(std::memory_order_relaxed);
+  drain_available();
+  const auto drops = dropped_.load(std::memory_order_relaxed);
+  static thread_local std::uint64_t last_drop_report = 0;
+  if (drops > last_drop_report) {
+    spdlog::warn("log_hub queue full; dropped_total={}", drops);
+    last_drop_report = drops;
+  }
+  (void)before;
+}
+
 void LogHub::drain_loop() {
   std::uint64_t last_drop_report = 0;
   while (!stop_.load(std::memory_order_relaxed)) {
