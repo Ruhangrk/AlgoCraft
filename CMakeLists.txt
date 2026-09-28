@@ -33,7 +33,6 @@ add_library(algocraft
   src/container/container_manager.cpp
   src/container/trading_container.cpp
   src/domain/symbol_table.cpp
-  src/engine/phase0_runtime.cpp
   src/engine/run_manager.cpp
   src/execution/cost_calculator.cpp
   src/execution/simulated_exchange.cpp
@@ -46,7 +45,6 @@ add_library(algocraft
   src/market_data/csv_provider.cpp
   src/market_data/data_fetch_service.cpp
   src/market_data/data_source_registry.cpp
-  src/market_data/dummy_provider.cpp
   src/market_data/instrument_ingest.cpp
   src/market_data/upstox_live_feed.cpp
   src/market_data/virtual_live_feed.cpp
@@ -55,7 +53,6 @@ add_library(algocraft
   src/log/log.cpp
   src/log/log_hub.cpp
   src/persistence/activity_repository.cpp
-  src/persistence/async_logger.cpp
   src/persistence/backtest_repository.cpp
   src/persistence/coverage_repository.cpp
   src/persistence/instrument_repository.cpp
@@ -70,6 +67,7 @@ add_library(algocraft
   src/risk/risk_engine.cpp
   src/routing/default_router.cpp
   src/routing/top15_week_router.cpp
+  src/routing/live_run_testing_router.cpp
   src/routing/routing_algo_registry.cpp
   src/strategies/atr_expansion_long.cpp
   src/strategies/bajaj_custom_strategy.cpp
@@ -82,6 +80,7 @@ add_library(algocraft
   src/strategies/ema_trend_pullback.cpp
   src/strategies/five_bar_high_break.cpp
   src/strategies/hammer_reversal.cpp
+  src/strategies/live_run_testing.cpp
   src/strategies/morning_star_long.cpp
   src/strategies/nr7_breakout.cpp
   src/strategies/open_dump_fade.cpp

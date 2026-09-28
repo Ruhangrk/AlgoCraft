@@ -11,6 +11,7 @@
 #include "algocraft/strategies/ema_trend_pullback.hpp"
 #include "algocraft/strategies/five_bar_high_break.hpp"
 #include "algocraft/strategies/hammer_reversal.hpp"
+#include "algocraft/strategies/live_run_testing.hpp"
 #include "algocraft/strategies/morning_star_long.hpp"
 #include "algocraft/strategies/nr7_breakout.hpp"
 #include "algocraft/strategies/open_dump_fade.hpp"
@@ -67,6 +68,7 @@ void register_all_strategies(StrategyRegistry& registry) {
   registry.add("compression_break", [] { return std::make_unique<CompressionBreak>(); });
   registry.add("two_green_thrust", [] { return std::make_unique<TwoGreenThrust>(); });
   registry.add("hammer_reversal", [] { return std::make_unique<HammerReversal>(); });
+  registry.add("live_run_testing", [] { return std::make_unique<LiveRunTesting>(); });
   registry.add("piercing_line_long", [] { return std::make_unique<PiercingLineLong>(); });
   registry.add("bull_harami_break", [] { return std::make_unique<BullHaramiBreak>(); });
   registry.add("morning_star_long", [] { return std::make_unique<MorningStarLong>(); });

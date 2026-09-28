@@ -4,8 +4,7 @@
 
 - **Facade:** `AC_LOG_TRACE|DEBUG|INFO|WARN|ERROR` → `algocraft::log::write` (`include/algocraft/log/log.hpp`)
 - **Async drain:** `LogHub` queue → **PersistenceService (T2)** via `drain_once()` on serve/run/backtest; other CLI cmds still use a dedicated `log_drain` thread
-- **Hot-path SPSC:** `AsyncLogger` + `LogEvent` remains for Phase0 / future single-producer T0 ring (polled by T2)
-- **DB signal loggers** (`strategy_signals`, etc.) are separate — not console logging
+- **Payload:** fixed-size `LogEvent` (256 chars); multi-producer into `LogHub`
 
 ## Levels (CLI)
 
@@ -39,7 +38,6 @@ scripts/serve --restart trace
 | Containers | create/warmup/start/kill/on_bar/signal/reject/fill/exit |
 | Market data | `ensure_data`, Upstox/virtual feed warn/error |
 | Persistence | `persist_run` begin/done/rollback |
-| Phase0 | persist ring drain via `AC_LOG_INFO` |
 
 **Sink only (keep raw spdlog):** `src/log/log.cpp`, `src/log/log_hub.cpp`.
 

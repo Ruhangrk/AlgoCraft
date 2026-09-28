@@ -114,3 +114,27 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(Crow)
+
+# Crow v1.2.1.2: default request() leaves keep_alive/close_connection/upgrade
+# uninitialized. parser_.clear() does `req = crow::request()` after every response
+# → UBSan "load of value N, which is not a valid value for type 'bool'".
+set(_algocraft_crow_req "${crow_SOURCE_DIR}/include/crow/http_request.h")
+if(EXISTS "${_algocraft_crow_req}")
+  file(READ "${_algocraft_crow_req}" _algocraft_crow_req_src)
+  if(NOT _algocraft_crow_req_src MATCHES "keep_alive\\(false\\)")
+    string(REPLACE
+      "        request():\n          method(HTTPMethod::Get)\n        {}"
+      "        request():\n          method(HTTPMethod::Get),\n          keep_alive(false),\n          close_connection(false),\n          upgrade(false)\n        {}"
+      _algocraft_crow_req_patched
+      "${_algocraft_crow_req_src}")
+    if(_algocraft_crow_req_patched STREQUAL _algocraft_crow_req_src)
+      message(WARNING "Crow http_request.h bool-init patch did not match; UBSan may still spam")
+    else()
+      file(WRITE "${_algocraft_crow_req}" "${_algocraft_crow_req_patched}")
+      message(STATUS "Patched Crow request() bool defaults (UBSan)")
+    endif()
+  endif()
+endif()
+unset(_algocraft_crow_req)
+unset(_algocraft_crow_req_src)
+unset(_algocraft_crow_req_patched)

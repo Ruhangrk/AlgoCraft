@@ -1,20 +1,25 @@
-#include "algocraft/engine/dummy_event.hpp"
 #include "algocraft/engine/spsc_ring.hpp"
 
 #include <atomic>
+#include <cstdint>
 #include <thread>
 
 #include <gtest/gtest.h>
 
-using algocraft::DummyEvent;
 using algocraft::SpscRing;
 
+struct TestEvent {
+  std::uint32_t kind{0};
+  std::uint32_t symbol_id{0};
+  std::uint64_t seq{0};
+};
+
 TEST(SpscRing, PushPopSameThread) {
-  SpscRing<DummyEvent, 8> ring;
-  DummyEvent in{.kind = 1, .symbol_id = 7, .seq = 42};
+  SpscRing<TestEvent, 8> ring;
+  TestEvent in{.kind = 1, .symbol_id = 7, .seq = 42};
   ASSERT_TRUE(ring.try_push(in));
 
-  DummyEvent out{};
+  TestEvent out{};
   ASSERT_TRUE(ring.try_pop(out));
   EXPECT_EQ(out.kind, 1u);
   EXPECT_EQ(out.symbol_id, 7u);
@@ -23,8 +28,8 @@ TEST(SpscRing, PushPopSameThread) {
 }
 
 TEST(SpscRing, FillsThenRejects) {
-  SpscRing<DummyEvent, 4> ring;
-  DummyEvent event{.seq = 1};
+  SpscRing<TestEvent, 4> ring;
+  TestEvent event{.seq = 1};
   std::size_t pushed = 0;
   while (ring.try_push(event)) {
     ++pushed;
@@ -35,11 +40,11 @@ TEST(SpscRing, FillsThenRejects) {
 
 TEST(SpscRing, TwoThreadsTransferAll) {
   constexpr int kCount = 10'000;
-  SpscRing<DummyEvent, 1024> ring;
+  SpscRing<TestEvent, 1024> ring;
   std::atomic<int> received{0};
 
   std::thread consumer([&] {
-    DummyEvent event{};
+    TestEvent event{};
     while (received.load(std::memory_order_relaxed) < kCount) {
       if (ring.try_pop(event)) {
         received.fetch_add(1, std::memory_order_relaxed);
@@ -49,7 +54,7 @@ TEST(SpscRing, TwoThreadsTransferAll) {
 
   std::thread producer([&] {
     for (int i = 0; i < kCount; ++i) {
-      DummyEvent event{};
+      TestEvent event{};
       event.seq = static_cast<std::uint64_t>(i);
       while (!ring.try_push(event)) {
         std::this_thread::yield();

@@ -517,7 +517,8 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
 
   CROW_ROUTE(app, "/workbooks/<int>/runs/start")
       .methods(crow::HTTPMethod::POST)([auth, workbooks, activity, data, strategies, symbols, books,
-                                        live_runs](const crow::request& req, std::int64_t wid) {
+                                        live_runs, persist](const crow::request& req,
+                                                            std::int64_t wid) {
         auto gate = require_workbook(*auth, *workbooks, req, wid);
         if (!gate) {
           return std::move(gate.error);
@@ -665,8 +666,14 @@ void register_workbook_routes(App& app, WorkbookRouteDeps deps) {
           return json_error(500, "failed to load workbook");
         }
         RunManager mgr;
-        const auto result =
-            mgr.execute(cfg, *data, *strategies, local_books, *symbols, activity);
+        RunResult result{};
+        try {
+          // Writes must go through T2 (db_write). `activity` is db_read-only.
+          result = mgr.execute(cfg, *data, *strategies, local_books, *symbols, nullptr, persist);
+        } catch (const std::exception& e) {
+          AC_LOG_ERROR("api_hist_run_persist_failed wid={} err={}", wid, e.what());
+          return json_error(500, e.what());
+        }
         if (uuid_low(result.workbook_id) != wid) {
           return json_error(500, "run workbook bind failed");
         }

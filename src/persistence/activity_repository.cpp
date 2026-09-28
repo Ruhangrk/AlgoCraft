@@ -435,9 +435,19 @@ void ActivityRepository::persist_run(const RunConfig& config, const RunResult& r
 
     exec(db_, "COMMIT");
     AC_LOG_INFO("persist_run done wid={}", wb_db_id);
+  } catch (const std::exception& e) {
+    AC_LOG_ERROR("persist_run rollback wid={} err={}", wb_db_id, e.what());
+    try {
+      exec(db_, "ROLLBACK");
+    } catch (...) {
+    }
+    throw;
   } catch (...) {
-    AC_LOG_ERROR("persist_run rollback wid={}", wb_db_id);
-    exec(db_, "ROLLBACK");
+    AC_LOG_ERROR("persist_run rollback wid={} err=unknown", wb_db_id);
+    try {
+      exec(db_, "ROLLBACK");
+    } catch (...) {
+    }
     throw;
   }
 }

@@ -40,23 +40,20 @@ On disk:
 ```mermaid
 flowchart TB
   MAIN["src/main.cpp"]
-  MAIN -->|no args| P0["Phase0Runtime smoke<br/>rings + dummy events"]
-  MAIN -->|backtest| BT["BacktestRunner<br/>+ CachedProvider/Csv"]
-  MAIN -->|run| RM["RunManager Phase-4 style<br/>DefaultRouter + persist"]
   MAIN -->|serve| HTTP["HttpServer :8080<br/>Auth + workbooks + ensure + runs"]
+  MAIN -->|run| RM["RunManager Phase-4 style<br/>DefaultRouter + persist"]
+  MAIN -->|backtest| BT["BacktestRunner<br/>+ CachedProvider/Csv"]
   MAIN -->|db| DBSmoke["SqliteDatabase open/migrate"]
   MAIN -->|instruments ingest| INGEST["InstrumentRepository<br/>Upstox complete.csv.gz"]
 ```
 
 | CLI | Code path |
 |-----|-----------|
-| `./algocraft_engine` | `Phase0Runtime` |
-| `./algocraft_engine backtest [dir]` | `BacktestRunner` + strategies |
-| `./algocraft_engine run [dir]` | `RunManager::execute` + `ActivityRepository` |
 | `./algocraft_engine serve [dir] [port]` | `HttpServer` (Upstox if token else CSV) |
+| `./algocraft_engine run [dir]` | `RunManager::execute` + `ActivityRepository` |
+| `./algocraft_engine backtest [dir]` | `BacktestRunner` + strategies |
 | `./algocraft_engine db [path]` | migrate smoke |
 | `./algocraft_engine instruments ingest [source] [db]` | parse/filter NSE EQ → SQLite |
-| `./algocraft_engine instruments ingest [source] [db]` | Upstox complete.csv.gz → NSE EQ catalog |
 
 ---
 
@@ -217,11 +214,10 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | File | Contains | Talks to |
 |------|----------|----------|
 | `engine/run_manager.hpp/.cpp` | Full workbook run: borrow → router → replay tape → settle → optional persist | `WorkbookManager`, `ContainerManager`, `DefaultRouter`, `DataSourceRegistry`, `ActivityRepository`, `SessionScheduler`, `RiskEngine`, `SimulatedExchange` |
-| `engine/phase0_runtime.hpp/.cpp` | 5-thread ring-buffer smoke | `SpscRing`, `AsyncLogger` |
-| `engine/spsc_ring.hpp` | Lock-free SPSC queue | Used by Phase0 / logging |
-| `engine/memory_pool.hpp` | Fixed object pool | Phase0 / future hot path |
-| `engine/engine_thread.hpp` | Named thread wrapper | Phase0 |
-| `engine/dummy_event.hpp` | Dummy payload for Phase0 | Phase0 |
+| `engine/live_run_service.hpp/.cpp` | Live ActiveRun: MarketData/Order/Fill/Command/Routing rings | Feed, T3 venue, T1 router, StatusSseHub |
+| `engine/live_control.hpp` | `LiveCommand` / `RoutingSignal` payloads | CommandRing + RoutingRing |
+| `engine/spsc_ring.hpp` | Lock-free SPSC queue | Live rings |
+| `engine/engine_thread.hpp` | Named thread wrapper | T2 PersistenceService, live T1/T3 |
 
 ### 5.4 Routing
 
@@ -281,7 +277,6 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `market_data/data_source_registry.*` | Active provider by name | Engine / HTTP |
 | `market_data/csv_provider.*` | CSV historical loader | Files under `data/1min/` |
 | `market_data/upstox_provider.*` | Upstox v3 REST candles (1m + 1d/1w/1M); ISIN map; rate limit; chunk windows | HTTPS + token file |
-| `market_data/dummy_provider.*` | Phase0 dummy | Phase0 |
 | `market_data/data_fetch_service.*` | Coverage logic A/B/C; Rocks then SQLite | `BarStore`, `CoverageRepository`, vendor loader |
 | `market_data/cached_provider.*` | Vendor wrapped so `historical_loader()` is the fetch service | Used by `main` for all real runs |
 | `market_data/bar_store.hpp` | Abstract session put/get | Rocks impl |
@@ -297,7 +292,8 @@ Headers live under `include/algocraft/…`. Matching `.cpp` under `src/…` unle
 | `persistence/rocks_bar_store.*` | RocksDB `BarStore` | `packed_bars`, RocksDB |
 | `persistence/packed_bars.*` | `ACB1` binary OHLCV pack/unpack | Rocks values |
 | `persistence/activity_repository.*` | Persist/read runs, containers, fills, signals, rejections | Sqlite after run |
-| `persistence/async_logger.*` + `log_event.hpp` | SPSC log events (Phase0) | Persistence thread demo |
+| `persistence/persistence_service.*` | T2 sole writer; mutex job queue + LogHub drain | `db_write`, API/live producers |
+| `persistence/log_event.hpp` | Fixed-size log payload | `LogHub` / `AC_LOG_*` |
 | `log/log.hpp` + `log_hub.*` | `AC_LOG_*` facade + async drain → spdlog | CLI level; see `Notes/LOGGING.md` |
 
 ### 5.10 Domain (types only)
@@ -466,7 +462,7 @@ flowchart TB
 | SQLite + RocksDB + DataFetchService | Yes |
 | Auth + HTTP API | Yes (minimal server) |
 | Signal/rejection rows | Captured in container; written post-run |
-| PersistenceRing Thread-2 for all writes | Phase0 demo only; activity persist is post-run sync. **Target (locked):** `db_write`=T2 only, `db_read`=T4 SELECT only; see PHASE5 “SQLite connections + T2 / T4” |
+| PersistenceService Thread-2 for all writes | Yes — mutex job queue + LogHub drain; `db_write`=T2 only, `db_read`=T4 SELECT; typed Persist_* SPSC rings still TODO |
 | Live Upstox WS paper tape | `UpstoxLiveFeed` + `POST .../runs/stop`; status hub push |
 | Broker gateway | No |
 

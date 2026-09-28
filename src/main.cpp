@@ -2,14 +2,12 @@
 #include "algocraft/backtest/backtest_runner.hpp"
 #include "algocraft/domain/instrument.hpp"
 #include "algocraft/domain/symbol.hpp"
-#include "algocraft/engine/phase0_runtime.hpp"
 #include "algocraft/engine/run_manager.hpp"
 #include "algocraft/log/log.hpp"
 #include "algocraft/log/log_hub.hpp"
 #include "algocraft/market_data/cached_provider.hpp"
 #include "algocraft/market_data/csv_provider.hpp"
 #include "algocraft/market_data/data_source_registry.hpp"
-#include "algocraft/market_data/dummy_provider.hpp"
 #include "algocraft/market_data/upstox_provider.hpp"
 #include "algocraft/market_data/instrument_ingest.hpp"
 #include "algocraft/persistence/instrument_repository.hpp"
@@ -282,35 +280,14 @@ int run_instruments_ingest(const char* source, const char* db_path) {
   return 0;
 }
 
-int run_phase0_smoke() {
-  algocraft::DataSourceRegistry registry;
-  registry.register_provider(std::make_unique<algocraft::DummyProvider>());
-  AC_LOG_INFO("active data source: {}", registry.active_provider().name());
-
-  algocraft::Phase0Runtime runtime;
-  runtime.start();
-
-  constexpr std::uint64_t kBars = 8;
-  for (std::uint64_t i = 0; i < kBars; ++i) {
-    algocraft::DummyEvent event{};
-    event.kind = algocraft::kEventBar;
-    event.symbol_id = 1;
-    event.seq = i;
-    while (!runtime.market_data_ring().try_push(event)) {
-      std::this_thread::yield();
-    }
-  }
-
-  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-  while (runtime.bars_processed() < kBars && std::chrono::steady_clock::now() < deadline) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-  }
-
-  runtime.stop();
-  AC_LOG_INFO("bars={} fills={} commands={} persist={} logs={}", runtime.bars_processed(),
-               runtime.fills_processed(), runtime.commands_processed(), runtime.persist_events(),
-               runtime.logs_written());
-  return runtime.bars_processed() >= kBars ? 0 : 1;
+void print_usage() {
+  AC_LOG_ERROR(
+      "usage: algocraft_engine <serve|run|backtest|db|instruments> [args...] [log_level]\n"
+      "  serve [data_dir] [port]\n"
+      "  run [data_dir]\n"
+      "  backtest [data_dir] | backtest consecutive_up_clip [data_dir]\n"
+      "  db [db_path]\n"
+      "  instruments ingest [source] [db_path]");
 }
 
 int run_clip_backtest(const char* data_dir) {
@@ -609,7 +586,8 @@ int main(int argc, char** argv) {
       rc = run_phase2_backtest(data_dir);
     }
   } else {
-    rc = run_phase0_smoke();
+    print_usage();
+    rc = 1;
   }
 
   AC_LOG_INFO("algocraft exit rc={} log_dropped={} log_written={}", rc, log_hub.dropped(),
