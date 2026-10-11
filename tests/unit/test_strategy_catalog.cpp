@@ -3,10 +3,15 @@
 #include "algocraft/persistence/strategy_catalog_repository.hpp"
 #include "algocraft/strategies/strategy_compiler.hpp"
 
+#include <filesystem>
 #include <gtest/gtest.h>
 
 #ifndef ALGOCRAFT_MIGRATIONS_DIR
 #define ALGOCRAFT_MIGRATIONS_DIR "migrations"
+#endif
+
+#ifndef ALGOCRAFT_SOURCE_DIR
+#define ALGOCRAFT_SOURCE_DIR "."
 #endif
 
 TEST(StrategyCompiler, ValidNameAndClassName) {
@@ -16,6 +21,91 @@ TEST(StrategyCompiler, ValidNameAndClassName) {
   EXPECT_FALSE(algocraft::StrategyCompiler::valid_name("1bad"));
   EXPECT_EQ(algocraft::StrategyCompiler::derive_class_name("live_run_testing"), "LiveRunTesting");
   EXPECT_EQ(algocraft::StrategyCompiler::derive_class_name("foo"), "Foo");
+}
+
+TEST(StrategyCompiler, CompileRejectsPrivateQuantityCtor) {
+  const auto sandbox =
+      std::filesystem::temp_directory_path() / "algocraft_agent_compile_bad";
+  std::filesystem::remove_all(sandbox);
+  algocraft::StrategyCompiler compiler({.source_root = ALGOCRAFT_SOURCE_DIR,
+                                        .sandbox_root = sandbox});
+  algocraft::StrategyCompiler::Request req;
+  req.name = "agent_unit_bad";
+  req.class_name = "AgentUnitBad";
+  req.hpp = R"(#pragma once
+#include "algocraft/strategies/strategy.hpp"
+namespace algocraft {
+class AgentUnitBad final : public Strategy {
+public:
+  void configure(const StrategyConfig&, IndicatorLibrary&) override {}
+  void on_bar(const BarEvent&, const PortfolioView&, std::vector<OrderIntent>&) override;
+  void on_fill(const FillEvent&) override {}
+  void on_order_update(const OrderUpdate&) override {}
+  bool should_exit() const override { return false; }
+  StrategyMetadata metadata() const override {
+    return {"agent_unit_bad", "1.0.0", TradingMode::Mis, BarResolution::OneMin, {}};
+  }
+};
+}
+)";
+  req.cpp = R"(#include "algocraft/strategies/agent_unit_bad.hpp"
+#include "algocraft/strategies/make_intent.hpp"
+namespace algocraft {
+void AgentUnitBad::on_bar(const BarEvent&, const PortfolioView&, std::vector<OrderIntent>& out) {
+  out.push_back(make_intent(StrategyId::from(1), SymbolId{1}, Side::Buy, Quantity{1}));
+}
+}
+)";
+  const auto result = compiler.compile(req);
+  EXPECT_FALSE(result.ok);
+  EXPECT_NE(result.log.find("Quantity"), std::string::npos);
+  std::filesystem::remove_all(sandbox);
+}
+
+TEST(StrategyCompiler, CompileAcceptsFromShares) {
+  const auto sandbox =
+      std::filesystem::temp_directory_path() / "algocraft_agent_compile_ok";
+  std::filesystem::remove_all(sandbox);
+  algocraft::StrategyCompiler compiler({.source_root = ALGOCRAFT_SOURCE_DIR,
+                                        .sandbox_root = sandbox});
+  algocraft::StrategyCompiler::Request req;
+  req.name = "agent_unit_ok";
+  req.class_name = "AgentUnitOk";
+  req.hpp = R"(#pragma once
+#include "algocraft/strategies/strategy.hpp"
+namespace algocraft {
+class AgentUnitOk final : public Strategy {
+public:
+  void configure(const StrategyConfig& c, IndicatorLibrary&) override { config_ = c; }
+  void on_bar(const BarEvent&, const PortfolioView&, std::vector<OrderIntent>&) override;
+  void on_fill(const FillEvent&) override {}
+  void on_order_update(const OrderUpdate&) override {}
+  bool should_exit() const override { return false; }
+  StrategyMetadata metadata() const override {
+    return {"agent_unit_ok", "1.0.0", TradingMode::Mis, BarResolution::OneMin, {}};
+  }
+private:
+  StrategyConfig config_{};
+};
+}
+)";
+  req.cpp = R"(#include "algocraft/strategies/agent_unit_ok.hpp"
+#include "algocraft/domain/bar_resolution.hpp"
+#include "algocraft/strategies/make_intent.hpp"
+namespace algocraft {
+void AgentUnitOk::on_bar(const BarEvent& bar, const PortfolioView& pf,
+                         std::vector<OrderIntent>& out) {
+  if (bar.symbol_id != config_.symbol_id || bar.resolution != BarResolution::OneMin) return;
+  if (pf.position.shares() == 0) {
+    out.push_back(make_intent(StrategyId::from(1), config_.symbol_id, Side::Buy,
+                              Quantity::from_shares(1)));
+  }
+}
+}
+)";
+  const auto result = compiler.compile(req);
+  EXPECT_TRUE(result.ok) << result.log;
+  std::filesystem::remove_all(sandbox);
 }
 
 TEST(StrategyCatalogRepository, UpsertPromoteThenActivate) {

@@ -79,3 +79,6 @@ data/bars/
 
 # Daily engine logs (spdlog daily_file_sink)
 data/logs/
+
+# Agent compile scratch (promote copies into include/ + src/)
+data/agent_sandbox/

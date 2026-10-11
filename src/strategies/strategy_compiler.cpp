@@ -52,6 +52,34 @@ bool contains_token(std::string_view hay, std::string_view needle) {
   return hay.find(needle) != std::string_view::npos;
 }
 
+// Reject LLM stubs that redefine Strategy / invent types so sandbox -fsyntax-only
+// cannot "succeed" against a fake base class (sandbox -I is checked first).
+std::string validate_agent_sources(std::string_view name, std::string_view hpp,
+                                   std::string_view cpp) {
+  const std::string want_include =
+      std::string("#include \"algocraft/strategies/") + std::string(name) + ".hpp\"";
+  if (!contains_token(hpp, "#include \"algocraft/strategies/strategy.hpp\"") &&
+      !contains_token(hpp, "#include <algocraft/strategies/strategy.hpp>")) {
+    return "hpp must #include \"algocraft/strategies/strategy.hpp\" "
+           "(do not invent a local Strategy base class)";
+  }
+  if (!contains_token(cpp, want_include)) {
+    return "cpp must #include \"algocraft/strategies/<name>.hpp\"";
+  }
+  if (contains_token(hpp, "class Strategy") || contains_token(cpp, "class Strategy")) {
+    return "do not redefine class Strategy; include algocraft/strategies/strategy.hpp";
+  }
+  if (contains_token(hpp, "struct Config") || contains_token(hpp, "struct Bar {") ||
+      contains_token(hpp, "struct Metadata") || contains_token(hpp, "placeholder")) {
+    return "do not invent Config/Bar/Metadata stubs; use real AlgoCraft types";
+  }
+  if (contains_token(hpp, "Quantity{1") || contains_token(cpp, "Quantity{1") ||
+      contains_token(hpp, "Quantity{ 1") || contains_token(cpp, "Quantity{ 1")) {
+    return "use Quantity::from_shares(n); Quantity{n} is private";
+  }
+  return {};
+}
+
 void ensure_cmake_entry(const std::filesystem::path& cmake, std::string_view cpp_rel) {
   auto text = read_file(cmake);
   const std::string entry = std::string("  ") + std::string(cpp_rel);
@@ -165,6 +193,11 @@ StrategyCompiler::Result StrategyCompiler::compile(const Request& req) const {
     return result;
   }
 
+  if (const auto verr = validate_agent_sources(req.name, req.hpp, req.cpp); !verr.empty()) {
+    result.log = verr;
+    return result;
+  }
+
   result.class_name = req.class_name.empty() ? derive_class_name(req.name) : req.class_name;
   result.sandbox_dir = paths_.sandbox_root / req.name;
   const auto hpp_abs =
@@ -183,11 +216,12 @@ StrategyCompiler::Result StrategyCompiler::compile(const Request& req) const {
 
     const auto project_include = paths_.source_root / "include";
     const auto sandbox_include = result.sandbox_dir / "include";
-    // Syntax-only: validates against live project headers + sandbox override for the new hpp.
+    // Project includes first so real strategy.hpp wins; sandbox only supplies the new hpp.
+    // Match engine -Werror on unused params so promote/rebuild does not surprise.
     std::ostringstream cmd;
-    cmd << "g++ -std=c++20 -fsyntax-only -Wall -Wextra"
-        << " -I" << sandbox_include.string()
+    cmd << "g++ -std=c++20 -fsyntax-only -Wall -Wextra -Werror=unused-parameter"
         << " -I" << project_include.string()
+        << " -I" << sandbox_include.string()
         << " " << cpp_abs.string() << " 2>&1";
 
     result.log = run_cmd(cmd.str());

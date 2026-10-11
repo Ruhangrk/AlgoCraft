@@ -90,6 +90,21 @@ add_library(algocraft
   src/strategies/piercing_line_long.cpp
   src/strategies/reliance_prev5_avg_break.cpp
   src/strategies/strategy_compiler.cpp
+  src/strategies/agent_e2e_two_red.cpp
+  src/strategies/agent_e2e_two_green.cpp
+  src/strategies/agent_e2e_flat_churn.cpp
+  src/strategies/agent_ok_two_red.cpp
+  src/strategies/agent_ok_two_green.cpp
+  src/strategies/agent_ok_open_clip.cpp
+  src/strategies/agent_reload_smoke.cpp
+  src/strategies/agent_llm_prev_high.cpp
+  src/strategies/agent_llm_red_exit.cpp
+  src/strategies/agent_llm_morning_buy.cpp
+  src/strategies/agent_llm_higher_close.cpp
+  src/strategies/agent_llm_range_expand.cpp
+  src/strategies/agent_llm_two_up_closes.cpp
+  src/strategies/agent_reliance_custom.cpp
+  src/strategies/custom_itc.cpp
   src/strategies/strategy_registrations.cpp
   src/strategies/three_red_bounce.cpp
   src/strategies/three_white_soldiers.cpp

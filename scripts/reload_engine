@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Rebuild algocraft_engine and restart serve. Invoked by POST /agent/strategies/activate
+# (enabled=true) so new promoted strategies appear in GET /strategies without a manual ops step.
+#
+# Usage:
+#   scripts/reload_engine [log_level]
+#   log_level defaults to info (also: debug, trace, …)
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+LEVEL="${1:-info}"
+mkdir -p "$ROOT/data/logs"
+LOG="$ROOT/data/logs/reload_engine.log"
+
+{
+  echo "[$(date -Iseconds)] reload_engine start level=${LEVEL}"
+  # Let the activate HTTP response flush before we kill the server.
+  sleep 1
+  echo "[$(date -Iseconds)] building algocraft_engine (-j2)"
+  cmake --build build -j2 --target algocraft_engine
+  echo "[$(date -Iseconds)] restarting serve"
+} >>"$LOG" 2>&1
+
+# --restart kills the old serve process, then execs the new binary.
+exec "$ROOT/scripts/serve" --restart "$LEVEL"

@@ -23,6 +23,21 @@
 #include "algocraft/strategies/two_consecutive_bars.hpp"
 #include "algocraft/strategies/two_green_thrust.hpp"
 #include "algocraft/strategies/vwap_reclaim_long.hpp"
+#include "algocraft/strategies/agent_e2e_two_red.hpp"
+#include "algocraft/strategies/agent_e2e_two_green.hpp"
+#include "algocraft/strategies/agent_e2e_flat_churn.hpp"
+#include "algocraft/strategies/agent_ok_two_red.hpp"
+#include "algocraft/strategies/agent_ok_two_green.hpp"
+#include "algocraft/strategies/agent_ok_open_clip.hpp"
+#include "algocraft/strategies/agent_reload_smoke.hpp"
+#include "algocraft/strategies/agent_llm_prev_high.hpp"
+#include "algocraft/strategies/agent_llm_red_exit.hpp"
+#include "algocraft/strategies/agent_llm_morning_buy.hpp"
+#include "algocraft/strategies/agent_llm_higher_close.hpp"
+#include "algocraft/strategies/agent_llm_range_expand.hpp"
+#include "algocraft/strategies/agent_llm_two_up_closes.hpp"
+#include "algocraft/strategies/agent_reliance_custom.hpp"
+#include "algocraft/strategies/custom_itc.hpp"
 #include "algocraft/strategies/vwap_reversion.hpp"
 
 #include <stdexcept>
@@ -75,6 +90,21 @@ void register_all_strategies(StrategyRegistry& registry) {
   registry.add("three_white_soldiers", [] { return std::make_unique<ThreeWhiteSoldiers>(); });
   registry.add("atr_expansion_long", [] { return std::make_unique<AtrExpansionLong>(); });
   registry.add("nr7_breakout", [] { return std::make_unique<Nr7Breakout>(); });
+  registry.add("custom_itc", [] { return std::make_unique<CustomItc>(); });
+  registry.add("agent_reliance_custom", [] { return std::make_unique<AgentRelianceCustom>(); });
+  registry.add("agent_llm_two_up_closes", [] { return std::make_unique<AgentLlmTwoUpCloses>(); });
+  registry.add("agent_llm_range_expand", [] { return std::make_unique<AgentLlmRangeExpand>(); });
+  registry.add("agent_llm_higher_close", [] { return std::make_unique<AgentLlmHigherClose>(); });
+  registry.add("agent_llm_morning_buy", [] { return std::make_unique<AgentLlmMorningBuy>(); });
+  registry.add("agent_llm_red_exit", [] { return std::make_unique<AgentLlmRedExit>(); });
+  registry.add("agent_llm_prev_high", [] { return std::make_unique<AgentLlmPrevHigh>(); });
+  registry.add("agent_reload_smoke", [] { return std::make_unique<AgentReloadSmoke>(); });
+  registry.add("agent_ok_open_clip", [] { return std::make_unique<AgentOkOpenClip>(); });
+  registry.add("agent_ok_two_green", [] { return std::make_unique<AgentOkTwoGreen>(); });
+  registry.add("agent_ok_two_red", [] { return std::make_unique<AgentOkTwoRed>(); });
+  registry.add("agent_e2e_flat_churn", [] { return std::make_unique<AgentE2eFlatChurn>(); });
+  registry.add("agent_e2e_two_green", [] { return std::make_unique<AgentE2eTwoGreen>(); });
+  registry.add("agent_e2e_two_red", [] { return std::make_unique<AgentE2eTwoRed>(); });
 }
 
 }  // namespace algocraft

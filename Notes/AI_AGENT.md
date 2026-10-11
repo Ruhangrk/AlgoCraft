@@ -76,7 +76,7 @@ AlgoCraft-UI (:5173)
 ### Phase C — Promote + activate
 - Human OK → `POST /agent/strategies/promote` (`enabled=0` in catalog).
 - Second human OK → `POST /agent/strategies/activate` (`enabled=1`).
-- Tell user: **rebuild + `scripts/serve --restart`** required for new C++ to load into the in-process registry (no dlopen yet).
+- Activate (`enabled=true`) **schedules** `scripts/reload_engine` (build `-j2` + `serve --restart`). Response includes `reload: scheduled`. API drops briefly; poll `/strategies` when back.
 
 ---
 
@@ -255,7 +255,8 @@ All under `/agent/strategies/*`, JWT required.
 }
 ```
 - `name`: `^[a-z][a-z0-9_]{0,63}$`
-- Response `200` if ok, `422` if compile failed: `{ok, name, class_name, sandbox_dir, log}`
+- Response `200` if ok, `400` if compile failed: `{ok, name, class_name, sandbox_dir, log}`  
+  (Crow has no 422 status mapping; unknown codes become 500 — use `400` + `ok:false`.)
 - Sandbox on disk: `data/agent_sandbox/<name>/` (C++ side). No catalog enable.
 
 #### `POST /agent/strategies/promote`
@@ -272,8 +273,8 @@ All under `/agent/strategies/*`, JWT required.
 ```json
 { "name": "my_mean_revert", "enabled": true }
 ```
-- `enabled: false` deactivates.
-- `200`: catalog row + note to rebuild/restart.
+- `enabled: true|false` updates catalog and **always** schedules rebuild+restart via `scripts/reload_engine`.
+- `200`: catalog row + `{ok, reload, note}` (`reload` = `scheduled` | `already_scheduled` | …).
 
 #### `GET /agent/strategies/catalog`
 - Array of catalog rows (`id`, `kind`, `name`, `class_name`, `enabled`, paths, `compile_ok`, …).

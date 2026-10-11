@@ -1,10 +1,15 @@
 #include "algocraft/api/agent_routes.hpp"
 
+#include <atomic>
+#include <cstdlib>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
 
 #include <sqlite3.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "algocraft/log/log.hpp"
 #include "algocraft/persistence/strategy_catalog_repository.hpp"
@@ -12,6 +17,8 @@
 
 namespace algocraft::api {
 namespace {
+
+std::atomic<bool> g_reload_scheduled{false};
 
 crow::json::wvalue catalog_json(const StrategyCatalogRepository::Row& row) {
   crow::json::wvalue root;
@@ -28,6 +35,46 @@ crow::json::wvalue catalog_json(const StrategyCatalogRepository::Row& row) {
   root["created_at"] = row.created_at;
   root["updated_at"] = row.updated_at;
   return root;
+}
+
+// Detach scripts/reload_engine so activate can return before build+restart.
+// Returns: "scheduled" | "already_scheduled" | "missing_script" | "fork_failed"
+std::string schedule_engine_reload(const std::filesystem::path& source_root) {
+  if (source_root.empty()) {
+    return "missing_script";
+  }
+  const auto script = source_root / "scripts" / "reload_engine";
+  if (!std::filesystem::exists(script)) {
+    AC_LOG_ERROR("agent_reload script missing path={}", script.string());
+    return "missing_script";
+  }
+
+  bool expected = false;
+  if (!g_reload_scheduled.compare_exchange_strong(expected, true)) {
+    AC_LOG_INFO("agent_reload already scheduled; skipping duplicate");
+    return "already_scheduled";
+  }
+
+  const pid_t pid = ::fork();
+  if (pid < 0) {
+    g_reload_scheduled.store(false);
+    AC_LOG_ERROR("agent_reload fork failed");
+    return "fork_failed";
+  }
+  if (pid == 0) {
+    // Child: new session so we survive parent exit when serve is killed.
+    ::setsid();
+    // Best-effort: avoid inheriting Crow listen sockets as busy fds.
+    for (int fd = 3; fd < 256; ++fd) {
+      ::close(fd);
+    }
+    const std::string path = script.string();
+    ::execl(path.c_str(), path.c_str(), "info", static_cast<char*>(nullptr));
+    std::_Exit(127);
+  }
+
+  AC_LOG_INFO("agent_reload scheduled pid={} script={}", static_cast<int>(pid), script.string());
+  return "scheduled";
 }
 
 }  // namespace
@@ -99,7 +146,8 @@ void register_agent_routes(App& app, AgentRouteDeps deps) {
         root["sandbox_dir"] = compiled.sandbox_dir.string();
         root["log"] = compiled.log;
         AC_LOG_INFO("api_agent_compile name={} ok={}", creq.name, compiled.ok);
-        return json_ok(std::move(root), compiled.ok ? 200 : 422);
+        // Crow has no 422 mapping (it coerces unknown codes to 500); use 400 for compile fail.
+        return json_ok(std::move(root), compiled.ok ? 200 : 400);
       });
 
   CROW_ROUTE(app, "/agent/strategies/promote")
@@ -129,7 +177,8 @@ void register_agent_routes(App& app, AgentRouteDeps deps) {
           root["ok"] = false;
           root["name"] = name;
           root["log"] = promoted.log;
-          return json_ok(std::move(root), 422);
+          // Crow has no 422 mapping (it coerces unknown codes to 500); use 400 for promote fail.
+          return json_ok(std::move(root), 400);
         }
 
         StrategyCatalogRepository::Row row{};
@@ -158,13 +207,14 @@ void register_agent_routes(App& app, AgentRouteDeps deps) {
         root["cpp_path"] = promoted.cpp_path.string();
         root["log"] = promoted.log;
         root["note"] =
-            "catalog enabled=0; call POST /agent/strategies/activate then rebuild+restart serve";
+            "catalog enabled=0; call POST /agent/strategies/activate "
+            "(activate schedules rebuild+restart)";
         AC_LOG_INFO("api_agent_promote name={} id={}", name, id);
         return json_ok(std::move(root), 201);
       });
 
   CROW_ROUTE(app, "/agent/strategies/activate")
-      .methods(crow::HTTPMethod::POST)([auth, persist](const crow::request& req) {
+      .methods(crow::HTTPMethod::POST)([auth, persist, source_root](const crow::request& req) {
         auto gate = require_user(*auth, req);
         if (!gate) {
           return std::move(gate.error);
@@ -204,10 +254,25 @@ void register_agent_routes(App& app, AgentRouteDeps deps) {
 
         crow::json::wvalue root = catalog_json(*row);
         root["ok"] = true;
-        root["note"] = enabled
-                           ? "enabled=1; rebuild engine and restart serve to load new C++ into registry"
-                           : "enabled=0; strategy hidden from agent catalog consumers";
-        AC_LOG_INFO("api_agent_activate name={} enabled={}", name, enabled);
+        // Activate and deactivate both rebuild+restart so the running binary matches catalog intent.
+        const auto reload = schedule_engine_reload(source_root);
+        root["reload"] = reload;
+        if (reload == "scheduled") {
+          root["note"] = enabled
+                             ? "enabled=1; rebuild+restart scheduled (scripts/reload_engine). "
+                               "API will drop briefly; poll GET /strategies when serve is back"
+                             : "enabled=0; rebuild+restart scheduled (scripts/reload_engine). "
+                               "API will drop briefly";
+        } else if (reload == "already_scheduled") {
+          root["note"] = enabled ? "enabled=1; engine reload already in progress"
+                                 : "enabled=0; engine reload already in progress";
+        } else {
+          root["note"] =
+              std::string(enabled ? "enabled=1" : "enabled=0") +
+              "; failed to schedule reload (" + reload +
+              "); run: cmake --build build -j2 --target algocraft_engine && scripts/serve --restart";
+        }
+        AC_LOG_INFO("api_agent_activate name={} enabled={} reload={}", name, enabled, reload);
         return json_ok(std::move(root));
       });
 }

@@ -1,0 +1,18 @@
+#pragma once
+#include "algocraft/strategies/strategy.hpp"
+
+namespace algocraft {
+class CustomItc final : public Strategy {
+public:
+  void configure(const StrategyConfig&, IndicatorLibrary&) override;
+  void on_bar(const BarEvent&, const PortfolioView&, std::vector<OrderIntent>&) override;
+  void on_fill(const FillEvent&) override {}
+  void on_order_update(const OrderUpdate&) override {}
+  bool should_exit() const override { return false; }
+  StrategyMetadata metadata() const override;
+private:
+  StrategyConfig config_{};
+  int green_streak_{0};
+  int red_streak_{0};
+};
+}
